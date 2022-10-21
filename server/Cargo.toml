@@ -7,3 +7,7 @@ edition = "2021"
 
 [dependencies]
 model = { path = "../model" }
+tokio = { version = "1", features = ["rt-multi-thread", "macros"]}
+axum = "0.5"
+tracing = "0.1"
+tracing-subscriber = "0.3"

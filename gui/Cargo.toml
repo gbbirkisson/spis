@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 model = { path = "../model" }
+yew = "0.19"
