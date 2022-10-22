@@ -8,13 +8,17 @@ _dev-run-nginx-nowatch:
 	cat $(NGINX_CONF) | envsubst > $(NGINX_CONF_TMP)
 	nginx -c $(NGINX_CONF_TMP)
 
+.PHONY: fmt
+fmt: ## Run formatters
+	cargo fmt
+
 .PHONY: dev-nginx
 dev-nginx: ## Run nginx
 	watchexec -r -w dev/nginx.conf -- make _dev-run-nginx-nowatch
 
 .PHONY: dev-server
 dev-server: ## Run the server
-	watchexec -r -e rs -w model -w server -- cargo run -p server
+	watchexec -r -e rs,toml -w model -w server -- cargo run -p server
 
 .PHONY: dev-gui
 dev-gui: ## Run the gui

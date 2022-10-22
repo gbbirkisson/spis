@@ -8,3 +8,5 @@ edition = "2021"
 [dependencies]
 model = { path = "../model" }
 yew = "0.19"
+gloo-net = "0.2"
+wasm-bindgen-futures = "0.4"

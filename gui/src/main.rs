@@ -1,9 +1,52 @@
+use gloo_net::http::Request;
 use yew::prelude::*;
+
+#[derive(Properties, PartialEq)]
+struct ImageListProps {
+    images: Vec<model::Image>,
+}
+
+#[function_component(ImageList)]
+fn videos_list(ImageListProps { images }: &ImageListProps) -> Html {
+    images
+        .iter()
+        .map(|image| {
+            html! {
+                <img width="20%" height="20%" src={format!("{}", image.path)}/>
+            }
+        })
+        .collect()
+}
 
 #[function_component(App)]
 fn app() -> Html {
+    let images = use_state(|| vec![]);
+
+    {
+        let images = images.clone();
+        use_effect_with_deps(
+            move |_| {
+                let images = images.clone();
+                wasm_bindgen_futures::spawn_local(async move {
+                    let fetched_images: Vec<model::Image> = Request::get("/api/")
+                        .send()
+                        .await
+                        .unwrap()
+                        .json()
+                        .await
+                        .unwrap();
+                    images.set(fetched_images);
+                });
+                || ()
+            },
+            (),
+        );
+    }
+
     html! {
-        <h1>{ "Hello World1" }</h1>
+        <div>
+            <ImageList images={(*images).clone()} />
+        </div>
     }
 }
 
