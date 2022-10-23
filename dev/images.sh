@@ -34,6 +34,7 @@ dir=$basedir/$RANDOM
 
 mkdir -p $dir
 seq $nr_of_images | xargs -I {} -P 8 sh -c "wget -q -O $dir/$RANDOM{}.jpg https://source.unsplash.com/1920x1200/\?animals,stars,nature,sea,weather || rm -f $dir/$RANDOM{}.jpg"
+seq $nr_of_images | xargs -I {} -P 8 sh -c "wget -q -O $dir/$RANDOM{}.jpg https://source.unsplash.com/1200x1920/\?animals,stars,nature,sea,weather || rm -f $dir/$RANDOM{}.jpg"
 
 declare -A arr
 arr=()
