@@ -31,5 +31,17 @@ nr_of_images=${1:?"NR_OF_IMAGES <- missing parameter $(usage)"}
 basedir=${2:?"BASEDIR <- missing parameter $(usage)"}
 
 dir=$basedir/$RANDOM
+
 mkdir -p $dir
-seq $nr_of_images | xargs -I {} -P 8 wget -q -O $dir/$RANDOM{}.jpg https://source.unsplash.com/1920x1200/\?stars,nature,sea,weather
+seq $nr_of_images | xargs -I {} -P 8 sh -c "wget -q -O $dir/$RANDOM{}.jpg https://source.unsplash.com/1920x1200/\?animals,stars,nature,sea,weather || rm -f $dir/$RANDOM{}.jpg"
+
+declare -A arr
+arr=()
+for file in $dir/** ; do
+  [[ -f "$file" ]] || continue
+   
+  read cksm _ < <(md5sum "$file")
+  if ((arr[$cksm]++)); then 
+    rm $file
+  fi
+done
