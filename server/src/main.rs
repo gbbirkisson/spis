@@ -11,12 +11,20 @@ impl ImageServer {
     fn new(dir: &str) -> Self {
         let mut images = Vec::with_capacity(100);
 
+        tracing::info!("Start to scan dir: {}", dir);
         let walk = WalkDir::new(dir).into_iter();
+
+        let mut count = 0;
         for entry in walk.filter_map(|e| e.ok()).filter(Self::filter) {
             images.push(Image {
                 path: entry.path().to_str().unwrap().to_string().replace(dir, ""),
             });
+            count += 1;
+            if count % 10 == 0 {
+                tracing::info!("Added {} images", count)
+            }
         }
+        tracing::info!("Scan done. Total image count: {}", count);
 
         Self { images }
     }
