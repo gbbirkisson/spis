@@ -12,7 +12,7 @@ fn videos_list(ImageListProps { images }: &ImageListProps) -> Html {
         .iter()
         .map(|image| {
             html! {
-                <img width="20%" height="20%" src={format!("{}", image.path)}/>
+                <img src={format!("{}", image.thumbnail)}/>
             }
         })
         .collect()

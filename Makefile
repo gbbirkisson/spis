@@ -3,6 +3,9 @@
 NGINX_CONF:=dev/nginx.conf
 NGINX_CONF_TMP:=/tmp/nginx.conf
 
+dev/api/state/thumbnails:
+	mkdir -p dev/api/state/thumbnails
+
 .PHONY: _dev-run-nginx-nowatch
 _dev-run-nginx-nowatch:
 	cat $(NGINX_CONF) | envsubst > $(NGINX_CONF_TMP)
@@ -17,7 +20,7 @@ dev-nginx: ## Run nginx
 	watchexec -r -w dev/nginx.conf -- make _dev-run-nginx-nowatch
 
 .PHONY: dev-server
-dev-server: ## Run the server
+dev-server: dev/api/state/thumbnails ## Run the server
 	watchexec -r -e rs,toml -w model -w server -- cargo run -p server
 
 .PHONY: dev-gui
