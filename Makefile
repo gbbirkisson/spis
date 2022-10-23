@@ -24,6 +24,10 @@ dev-server: ## Run the server
 dev-gui: ## Run the gui
 	cd gui && trunk serve --port 9000 --proxy-backend http://localhost:7000/api/
 
+.PHONY: dl-img
+dl-img: ## Download 50 random images
+	./dev/images.sh 50 dev/api/images
+
 .PHONY: help
 help: ## Show this help
 	$(eval HELP_COL_WIDTH:=15)

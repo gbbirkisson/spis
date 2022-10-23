@@ -16,6 +16,12 @@ $ cargo install trunk
 $ rustup target add wasm32-unknown-unknown
 ```
 
+### Fetching test data
+
+```console
+$ make dl-img
+```
+
 ### Running
 
 Open 3 terminals and run:
