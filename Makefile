@@ -21,10 +21,12 @@ lint: ## Run lint check
 
 .PHONY: test
 test: ## Run tests
+	cargo install cargo-tarpaulin
 	cargo test
 	cargo tarpaulin --ignore-tests
 
 audit: ## Run audit on dependencies
+	cargo install cargo-audit
 	cargo audit
 
 .PHONY: ci
@@ -58,8 +60,6 @@ setup: ## Setup project dependencies
 	cargo install watchexec-cli
 	cargo install trunk
 	cargo install cargo-watch
-	cargo install cargo-tarpaulin
-	cargo install cargo-audit
 
 	# Add rust components/targets
 	rustup component add rustfmt
