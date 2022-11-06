@@ -10,7 +10,6 @@ use walkdir::{DirEntry, WalkDir};
 use chksum::prelude::HashAlgorithm;
 use model::Image;
 
-static STATE_FILE_NAME: &str = "state.json";
 static THUMBNAIL_DIR: &str = "thumbnails";
 static THUMBNAIL_FORMAT: &str = "webp";
 static THUMBNAIL_HEIGHT: u32 = 200;
@@ -56,7 +55,7 @@ impl State {
 
         let mut thumbnail_dir = "".to_owned();
         thumbnail_dir.push_str(&self.state_dir);
-        thumbnail_dir.push_str("/");
+        thumbnail_dir.push('/');
         thumbnail_dir.push_str(THUMBNAIL_DIR);
 
         self.images = walk(&self.image_dir, &thumbnail_dir)?; // TODO: Handle
