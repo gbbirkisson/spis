@@ -1,3 +1,5 @@
 dev/api
 dist
 target
+
+cobertura.xml

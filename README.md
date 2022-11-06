@@ -2,6 +2,8 @@
 
 <h1>SPIS</h1>
 
+[![CI](https://github.com/gbbirkisson/spis/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/gbbirkisson/spis/actions/workflows/ci.yml)
+
 This project is called "Simple Private Image Server" or "SPIS" for short. It's purpose is to be a lightweight and fast server to display images hosted on a private server.
 
 - [Development](#development)

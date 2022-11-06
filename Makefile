@@ -23,7 +23,7 @@ lint: ## Run lint check
 test: ## Run tests
 	cargo install cargo-tarpaulin
 	cargo test
-	cargo tarpaulin --ignore-tests
+	cargo tarpaulin --ignore-tests --verbose --all-features --workspace --timeout 120 --out Xml
 
 audit: ## Run audit on dependencies
 	cargo install cargo-audit
