@@ -1,4 +1,4 @@
-<img align="right" src="https://projecteuler.net/images/clipart/euler_portrait.png">
+<img align="right" width="128" height="128" src="logo.png">
 
 <h1>SPIS</h1>
 
