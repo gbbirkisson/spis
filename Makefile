@@ -12,8 +12,29 @@ _dev-run-nginx-nowatch:
 	nginx -c $(NGINX_CONF_TMP)
 
 .PHONY: fmt
-fmt: ## Run formatters
-	cargo fmt
+fmt: ## Run format check
+	cargo fmt -- --check
+
+.PHONY: lint
+lint: ## Run lint check
+	cargo clippy -- -D warnings
+
+.PHONY: test
+test: ## Run tests
+	cargo test
+	cargo tarpaulin --ignore-tests
+
+audit: ## Run audit on dependencies
+	cargo audit
+
+.PHONY: ci
+ci: fmt lint test audit ## Run CI steps
+
+.PHONY: dev
+dev: ## Run all dev processes
+	x-terminal-emulator -t nginx -e make dev-nginx &
+	x-terminal-emulator -t server -e make dev-server &
+	x-terminal-emulator -t gui -e make dev-gui &
 
 .PHONY: dev-nginx
 dev-nginx: ## Run nginx
@@ -30,6 +51,23 @@ dev-gui: ## Run the gui
 .PHONY: dl-img
 dl-img: ## Download random images
 	./dev/images.sh 100 dev/api/images
+
+.PHONY: setup
+setup: ## Setup project dependencies
+	# Install cargo binaries
+	cargo install watchexec-cli
+	cargo install trunk
+	cargo install cargo-watch
+	cargo install cargo-tarpaulin
+	cargo install cargo-audit
+
+	# Add rust components/targets
+	rustup component add rustfmt
+	rustup component add clippy
+	rustup target add wasm32-unknown-unknown
+
+	# Install apt packages
+	sudo apt install -y nginx lld clang
 
 .PHONY: help
 help: ## Show this help

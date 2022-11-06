@@ -1,19 +1,20 @@
+<img align="right" src="https://projecteuler.net/images/clipart/euler_portrait.png">
+
+<h1>SPIS</h1>
+
+This project is called "Simple Private Image Server" or "SPIS" for short. It's purpose is to be a lightweight and fast server to display images hosted on a private server.
+
+- [Development](#development)
+  - [Setup test dependencies](#setup-test-dependencies)
+  - [Fetching test data](#fetching-test-data)
+  - [Running](#running)
+
 ## Development
 
-### Dependencies
+### Setup test dependencies
 
 ```console
-# Install nginx
-$ sudo apt install nginx
-
-# Install watchexec
-$ cargo install watchexec-cli
-
-# Install trunk
-$ cargo install trunk
-
-# Add WASM build target
-$ rustup target add wasm32-unknown-unknown
+$ make setup
 ```
 
 ### Fetching test data
@@ -24,7 +25,13 @@ $ make dl-img
 
 ### Running
 
-Open 3 terminals and run:
+Run stack with:
+
+```console
+$ make dev
+```
+
+Or alternatively open 3 terminals and run:
 
 ```console
 $ make dev-nginx
