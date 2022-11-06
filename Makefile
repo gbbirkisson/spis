@@ -67,7 +67,7 @@ setup: ## Setup project dependencies
 	rustup target add wasm32-unknown-unknown
 
 	# Install apt packages
-	sudo apt install -y nginx lld clang
+	sudo apt install -y nginx
 
 .PHONY: help
 help: ## Show this help
