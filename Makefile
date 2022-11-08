@@ -33,11 +33,11 @@ test-nocov: ## Run tests with no coverage report
 
 .PHONY: test
 test: ## Run tests with coverage report
-	cargo install cargo-tarpaulin
-	cargo tarpaulin --ignore-tests --all-features --workspace --timeout 120 --out Xml
+	cargo tarpaulin --version > /dev/null || cargo install cargo-tarpaulin
+	cargo tarpaulin --ignore-tests --all-features --workspace --timeout 120 --skip-clean --out Xml
 
 audit: ## Run audit on dependencies
-	cargo install cargo-audit
+	cargo audit --version > /dev/null || cargo install cargo-audit
 	cargo audit
 
 .PHONY: ci
@@ -63,8 +63,8 @@ dev-gui: ## Run the gui
 	cd spis-gui && trunk serve --port 9000 --proxy-backend http://localhost:7000/api/
 
 .PHONY: dl-img
-dl-img: ## Download 20 random images
-	./dev/images.sh 20 dev/api/images
+dl-img: ${IMAGE_DIR} ## Download 20 random images
+	./dev/images.sh 20 ${IMAGE_DIR}
 
 .PHONY: setup
 setup: ${IMAGE_DIR} ${THUMBNAIL_DIR} ## Setup project dependencies and dirs

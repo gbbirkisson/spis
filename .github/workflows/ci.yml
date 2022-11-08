@@ -81,6 +81,5 @@ jobs:
 
       - name: Upload test coverage
         uses: codecov/codecov-action@v2
-        if: github.ref == 'refs/heads/main'
         with:
           fail_ci_if_error: true
