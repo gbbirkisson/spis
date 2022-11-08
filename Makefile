@@ -62,6 +62,13 @@ dev-server: ${IMAGE_DIR} ${THUMBNAIL_DIR} ## Run the server
 dev-gui: ## Run the gui
 	cd spis-gui && trunk serve --port 9000 --proxy-backend http://localhost:7000/api/
 
+TEST_PROJ?=spis-server
+TEST_NAME?=
+.PHONY: dev-test
+dev-test: ## Run specific test
+	test ${TEST_NAME} || (echo "Set env var TEST_NAME to specify test name!"; exit 1)
+	watchexec -r -e rs,toml -w ${TEST_PROJ} -- cargo test -q -p ${TEST_PROJ} ${TEST_NAME} -- --nocapture
+
 .PHONY: dl-img
 dl-img: ${IMAGE_DIR} ## Download 20 random images
 	./dev/images.sh 20 ${IMAGE_DIR}
