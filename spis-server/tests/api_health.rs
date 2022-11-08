@@ -3,7 +3,9 @@ use std::net::TcpListener;
 fn spawn_server() -> String {
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
     let port = listener.local_addr().unwrap().port();
-    let server = spis_server::run(listener).expect("Failed to bind address");
+
+    let state = spis_server::state::State::empty();
+    let server = spis_server::run(state, listener).expect("Failed to bind address");
 
     let _ = tokio::spawn(server);
 

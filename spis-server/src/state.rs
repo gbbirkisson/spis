@@ -23,6 +23,15 @@ pub struct State {
 }
 
 impl State {
+    pub fn empty() -> Self {
+        Self {
+            state_dir: "".to_string(),
+            image_dir: "".to_string(),
+            image_dir_hash: "".to_string(),
+            images: HashMap::new(),
+        }
+    }
+
     pub fn load(state_dir: &str, image_dir: &str) -> Self {
         // TODO: Try to load old state
 

@@ -1,30 +1,34 @@
-use std::{net::TcpListener, sync::Arc};
+use std::net::TcpListener;
 
 use actix_web::{dev::Server, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use state::State;
 
-mod state;
+pub mod state;
 
 async fn health(_: HttpRequest) -> impl Responder {
     HttpResponse::Ok()
 }
 
-pub fn run(listener: TcpListener) -> Result<Server, std::io::Error> {
-    // let shared_state = Arc::new(State::load("dev/api/state", "dev/api/images"));
+async fn images(state: web::Data<State>) -> actix_web::Result<impl Responder> {
+    let images: Vec<spis_model::Image> = state
+        .images()
+        .values()
+        .cloned()
+        .collect::<Vec<spis_model::Image>>();
+    Ok(web::Json(images))
+}
+
+pub fn run(state: State, listener: TcpListener) -> Result<Server, std::io::Error> {
+    let state = web::Data::new(state);
 
     let server = HttpServer::new(move || {
         App::new()
-            // .app_data(shared_state.clone())
             .route("/api/health", web::get().to(health))
-        // .route("/api", web::get().to(images))
+            .route("/api", web::get().to(images))
+            .app_data(state.clone())
     })
     .listen(listener)?
     .run();
 
     Ok(server)
 }
-
-// async fn get_images(state: Extension<Arc<State>>) -> impl IntoResponse {
-//     let images: Vec<Image> = state.images().values().cloned().collect::<Vec<Image>>();
-//     (StatusCode::OK, Json(images))
-// }
