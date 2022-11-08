@@ -1,9 +1,12 @@
 [package]
-name = "model"
+name = "gui"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde = { version = "1", features = ["derive"] }
+spis-model = { path = "../spis-model" }
+yew = "0.19"
+gloo-net = "0.2"
+wasm-bindgen-futures = "0.4"

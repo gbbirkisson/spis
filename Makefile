@@ -19,11 +19,17 @@ fmt: ## Run format check
 lint: ## Run lint check
 	cargo clippy -- -D warnings
 
-.PHONY: test
-test: ## Run tests
-	cargo install cargo-tarpaulin
+.PHONY: test-cargo
+test-cargo: ## Run cargo tests
 	cargo test
+
+.PHONY: test-coverage
+test-coverage: ## Run tests with coverage report
+	cargo install cargo-tarpaulin
 	cargo tarpaulin --ignore-tests --verbose --all-features --workspace --timeout 120 --out Xml
+
+.PHONY: test
+test: test-cargo test-coverage ## Run tests
 
 audit: ## Run audit on dependencies
 	cargo install cargo-audit
@@ -37,6 +43,7 @@ dev: ## Run all dev processes
 	x-terminal-emulator -t nginx -e make dev-nginx &
 	x-terminal-emulator -t server -e make dev-server &
 	x-terminal-emulator -t gui -e make dev-gui &
+	xdg-open http://localhost:9000
 
 .PHONY: dev-nginx
 dev-nginx: ## Run nginx
@@ -44,11 +51,11 @@ dev-nginx: ## Run nginx
 
 .PHONY: dev-server
 dev-server: dev/api/state/thumbnails ## Run the server
-	watchexec -r -e rs,toml -w model -w server -- cargo run -p server
+	watchexec -r -e rs,toml -w spis-model -w spis-server -- cargo run -p spis-server
 
 .PHONY: dev-gui
 dev-gui: ## Run the gui
-	cd gui && trunk serve --port 9000 --proxy-backend http://localhost:7000/api/
+	cd spis-gui && trunk serve --port 9000 --proxy-backend http://localhost:7000/api/
 
 .PHONY: dl-img
 dl-img: ## Download random images

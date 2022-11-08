@@ -8,7 +8,7 @@ use std::{
 use walkdir::{DirEntry, WalkDir};
 
 use chksum::prelude::HashAlgorithm;
-use model::Image;
+use spis_model::Image;
 
 static THUMBNAIL_DIR: &str = "thumbnails";
 static THUMBNAIL_FORMAT: &str = "webp";

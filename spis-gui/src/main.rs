@@ -3,7 +3,7 @@ use yew::prelude::*;
 
 #[derive(Properties, PartialEq)]
 struct ImageListProps {
-    images: Vec<model::Image>,
+    images: Vec<spis_model::Image>,
 }
 
 #[function_component(ImageList)]
@@ -30,7 +30,7 @@ fn app() -> Html {
                 #[allow(clippy::redundant_clone)]
                 let images = images.clone();
                 wasm_bindgen_futures::spawn_local(async move {
-                    let fetched_images: Vec<model::Image> = Request::get("/api/")
+                    let fetched_images: Vec<spis_model::Image> = Request::get("/api/")
                         .send()
                         .await
                         .unwrap()
