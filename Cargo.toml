@@ -1,7 +1,7 @@
 [workspace]
 
 members = [
-    "model",
-    "gui",
-    "server",
+    "spis-model",
+    "spis-gui",
+    "spis-server",
 ]

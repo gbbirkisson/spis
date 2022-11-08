@@ -12,7 +12,6 @@ This project is called "Simple Private Image Server" or "SPIS" for short. It's p
 
 - [Development](#development)
   - [Setup test dependencies](#setup-test-dependencies)
-  - [Fetching test data](#fetching-test-data)
   - [Running](#running)
 
 ## Development
@@ -21,12 +20,6 @@ This project is called "Simple Private Image Server" or "SPIS" for short. It's p
 
 ```console
 $ make setup
-```
-
-### Fetching test data
-
-```console
-$ make dl-img
 ```
 
 ### Running
