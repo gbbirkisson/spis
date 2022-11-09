@@ -24,34 +24,3 @@ async fn main() -> Result<(), std::io::Error> {
     let server = run(state, listener).expect("Failed to create server");
     server.await
 }
-
-// #[tokio::main]
-// async fn main() {
-//     let img_dir = PathBuf::from("dev/api/images");
-//     let ext = vec!["jpg".to_string()];
-
-//     let (s, r) = img::walker::start_walker(ext);
-
-//     for id in 0..5 {
-//         let r = r.clone();
-//         tokio::spawn(async move {
-//             loop {
-//                 println!("Async task {} loop", id);
-//                 match r.recv().await {
-//                     Ok(msg) => {
-//                         println!("Async task {} got {:?}", id, msg);
-//                     }
-//                     Err(e) => {
-//                         println!("Async task error: {}", e);
-//                     }
-//                 }
-
-//                 tokio::time::sleep(Duration::from_secs(1)).await;
-//             }
-//         });
-//     }
-
-//     s.send(img_dir).await.expect("should not fail");
-
-//     tokio::time::sleep(Duration::from_secs(10)).await;
-// }
