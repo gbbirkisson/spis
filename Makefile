@@ -6,6 +6,8 @@ NGINX_CONF_TMP:=/tmp/nginx.conf
 BASE_DIR:=dev/api
 IMAGE_DIR:=${BASE_DIR}/images
 THUMBNAIL_DIR:=${BASE_DIR}/state/thumbnails
+DB_FILE:=${BASE_DIR}/state/spis.db
+
 
 ${THUMBNAIL_DIR}:
 	mkdir -p ${THUMBNAIL_DIR}
@@ -13,6 +15,10 @@ ${THUMBNAIL_DIR}:
 ${IMAGE_DIR}:
 	mkdir -p ${IMAGE_DIR}
 	$(MAKE) dl-img
+
+${DB_FILE}:
+	sqlx database create
+	sqlx migrate run --source spis-server/migrations
 
 .PHONY: _dev-run-nginx-nowatch
 _dev-run-nginx-nowatch:
@@ -55,7 +61,7 @@ dev-nginx: ## Run nginx
 	watchexec -r -w dev/nginx.conf -- make _dev-run-nginx-nowatch
 
 .PHONY: dev-server
-dev-server: ${IMAGE_DIR} ${THUMBNAIL_DIR} ## Run the server
+dev-server: ${IMAGE_DIR} ${THUMBNAIL_DIR} ${DB_FILE} ## Run the server
 	watchexec -r -e rs,toml -w spis-model -w spis-server -- cargo run -p spis-server
 
 .PHONY: dev-gui
@@ -79,6 +85,7 @@ setup: ${IMAGE_DIR} ${THUMBNAIL_DIR} ## Setup project dependencies and dirs
 	cargo install watchexec-cli
 	cargo install trunk
 	cargo install cargo-watch
+	cargo install sqlx-cli
 
 	# Add rust components/targets
 	rustup component add rustfmt
@@ -87,6 +94,8 @@ setup: ${IMAGE_DIR} ${THUMBNAIL_DIR} ## Setup project dependencies and dirs
 
 	# Install apt packages
 	sudo apt install -y nginx
+
+	$(MAKE) ${DB_FILE}
 
 .PHONY: clean
 clean: ## Clean up

@@ -3,6 +3,7 @@ use std::net::TcpListener;
 use actix_web::{dev::Server, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use state::State;
 
+pub mod db;
 pub mod img;
 pub mod state;
 

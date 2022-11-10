@@ -1,6 +1,6 @@
 use std::{net::TcpListener, path::PathBuf};
 
-use spis_server::{img, run, state::State};
+use spis_server::{db, img, run, state::State};
 use tokio::sync::mpsc::channel;
 
 #[tokio::main]
@@ -9,13 +9,21 @@ async fn main() -> Result<(), std::io::Error> {
 
     let img_dir = PathBuf::from("dev/api/images");
     let thumb_dir = PathBuf::from("dev/api/state/thumbnails");
+    let db_url = PathBuf::from("dev/api/state/spis.db");
+
+    let pool = db::setup_db(db_url).await.unwrap();
 
     let (tx, mut rx) = channel(32);
     img::image_processor(img_dir, thumb_dir, tx);
 
     tokio::spawn(async move {
         loop {
-            rx.recv().await;
+            match rx.recv().await {
+                Some(img) => {
+                    db::insert_image(&pool, img).await;
+                }
+                None => {}
+            }
         }
     });
 
