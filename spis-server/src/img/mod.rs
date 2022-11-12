@@ -55,7 +55,7 @@ impl TimeConv for SystemTime {
                 }
             }
         };
-        Utc.timestamp(sec, nsec)
+        Utc.timestamp_opt(sec, nsec).unwrap()
     }
 }
 

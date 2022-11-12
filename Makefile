@@ -85,7 +85,7 @@ dl-img: ${IMAGE_DIR} ## Download 20 random images
 	./dev/images.sh 20 ${IMAGE_DIR}
 
 .PHONY: setup
-setup: ${IMAGE_DIR} ${THUMBNAIL_DIR} ## Setup project dependencies and dirs
+setup: ${IMAGE_DIR} ${THUMBNAIL_DIR} ${DB_FILE} ## Setup project dependencies and dirs
 	# Install cargo binaries
 	cargo install watchexec-cli
 	cargo install trunk
@@ -98,8 +98,6 @@ setup: ${IMAGE_DIR} ${THUMBNAIL_DIR} ## Setup project dependencies and dirs
 
 	# Install apt packages
 	sudo apt install -y nginx
-
-	$(MAKE) ${DB_FILE}
 
 .PHONY: clean
 clean: ## Clean up
