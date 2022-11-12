@@ -5,18 +5,23 @@ NGINX_CONF_TMP:=/tmp/nginx.conf
 
 BASE_DIR:=dev/api
 IMAGE_DIR:=${BASE_DIR}/images
-THUMBNAIL_DIR:=${BASE_DIR}/state/thumbnails
-DB_FILE:=${BASE_DIR}/state/spis.db
+STATE_DIR:=${BASE_DIR}/state
+THUMBNAIL_DIR:=${STATE_DIR}/thumbnails
+DB_FILE:=${STATE_DIR}/spis.db
 
-
-${THUMBNAIL_DIR}:
-	mkdir -p ${THUMBNAIL_DIR}
 
 ${IMAGE_DIR}:
 	mkdir -p ${IMAGE_DIR}
 	$(MAKE) dl-img
 
-${DB_FILE}:
+${STATE_DIR}:
+	mkdir -p ${STATE_DIR}
+
+${THUMBNAIL_DIR}:
+	mkdir -p ${THUMBNAIL_DIR}
+
+${DB_FILE}: ${STATE_DIR}
+	sqlx --version > /dev/null || cargo install sqlx-cli
 	sqlx database create
 	sqlx migrate run --source spis-server/migrations
 
@@ -30,15 +35,15 @@ fmt: ## Run format check
 	cargo fmt -- --check
 
 .PHONY: lint
-lint: ## Run lint check
+lint: ${DB_FILE} ## Run lint check
 	cargo clippy -- -D warnings
 
 .PHONY: test-nocov
-test-nocov: ## Run tests with no coverage report
+test-nocov: ${DB_FILE} ## Run tests with no coverage report
 	cargo test
 
 .PHONY: test
-test: ## Run tests with coverage report
+test: ${DB_FILE} ## Run tests with coverage report
 	cargo tarpaulin --version > /dev/null || cargo install cargo-tarpaulin
 	cargo tarpaulin --ignore-tests --all-features --workspace --timeout 120 --skip-clean --out Xml
 
@@ -47,7 +52,7 @@ audit: ## Run audit on dependencies
 	cargo audit
 
 .PHONY: ci
-ci: fmt lint test audit ## Run CI steps
+ci: fmt lint audit test ## Run CI steps
 
 .PHONY: dev
 dev: ## Run all dev processes
@@ -85,7 +90,6 @@ setup: ${IMAGE_DIR} ${THUMBNAIL_DIR} ## Setup project dependencies and dirs
 	cargo install watchexec-cli
 	cargo install trunk
 	cargo install cargo-watch
-	cargo install sqlx-cli
 
 	# Add rust components/targets
 	rustup component add rustfmt

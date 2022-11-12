@@ -1,6 +1,6 @@
 use std::{net::TcpListener, path::PathBuf};
 
-use spis_server::{db, img, run, state::State};
+use spis_server::{db, img, run};
 use tokio::sync::mpsc::channel;
 
 #[tokio::main]
@@ -22,13 +22,14 @@ async fn main() -> Result<(), std::io::Error> {
                 Some(img) => {
                     db::insert_image(&pool, img).await;
                 }
-                None => {}
+                None => {
+                    tracing::info!("None from channel");
+                }
             }
         }
     });
 
-    let state = State::load("dev/api/state", "dev/api/images");
     let listener = TcpListener::bind("0.0.0.0:8000").expect("Failed to bind random port");
-    let server = run(state, listener).expect("Failed to create server");
+    let server = run(listener).expect("Failed to create server");
     server.await
 }

@@ -21,12 +21,13 @@ spis-model = { path = "../spis-model" }
 walkdir = "2"
 rayon = "1"
 
-chksum = "0.1.0-rc5"
+md5 = "0.7"
 image = { version = "0.24.4", features = ["jpeg", "webp-encoder"]}
 kamadak-exif = "0.5"
 
+uuid = "1"
 chrono = "0.4"
-sqlx = { version = "0.6", features = [ "runtime-tokio-native-tls", "sqlite", "macros", "chrono", "migrate" ] }
+sqlx = { version = "0.6", features = [ "runtime-tokio-native-tls", "sqlite", "macros", "chrono", "migrate", "uuid" ] }
 
 [dev-dependencies]
 reqwest = "0.11"
