@@ -1,20 +1,28 @@
-use std::net::TcpListener;
+use std::{net::TcpListener, path::PathBuf};
 
-fn spawn_server() -> String {
+use spis_server::db::setup_db;
+use uuid::Uuid;
+
+async fn spawn_server() -> String {
+    // Create listener
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
     let port = listener.local_addr().unwrap().port();
 
-    let state = spis_server::state::State::empty();
-    let server = spis_server::run(state, listener).expect("Failed to bind address");
+    // Create DB
+    let db_file = PathBuf::from("/tmp/").join(Uuid::new_v4().to_string());
+    let pool = setup_db(db_file).await.expect("Failed to create DB");
 
+    // Spawn server
+    let server = spis_server::server::run(listener, pool).expect("Failed to bind address");
     let _ = tokio::spawn(server);
 
+    // Return endpoint
     format!("http://127.0.0.1:{}", port)
 }
 
 #[tokio::test]
 async fn health_check_works() {
-    let address = spawn_server();
+    let address = spawn_server().await;
     let client = reqwest::Client::new();
 
     let response = client

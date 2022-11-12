@@ -11,14 +11,25 @@ path = "src/main.rs"
 name = "spis-server"
 
 [dependencies]
-spis-model = { path = "../spis-model" }
-tokio = { version = "1", features = ["rt-multi-thread", "macros"]}
-actix-web = "4"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync"]}
 tracing = "0.1"
 tracing-subscriber = "0.3"
+
+actix-web = "4"
+spis-model = { path = "../spis-model" }
+
 walkdir = "2"
-chksum = "0.1.0-rc5"
+rayon = "1"
+
+md5 = "0.7"
 image = { version = "0.24.4", features = ["jpeg", "webp-encoder"]}
+kamadak-exif = "0.5"
+
+uuid = { version = "1", features = ["serde", "v4"] }
+chrono = "0.4"
+sqlx = { version = "0.6", features = ["runtime-tokio-native-tls", "sqlite", "macros", "chrono", "migrate", "uuid"] }
 
 [dev-dependencies]
 reqwest = "0.11"
+ctor = "0.1"
+tempfile = "3"

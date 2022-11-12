@@ -5,14 +5,25 @@ NGINX_CONF_TMP:=/tmp/nginx.conf
 
 BASE_DIR:=dev/api
 IMAGE_DIR:=${BASE_DIR}/images
-THUMBNAIL_DIR:=${BASE_DIR}/state/thumbnails
+STATE_DIR:=${BASE_DIR}/state
+THUMBNAIL_DIR:=${STATE_DIR}/thumbnails
+DB_FILE:=${STATE_DIR}/spis.db
 
-${THUMBNAIL_DIR}:
-	mkdir -p ${THUMBNAIL_DIR}
 
 ${IMAGE_DIR}:
 	mkdir -p ${IMAGE_DIR}
 	$(MAKE) dl-img
+
+${STATE_DIR}:
+	mkdir -p ${STATE_DIR}
+
+${THUMBNAIL_DIR}:
+	mkdir -p ${THUMBNAIL_DIR}
+
+${DB_FILE}: ${STATE_DIR}
+	sqlx --version > /dev/null || cargo install sqlx-cli
+	sqlx database create
+	sqlx migrate run --source spis-server/migrations
 
 .PHONY: _dev-run-nginx-nowatch
 _dev-run-nginx-nowatch:
@@ -24,15 +35,15 @@ fmt: ## Run format check
 	cargo fmt -- --check
 
 .PHONY: lint
-lint: ## Run lint check
+lint: ${DB_FILE} ## Run lint check
 	cargo clippy -- -D warnings
 
 .PHONY: test-nocov
-test-nocov: ## Run tests with no coverage report
+test-nocov: ${DB_FILE} ## Run tests with no coverage report
 	cargo test
 
 .PHONY: test
-test: ## Run tests with coverage report
+test: ${DB_FILE} ## Run tests with coverage report
 	cargo tarpaulin --version > /dev/null || cargo install cargo-tarpaulin
 	cargo tarpaulin --ignore-tests --all-features --workspace --timeout 120 --skip-clean --out Xml
 
@@ -41,7 +52,7 @@ audit: ## Run audit on dependencies
 	cargo audit
 
 .PHONY: ci
-ci: fmt lint test audit ## Run CI steps
+ci: fmt lint audit test ## Run CI steps
 
 .PHONY: dev
 dev: ## Run all dev processes
@@ -55,19 +66,26 @@ dev-nginx: ## Run nginx
 	watchexec -r -w dev/nginx.conf -- make _dev-run-nginx-nowatch
 
 .PHONY: dev-server
-dev-server: ${IMAGE_DIR} ${THUMBNAIL_DIR} ## Run the server
+dev-server: ${IMAGE_DIR} ${THUMBNAIL_DIR} ${DB_FILE} ## Run the server
 	watchexec -r -e rs,toml -w spis-model -w spis-server -- cargo run -p spis-server
 
 .PHONY: dev-gui
 dev-gui: ## Run the gui
 	cd spis-gui && trunk serve --port 9000 --proxy-backend http://localhost:7000/api/
 
+TEST_PROJ?=spis-server
+TEST_NAME?=
+.PHONY: dev-test
+dev-test: ## Run specific test
+	test ${TEST_NAME} || (echo "Set env var TEST_NAME to specify test name!"; exit 1)
+	watchexec -r -e rs,toml -w ${TEST_PROJ} -- cargo test -q -p ${TEST_PROJ} ${TEST_NAME} -- --nocapture
+
 .PHONY: dl-img
 dl-img: ${IMAGE_DIR} ## Download 20 random images
 	./dev/images.sh 20 ${IMAGE_DIR}
 
 .PHONY: setup
-setup: ${IMAGE_DIR} ${THUMBNAIL_DIR} ## Setup project dependencies and dirs
+setup: ${IMAGE_DIR} ${THUMBNAIL_DIR} ${DB_FILE} ## Setup project dependencies and dirs
 	# Install cargo binaries
 	cargo install watchexec-cli
 	cargo install trunk
