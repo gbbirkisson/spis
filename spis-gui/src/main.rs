@@ -23,6 +23,7 @@ fn render_image<G: Html>(cx: Scope<'_>, image: Image) -> View<G> {
 #[component]
 async fn Images<G: Html>(cx: Scope<'_>) -> View<G> {
     let images = use_context::<RcSignal<Vec<Image>>>(cx);
+    let more_button_visible = use_context::<RcSignal<String>>(cx);
 
     let load_more = move |_| {
         spawn_local_scoped(cx, async move {
@@ -35,6 +36,8 @@ async fn Images<G: Html>(cx: Scope<'_>) -> View<G> {
 
             new_images.append(&mut fetch_images().await.unwrap());
             images.set(new_images);
+
+            more_button_visible.set("hide".to_string());
         });
     };
 
@@ -45,15 +48,17 @@ async fn Images<G: Html>(cx: Scope<'_>) -> View<G> {
                 view=|cx, image| render_image(cx, image),
             )
         }
-        button(on:click=load_more) { "More" }
+        button(class=more_button_visible, on:click=load_more) { "More" }
     }
 }
 
 #[component]
 fn App<G: Html>(cx: Scope) -> View<G> {
-    // Setup context
     let images: RcSignal<Vec<Image>> = create_rc_signal(vec![]);
+    let more_button_visible: RcSignal<String> = create_rc_signal("".to_string());
+
     provide_context(cx, images);
+    provide_context(cx, more_button_visible);
 
     view! { cx,
         div(class="container") {
