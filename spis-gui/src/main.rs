@@ -2,6 +2,9 @@ use reqwasm::http::Request;
 use spis_model::Image;
 use sycamore::prelude::*;
 use sycamore::suspense::Suspense;
+use wasm_bindgen_futures::spawn_local;
+
+const PAGE_SIZE: usize = 10;
 
 async fn fetch_images() -> Result<Vec<Image>, reqwasm::Error> {
     let res = Request::get("/api/").send().await?;
@@ -19,11 +22,20 @@ fn render_image<G: Html>(cx: Scope<'_>, image: Image) -> View<G> {
 
 #[component]
 async fn Images<G: Html>(cx: Scope<'_>) -> View<G> {
-    let images = fetch_images().await.unwrap();
-    let images = create_signal(cx, images);
+    let images = use_context::<RcSignal<Vec<Image>>>(cx);
+    let image_set = images.clone();
 
-    // let window = web_sys::window().expect("could not get window handle");
-    // let document = window.document().expect("could not get document handle");
+    spawn_local(async move {
+        let old_images = image_set.get();
+        let mut new_images: Vec<Image> = Vec::with_capacity(old_images.len() + PAGE_SIZE);
+
+        for image in old_images.iter() {
+            new_images.push(image.clone());
+        }
+
+        new_images.append(&mut fetch_images().await.unwrap());
+        image_set.set(new_images);
+    });
 
     view! { cx,
         ul(class="image-gallery") {
@@ -37,6 +49,10 @@ async fn Images<G: Html>(cx: Scope<'_>) -> View<G> {
 
 #[component]
 fn App<G: Html>(cx: Scope) -> View<G> {
+    // Setup context
+    let images: RcSignal<Vec<Image>> = create_rc_signal(vec![]);
+    provide_context(cx, images);
+
     view! { cx,
         div(class="container") {
             Suspense(fallback=view! { cx, "Loading..." }) {
