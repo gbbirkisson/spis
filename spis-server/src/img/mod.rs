@@ -19,7 +19,7 @@ use crate::img::prelude::Thumbnail;
 pub mod prelude;
 
 static IMAGE_FORMAT: &[&str] = &[".jpg"];
-static THUMBNAIL_HEIGHT: u32 = 200;
+static THUMBNAIL_SIZE: u32 = 200;
 
 trait HasExt {
     fn has_ext(&self, ext: &[&str]) -> bool;
@@ -200,7 +200,23 @@ fn do_process(
     if !image_thumbnail_path.exists() {
         tracing::debug!("Creating thumbnail: {:?}", image_thumbnail_path);
         let mut image = image::open(image_entry.path())?;
-        image = image.thumbnail(THUMBNAIL_HEIGHT * 2, THUMBNAIL_HEIGHT);
+        image = image.thumbnail(THUMBNAIL_SIZE, THUMBNAIL_SIZE);
+        let image_height = image.height();
+        let image_width = image.width();
+        image = match image_height > image_width {
+            true => image.crop(
+                0,
+                (image_height - image_width) / 2,
+                image_width,
+                image_width,
+            ),
+            false => image.crop(
+                (image_width - image_height) / 2,
+                0,
+                image_height,
+                image_height,
+            ),
+        };
         image.save(image_thumbnail_path)?;
 
         // TODO: load image exif data

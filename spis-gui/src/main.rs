@@ -5,12 +5,12 @@ use sycamore::futures::spawn_local_scoped;
 use sycamore::prelude::*;
 use sycamore::suspense::Suspense;
 
-const PAGE_SIZE: usize = 50;
+const PAGE_SIZE: usize = 100;
 
 async fn fetch_images(prev: Option<DateTime<Utc>>) -> Result<Vec<Image>, reqwasm::Error> {
     let url = match prev {
-        None => format!("/api?page_size={}", PAGE_SIZE),
-        Some(prev) => format!("/api?page_size={}&prev={}", PAGE_SIZE, prev),
+        None => format!("/api/?page_size={}", PAGE_SIZE),
+        Some(prev) => format!("/api/?page_size={}&prev={}", PAGE_SIZE, prev),
     };
     let res = Request::get(&url).send().await?;
     let body = res.json::<Vec<Image>>().await?;
@@ -20,7 +20,7 @@ async fn fetch_images(prev: Option<DateTime<Utc>>) -> Result<Vec<Image>, reqwasm
 fn render_image<G: Html>(cx: Scope<'_>, image: Image) -> View<G> {
     view!( cx,
         li {
-          img(src=image.thumbnail, loading="lazy") {}
+          img(src=image.thumbnail, class="thumbnail", loading="lazy") {}
         }
     )
 }

@@ -37,7 +37,7 @@ pub async fn image_insert(pool: &SqlitePool, img: ProcessedImage) -> Result<()> 
                 "#,
                 img.uuid,
                 image,
-                data.created_at,
+                data.modified_at, // TODO THIS IS FLIPPED FOR TESTING
                 data.modified_at,
             )
         }
@@ -116,7 +116,7 @@ pub async fn image_get(
         Some(prev) => sqlx::query_as::<Sqlite, ImgRow>(
             r#"
             SELECT id, image, created_at, modified_at FROM images
-            WHERE created_at <= ?
+            WHERE created_at < ?
             ORDER BY created_at DESC
             LIMIT ?
             "#,
