@@ -1,13 +1,18 @@
+use chrono::{DateTime, Utc};
 use reqwasm::http::Request;
 use spis_model::Image;
 use sycamore::futures::spawn_local_scoped;
 use sycamore::prelude::*;
 use sycamore::suspense::Suspense;
 
-const PAGE_SIZE: usize = 10;
+const PAGE_SIZE: usize = 50;
 
-async fn fetch_images() -> Result<Vec<Image>, reqwasm::Error> {
-    let res = Request::get("/api/").send().await?;
+async fn fetch_images(prev: Option<DateTime<Utc>>) -> Result<Vec<Image>, reqwasm::Error> {
+    let url = match prev {
+        None => format!("/api?page_size={}", PAGE_SIZE),
+        Some(prev) => format!("/api?page_size={}&prev={}", PAGE_SIZE, prev),
+    };
+    let res = Request::get(&url).send().await?;
     let body = res.json::<Vec<Image>>().await?;
     Ok(body)
 }
@@ -34,10 +39,15 @@ async fn Images<G: Html>(cx: Scope<'_>) -> View<G> {
                 new_images.push(image.clone());
             }
 
-            new_images.append(&mut fetch_images().await.unwrap());
-            images.set(new_images);
+            let prev = new_images.last().map(|i| i.created_at);
+            let mut fetched_images = fetch_images(prev).await.unwrap(); // TODO
 
-            more_button_visible.set("hide".to_string());
+            if fetched_images.len() != PAGE_SIZE {
+                more_button_visible.set("hide".to_string());
+            }
+
+            new_images.append(&mut fetched_images);
+            images.set(new_images);
         });
     };
 

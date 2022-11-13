@@ -113,7 +113,16 @@ pub async fn image_get(
             "#,
         )
         .bind(limit),
-        Some(_) => todo!(),
+        Some(prev) => sqlx::query_as::<Sqlite, ImgRow>(
+            r#"
+            SELECT id, image, created_at, modified_at FROM images
+            WHERE created_at <= ?
+            ORDER BY created_at DESC
+            LIMIT ?
+            "#,
+        )
+        .bind(prev)
+        .bind(limit),
     };
 
     let img = query

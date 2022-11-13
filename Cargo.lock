@@ -876,6 +876,7 @@ dependencies = [
 name = "gui"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "console_error_panic_hook",
  "console_log",
  "log",
@@ -2001,6 +2002,7 @@ dependencies = [
  "md5",
  "rayon",
  "reqwest",
+ "serde",
  "spis-model",
  "sqlx",
  "tempfile",
