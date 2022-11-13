@@ -1,5 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head> </head>
-    <body></body>
+
+<head>
+    <style>
+        body {
+            background-color: #2b2b2b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .container {
+            padding: 1% 1%;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        /* Responsive image gallery rules begin*/
+
+        .image-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .image-gallery>li {
+            flex-basis: 150px;
+            /*width: 350px;*/
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-gallery::after {
+            content: "";
+            flex-basis: 150px;
+        }
+
+        .image-gallery li img {
+            object-fit: cover;
+            max-width: 100%;
+            height: auto;
+            vertical-align: middle;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body></body>
+
 </html>

@@ -1,57 +1,54 @@
-use gloo_net::http::Request;
-use yew::prelude::*;
+use reqwasm::http::Request;
+use spis_model::Image;
+use sycamore::prelude::*;
+use sycamore::suspense::Suspense;
 
-#[derive(Properties, PartialEq)]
-struct ImageListProps {
-    images: Vec<spis_model::Image>,
+async fn fetch_images() -> Result<Vec<Image>, reqwasm::Error> {
+    let res = Request::get("/api/").send().await?;
+    let body = res.json::<Vec<Image>>().await?;
+    Ok(body)
 }
 
-#[function_component(ImageList)]
-fn videos_list(ImageListProps { images }: &ImageListProps) -> Html {
-    images
-        .iter()
-        .map(|image| {
-            html! {
-                <img src={image.thumbnail.to_string()}/>
-            }
-        })
-        .collect()
+fn render_image<G: Html>(cx: Scope<'_>, image: Image) -> View<G> {
+    view!( cx,
+        li {
+          img(src=image.thumbnail, loading="lazy") {}
+        }
+    )
 }
 
-#[function_component(App)]
-fn app() -> Html {
-    let images = use_state(Vec::new);
+#[component]
+async fn Images<G: Html>(cx: Scope<'_>) -> View<G> {
+    let images = fetch_images().await.unwrap();
+    let images = create_signal(cx, images);
 
-    {
-        #[allow(clippy::redundant_clone)]
-        let images = images.clone();
-        use_effect_with_deps(
-            move |_| {
-                #[allow(clippy::redundant_clone)]
-                let images = images.clone();
-                wasm_bindgen_futures::spawn_local(async move {
-                    let fetched_images: Vec<spis_model::Image> = Request::get("/api/")
-                        .send()
-                        .await
-                        .unwrap()
-                        .json()
-                        .await
-                        .unwrap();
-                    images.set(fetched_images);
-                });
-                || ()
-            },
-            (),
-        );
+    // let window = web_sys::window().expect("could not get window handle");
+    // let document = window.document().expect("could not get document handle");
+
+    view! { cx,
+        ul(class="image-gallery") {
+            Indexed(
+                iterable=images,
+                view=|cx, image| render_image(cx, image),
+            )
+        }
     }
+}
 
-    html! {
-        <div>
-            <ImageList images={(*images).clone()} />
-        </div>
+#[component]
+fn App<G: Html>(cx: Scope) -> View<G> {
+    view! { cx,
+        div(class="container") {
+            Suspense(fallback=view! { cx, "Loading..." }) {
+                Images {}
+            }
+        }
     }
 }
 
 fn main() {
-    yew::start_app::<App>();
+    console_error_panic_hook::set_once();
+    console_log::init_with_level(log::Level::Debug).unwrap();
+
+    sycamore::render(|cx| view! { cx, App {} });
 }
