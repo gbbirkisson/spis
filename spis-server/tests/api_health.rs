@@ -12,8 +12,11 @@ async fn spawn_server() -> String {
     let db_file = PathBuf::from("/tmp/").join(Uuid::new_v4().to_string());
     let pool = setup_db(db_file).await.expect("Failed to create DB");
 
+    let thumb_dir = PathBuf::from("/tmp");
+
     // Spawn server
-    let server = spis_server::server::run(listener, pool).expect("Failed to bind address");
+    let server =
+        spis_server::server::run(listener, pool, thumb_dir).expect("Failed to bind address");
     let _ = tokio::spawn(server);
 
     // Return endpoint
