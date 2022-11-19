@@ -883,7 +883,9 @@ dependencies = [
  "reqwasm",
  "spis-model",
  "sycamore",
+ "wasm-bindgen",
  "wasm-bindgen-futures",
+ "web-sys",
 ]
 
 [[package]]
