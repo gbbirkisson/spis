@@ -1,7 +1,5 @@
-use std::{net::TcpListener, path::PathBuf};
-
 use spis_server::db::setup_db;
-use uuid::Uuid;
+use std::net::TcpListener;
 
 async fn spawn_server() -> String {
     // Create listener
