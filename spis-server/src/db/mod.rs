@@ -5,9 +5,14 @@ use std::path::PathBuf;
 
 use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
 
-use crate::img::{prelude::Thumbnail, ProcessedImage};
+use crate::{
+    img::{prelude::Thumbnail, ProcessedImage},
+    SpisCfg,
+};
 
 pub async fn setup_db(db_file: PathBuf) -> Result<Pool<Sqlite>> {
+    tracing::info!("Setup db: {:?}", db_file);
+
     // Ensure db exits
     let db_file = db_file.to_str().ok_or(eyre!("Unable to get db file"))?;
     if !Sqlite::database_exists(db_file).await.unwrap_or(false) {
@@ -17,6 +22,8 @@ pub async fn setup_db(db_file: PathBuf) -> Result<Pool<Sqlite>> {
     // Create pool and run migrations
     let pool = SqlitePool::connect(db_file).await?;
     sqlx::migrate!("./migrations").run(&pool).await?;
+
+    tracing::debug!("DB setup: {:?}", db_file);
     Ok(pool)
 }
 
@@ -98,7 +105,7 @@ struct ImgRow {
 
 pub async fn image_get(
     pool: &SqlitePool,
-    thumb_dir: &PathBuf,
+    config: &SpisCfg,
     limit: i32,
     taken_after: Option<DateTime<Utc>>,
 ) -> Result<Vec<Image>> {
@@ -127,6 +134,8 @@ pub async fn image_get(
         .fetch_all(pool)
         .await
         .map_err(|e| eyre!("Failed to fetch rows: {e}"))?;
+
+    let thumb_dir = config.thumbnail_dir();
 
     Ok(img
         .into_iter()

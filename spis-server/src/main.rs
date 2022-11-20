@@ -1,10 +1,13 @@
-use std::{net::TcpListener, path::PathBuf};
-
-use spis_server::{db, img, server};
+use async_cron_scheduler::{Job, Scheduler};
+use chrono::Local;
+use eyre::Result;
+use spis_server::{db, img, server, SpisCfg};
+use sqlx::{Pool, Sqlite};
+use std::net::TcpListener;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
 #[tokio::main]
-async fn main() -> Result<(), std::io::Error> {
+async fn main() -> Result<()> {
     // Setup logging
     dotenv::dotenv().ok();
     tracing_subscriber::registry()
@@ -13,26 +16,51 @@ async fn main() -> Result<(), std::io::Error> {
         .init();
     tracing::info!("Starting spis");
 
-    tracing::info!("Setup paths");
-    let img_dir = PathBuf::from("dev/api/images");
-    let thumb_dir = PathBuf::from("dev/api/state/thumbnails");
-    let db_url = PathBuf::from("dev/api/state/spis.db");
+    let config = SpisCfg::new()?;
+    let pool = db::setup_db(config.db_file()).await.unwrap();
 
-    tracing::info!("Image dir: {:?}", img_dir);
-    tracing::info!("Thumb dir: {:?}", thumb_dir);
-    tracing::info!("DB file: {:?}", db_url);
-
-    tracing::info!("Setup DB");
-    let pool = db::setup_db(db_url).await.unwrap();
-
-    let processor_pool = pool.clone();
-    let processor_thumbdir = thumb_dir.clone();
-    tokio::spawn(async move {
-        img::process(processor_pool, img_dir, processor_thumbdir).await;
-    });
+    setup_processing(pool.clone(), config.clone()).await?;
 
     tracing::info!("Start server on http://0.0.0.0:8000");
     let listener = TcpListener::bind("0.0.0.0:8000").expect("Failed to bind random port");
-    let server = server::run(listener, pool, thumb_dir).expect("Failed to create server");
-    server.await
+    let server = server::run(listener, pool, config).expect("Failed to create server");
+    server.await?;
+
+    Ok(())
+}
+
+async fn setup_processing(pool: Pool<Sqlite>, config: SpisCfg) -> Result<()> {
+    tracing::info!("Setup processing");
+
+    let img_dir = config.image_dir();
+    let thumb_dir = config.thumbnail_dir();
+    let schedule = config.processing.schedule;
+    std::fs::create_dir_all(&thumb_dir)?;
+
+    tokio::spawn(async move {
+        if config.processing.run_on_start {
+            tracing::info!("Running on-start processing");
+            img::process(pool.clone(), img_dir.clone(), thumb_dir.clone()).await;
+            tracing::info!("Done with on-start processing");
+        }
+
+        tracing::info!("Added processing schedule: {}", schedule);
+        let (mut scheduler, sched_service) = Scheduler::<Local>::launch(tokio::time::sleep);
+        let job = Job::cron(&schedule).unwrap();
+        scheduler.insert(job, move |_| {
+            let pool = pool.clone();
+            let img_dir = img_dir.clone();
+            let thumb_dir = thumb_dir.clone();
+            let schedule = schedule.clone();
+
+            tokio::spawn(async move {
+                tracing::info!("Processing schedule triggered: {}", schedule);
+                img::process(pool, img_dir, thumb_dir).await;
+                tracing::info!("Processing schedule finished: {}", schedule);
+            });
+        });
+        sched_service.await;
+    });
+    tracing::debug!("Setup processing done");
+    Ok(())
 }
