@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use uuid::Uuid;
 
-static THUMBNAIL_FORMAT: &str = "webp";
+pub static THUMBNAIL_FORMAT: &str = "webp";
 
 pub trait Thumbnail {
     fn get_thumbnail(&self, uuid: &Uuid) -> PathBuf;

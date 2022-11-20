@@ -8,7 +8,7 @@
 [![codecov](https://codecov.io/github/gbbirkisson/spis/branch/main/graph/badge.svg?token=5VQHEBQ7JV)](https://codecov.io/github/gbbirkisson/spis)
 [![GitHub](https://img.shields.io/github/license/gbbirkisson/spis)](https://github.com/gbbirkisson/spis/blob/main/LICENSE)
 
-This project is called "Simple Private Image Server" or "SPIS" for short. It's purpose is to be a lightweight and fast server to display images hosted on a private server.
+This project is called "Simple Private Image Server" or "SPIS" for short. It's purpose is to be a lightweight and fast server to display media hosted on a private server.
 
 - [Development](#development)
   - [Setup test dependencies](#setup-test-dependencies)
@@ -44,4 +44,4 @@ $ make dev-server
 $ make dev-gui
 ```
 
-And then open [http://localhost:9000](http://localhost:9000)
+And then open [http://localhost:7000](http://localhost:7000)

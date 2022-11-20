@@ -1,7 +1,7 @@
 use async_cron_scheduler::{Job, Scheduler};
 use chrono::Local;
 use eyre::Result;
-use spis_server::{db, img, server, SpisCfg};
+use spis_server::{db, med, server, SpisCfg};
 use sqlx::{Pool, Sqlite};
 use std::net::TcpListener;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
@@ -32,7 +32,7 @@ async fn main() -> Result<()> {
 async fn setup_processing(pool: Pool<Sqlite>, config: SpisCfg) -> Result<()> {
     tracing::info!("Setup processing");
 
-    let img_dir = config.image_dir();
+    let media_dir = config.media_dir();
     let thumb_dir = config.thumbnail_dir();
     let schedule = config.processing.schedule;
     std::fs::create_dir_all(&thumb_dir)?;
@@ -40,7 +40,7 @@ async fn setup_processing(pool: Pool<Sqlite>, config: SpisCfg) -> Result<()> {
     tokio::spawn(async move {
         if config.processing.run_on_start {
             tracing::info!("Running on-start processing");
-            img::process(pool.clone(), img_dir.clone(), thumb_dir.clone()).await;
+            med::process(pool.clone(), media_dir.clone(), thumb_dir.clone()).await;
             tracing::info!("Done with on-start processing");
         }
 
@@ -49,13 +49,13 @@ async fn setup_processing(pool: Pool<Sqlite>, config: SpisCfg) -> Result<()> {
         let job = Job::cron(&schedule).unwrap();
         scheduler.insert(job, move |_| {
             let pool = pool.clone();
-            let img_dir = img_dir.clone();
+            let media_dir = media_dir.clone();
             let thumb_dir = thumb_dir.clone();
             let schedule = schedule.clone();
 
             tokio::spawn(async move {
                 tracing::info!("Processing schedule triggered: {}", schedule);
-                img::process(pool, img_dir, thumb_dir).await;
+                med::process(pool, media_dir, thumb_dir).await;
                 tracing::info!("Processing schedule finished: {}", schedule);
             });
         });
