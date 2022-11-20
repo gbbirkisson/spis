@@ -8,15 +8,15 @@ async fn spawn_server() -> String {
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
     let port = listener.local_addr().unwrap().port();
 
-    // Create DB
-    let db_file = PathBuf::from("/tmp/").join(Uuid::new_v4().to_string());
-    let pool = setup_db(db_file).await.expect("Failed to create DB");
+    let config = spis_server::SpisCfg::new_testing();
 
-    let thumb_dir = PathBuf::from("/tmp");
+    // Create DB
+    let pool = setup_db(config.db_file())
+        .await
+        .expect("Failed to create DB");
 
     // Spawn server
-    let server =
-        spis_server::server::run(listener, pool, thumb_dir).expect("Failed to bind address");
+    let server = spis_server::server::run(listener, pool, config).expect("Failed to bind address");
     let _ = tokio::spawn(server);
 
     // Return endpoint

@@ -1,65 +1,10 @@
 use async_cron_scheduler::{Job, Scheduler};
 use chrono::Local;
-use config::{Config, Environment, File};
-use eyre::{eyre, Result};
-use serde::Deserialize;
-use spis_server::{db, img, server};
+use eyre::Result;
+use spis_server::{db, img, server, SpisCfg};
 use sqlx::{Pool, Sqlite};
-use std::{
-    net::TcpListener,
-    path::{Path, PathBuf},
-};
+use std::net::TcpListener;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct SpisCfg {
-    image_dir: String,
-    data_dir: String,
-    pub processing: SpisCfgProcessing,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct SpisCfgProcessing {
-    pub run_on_start: bool,
-    pub schedule: String,
-}
-
-impl SpisCfg {
-    pub fn new() -> Result<Self> {
-        tracing::info!("Loading config");
-        let b = Config::builder()
-            .add_source(File::with_name("/etc/spis/config.yaml").required(false))
-            .add_source(Environment::with_prefix("spis"))
-            .set_default("processing.schedule", "0 0 2 * * *")?
-            .set_default("processing.run_on_start", false)?
-            .build()?;
-
-        let c: SpisCfg = b.try_deserialize()?;
-
-        if !Path::new(&c.image_dir).is_dir() {
-            return Err(eyre!("SPIS_IMAGE_DIR {} is not a directory", c.image_dir));
-        }
-
-        if !Path::new(&c.data_dir).is_dir() {
-            return Err(eyre!("SPIS_DATA_DIR {} is not a directory", c.data_dir));
-        }
-
-        tracing::debug!("Loaded config: {:?}", c);
-        Ok(c)
-    }
-
-    pub fn image_dir(&self) -> PathBuf {
-        PathBuf::from(self.image_dir.clone())
-    }
-
-    pub fn thumbnail_dir(&self) -> PathBuf {
-        PathBuf::from(self.data_dir.clone()).join("thumbnails")
-    }
-
-    pub fn db_file(&self) -> PathBuf {
-        PathBuf::from(self.data_dir.clone()).join("spis.db")
-    }
-}
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -78,8 +23,7 @@ async fn main() -> Result<()> {
 
     tracing::info!("Start server on http://0.0.0.0:8000");
     let listener = TcpListener::bind("0.0.0.0:8000").expect("Failed to bind random port");
-    let server =
-        server::run(listener, pool, config.thumbnail_dir()).expect("Failed to create server");
+    let server = server::run(listener, pool, config).expect("Failed to create server");
     server.await?;
 
     Ok(())

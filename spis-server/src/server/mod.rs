@@ -1,9 +1,9 @@
-use std::{net::TcpListener, path::PathBuf};
+use std::net::TcpListener;
 
 use actix_web::{dev::Server, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use sqlx::{Pool, Sqlite};
 
-use crate::db;
+use crate::{db, SpisCfg};
 
 async fn health(_: HttpRequest) -> impl Responder {
     HttpResponse::Ok()
@@ -11,34 +11,29 @@ async fn health(_: HttpRequest) -> impl Responder {
 
 async fn images(
     pool: web::Data<Pool<Sqlite>>,
-    thumb_dir: web::Data<PathBuf>,
+    config: web::Data<SpisCfg>,
     params: web::Query<spis_model::ImageSeachParams>,
 ) -> actix_web::Result<impl Responder> {
-    let images = db::image_get(
-        &pool,
-        &thumb_dir,
-        params.page_size as i32,
-        params.taken_after,
-    )
-    .await
-    .unwrap();
+    let images = db::image_get(&pool, &config, params.page_size as i32, params.taken_after)
+        .await
+        .unwrap();
     Ok(web::Json(images))
 }
 
 pub fn run(
     listener: TcpListener,
     pool: Pool<Sqlite>,
-    thumb_dir: PathBuf,
+    config: SpisCfg,
 ) -> Result<Server, std::io::Error> {
     let pool = web::Data::new(pool);
-    let thumb_dir = web::Data::new(thumb_dir);
+    let config = web::Data::new(config);
 
     let server = HttpServer::new(move || {
         App::new()
             .route("/api/health", web::get().to(health))
             .route("/api", web::get().to(images))
             .app_data(pool.clone())
-            .app_data(thumb_dir.clone())
+            .app_data(config.clone())
     })
     .listen(listener)?
     .run();
