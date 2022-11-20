@@ -8,6 +8,8 @@ use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
 use crate::img::{prelude::Thumbnail, ProcessedImage};
 
 pub async fn setup_db(db_file: PathBuf) -> Result<Pool<Sqlite>> {
+    tracing::info!("Setup db: {:?}", db_file);
+
     // Ensure db exits
     let db_file = db_file.to_str().ok_or(eyre!("Unable to get db file"))?;
     if !Sqlite::database_exists(db_file).await.unwrap_or(false) {
@@ -17,6 +19,8 @@ pub async fn setup_db(db_file: PathBuf) -> Result<Pool<Sqlite>> {
     // Create pool and run migrations
     let pool = SqlitePool::connect(db_file).await?;
     sqlx::migrate!("./migrations").run(&pool).await?;
+
+    tracing::debug!("DB setup: {:?}", db_file);
     Ok(pool)
 }
 

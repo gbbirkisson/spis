@@ -3,7 +3,7 @@ use exif::{In, Tag, Value};
 use eyre::{eyre, Result};
 use rayon::prelude::*;
 use sqlx::{Pool, Sqlite};
-use std::time::UNIX_EPOCH;
+use std::time::{Duration, UNIX_EPOCH};
 use std::{
     fs::{self},
     path::PathBuf,
@@ -181,6 +181,9 @@ fn do_walk(
             }
         })
         .collect();
+
+    // This sleep here is to make sure that the last image get inserted before we kill processing
+    std::thread::sleep(Duration::from_secs(5));
 
     if let Err(e) = done_send
         .blocking_send(walk.len())
