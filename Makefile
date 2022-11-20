@@ -27,7 +27,7 @@ ${DB_FILE}: ${STATE_DIR}
 
 .PHONY: _dev-run-nginx-nowatch
 _dev-run-nginx-nowatch:
-	cat $(NGINX_CONF) | envsubst > $(NGINX_CONF_TMP)
+	cat $(NGINX_CONF) | DOLLAR='$$' envsubst > $(NGINX_CONF_TMP)
 	nginx -c $(NGINX_CONF_TMP)
 
 .PHONY: fmt
@@ -59,7 +59,7 @@ dev: ## Run all dev processes
 	x-terminal-emulator -t nginx -e make dev-nginx &
 	x-terminal-emulator -t server -e make dev-server &
 	x-terminal-emulator -t gui -e make dev-gui &
-	xdg-open http://localhost:9000
+	xdg-open http://localhost:7000
 
 .PHONY: dev-nginx
 dev-nginx: ## Run nginx
@@ -71,7 +71,7 @@ dev-server: ${IMAGE_DIR} ${THUMBNAIL_DIR} ${DB_FILE} ## Run the server
 
 .PHONY: dev-gui
 dev-gui: ## Run the gui
-	cd spis-gui && trunk serve --port 9000 --proxy-backend http://localhost:7000/api/
+	cd spis-gui && trunk serve --port 9000
 
 TEST_PROJ?=spis-server
 TEST_NAME?=

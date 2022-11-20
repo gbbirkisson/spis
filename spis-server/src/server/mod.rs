@@ -1,9 +1,28 @@
 use std::net::TcpListener;
 
 use actix_web::{dev::Server, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
+use spis_model::Image;
 use sqlx::{Pool, Sqlite};
 
-use crate::{db, SpisCfg};
+use crate::{
+    db::{self, ImgRow},
+    SpisCfg,
+};
+
+trait ImgConvert {
+    fn into(self, config: &SpisCfg) -> Image;
+}
+
+impl ImgConvert for ImgRow {
+    fn into(self, config: &SpisCfg) -> Image {
+        Image {
+            uuid: self.id.to_string(),
+            taken_at: self.taken_at,
+            image: config.api_image(&self.image),
+            thumbnail: config.api_thumbnail(&self.id),
+        }
+    }
+}
 
 async fn health(_: HttpRequest) -> impl Responder {
     HttpResponse::Ok()
@@ -14,9 +33,13 @@ async fn images(
     config: web::Data<SpisCfg>,
     params: web::Query<spis_model::ImageSeachParams>,
 ) -> actix_web::Result<impl Responder> {
-    let images = db::image_get(&pool, &config, params.page_size as i32, params.taken_after)
+    let images: Vec<Image> = db::image_get(&pool, params.page_size as i32, params.taken_after)
         .await
-        .unwrap();
+        .unwrap()
+        .into_iter()
+        .map(|i| ImgConvert::into(i, &config))
+        .collect();
+
     Ok(web::Json(images))
 }
 

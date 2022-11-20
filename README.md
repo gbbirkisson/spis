@@ -44,4 +44,4 @@ $ make dev-server
 $ make dev-gui
 ```
 
-And then open [http://localhost:9000](http://localhost:9000)
+And then open [http://localhost:7000](http://localhost:7000)

@@ -1,14 +1,10 @@
 use chrono::{DateTime, Utc};
 use eyre::{eyre, Result};
-use spis_model::Image;
 use std::path::PathBuf;
 
 use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
 
-use crate::{
-    img::{prelude::Thumbnail, ProcessedImage},
-    SpisCfg,
-};
+use crate::img::ProcessedImage;
 
 pub async fn setup_db(db_file: PathBuf) -> Result<Pool<Sqlite>> {
     tracing::info!("Setup db: {:?}", db_file);
@@ -97,18 +93,17 @@ pub async fn image_count(pool: &SqlitePool) -> Result<i32> {
 }
 
 #[derive(sqlx::FromRow)]
-struct ImgRow {
-    id: uuid::Uuid,
-    image: String,
-    taken_at: DateTime<Utc>,
+pub struct ImgRow {
+    pub id: uuid::Uuid,
+    pub image: String,
+    pub taken_at: DateTime<Utc>,
 }
 
 pub async fn image_get(
     pool: &SqlitePool,
-    config: &SpisCfg,
     limit: i32,
     taken_after: Option<DateTime<Utc>>,
-) -> Result<Vec<Image>> {
+) -> Result<Vec<ImgRow>> {
     let query = match taken_after {
         None => sqlx::query_as::<Sqlite, ImgRow>(
             r#"
@@ -130,25 +125,8 @@ pub async fn image_get(
         .bind(limit),
     };
 
-    let img = query
+    query
         .fetch_all(pool)
         .await
-        .map_err(|e| eyre!("Failed to fetch rows: {e}"))?;
-
-    let thumb_dir = config.thumbnail_dir();
-
-    Ok(img
-        .into_iter()
-        .map(|i| Image {
-            uuid: i.id.to_string(),
-            image: i.image.replace("dev/", ""), // TODO
-            thumbnail: thumb_dir
-                .get_thumbnail(&i.id)
-                .to_str()
-                .unwrap()
-                .to_string()
-                .replace("dev/", ""), // TODO
-            taken_at: i.taken_at,
-        })
-        .collect())
+        .map_err(|e| eyre!("Failed to fetch rows: {e}"))
 }
