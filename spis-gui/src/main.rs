@@ -1,6 +1,5 @@
-use chrono::{DateTime, Utc};
 use reqwasm::http::Request;
-use spis_model::Image;
+use spis_model::{Image, ImageSeachParams};
 use sycamore::prelude::*;
 use sycamore::suspense::Suspense;
 use wasm_bindgen::prelude::Closure;
@@ -10,10 +9,13 @@ use wasm_bindgen_futures::spawn_local;
 const API_IMAGE_PER_REQ: usize = 30;
 const PAGE_PX_LEFT_TO_FETCH_MORE: f64 = 200.0;
 
-async fn fetch_images(prev: Option<DateTime<Utc>>) -> Result<Vec<Image>, reqwasm::Error> {
-    let url = match prev {
-        None => format!("/api/?page_size={}", API_IMAGE_PER_REQ),
-        Some(prev) => format!("/api/?page_size={}&prev={}", API_IMAGE_PER_REQ, prev),
+async fn fetch_images(params: spis_model::ImageSeachParams) -> Result<Vec<Image>, reqwasm::Error> {
+    let url = match params.taken_after {
+        None => format!("/api/?page_size={}", params.page_size),
+        Some(taken_after) => format!(
+            "/api/?page_size={}&taken_after={}",
+            params.page_size, taken_after
+        ),
     };
     let res = Request::get(&url).send().await?;
     let body = res.json::<Vec<Image>>().await?;
@@ -31,7 +33,14 @@ fn render_image<G: Html>(cx: Scope<'_>, image: Image) -> View<G> {
 #[component]
 async fn Images<G: Html>(cx: Scope<'_>) -> View<G> {
     // Setup signals
-    let images: RcSignal<Vec<Image>> = create_rc_signal(fetch_images(None).await.unwrap());
+    let images: RcSignal<Vec<Image>> = create_rc_signal(
+        fetch_images(spis_model::ImageSeachParams {
+            page_size: API_IMAGE_PER_REQ,
+            taken_after: None,
+        })
+        .await
+        .unwrap(),
+    );
     let images_loading = create_rc_signal(false);
     let images_reached_end = create_rc_signal(false);
     let images_ref = create_ref(cx, images.clone());
@@ -78,8 +87,13 @@ async fn Images<G: Html>(cx: Scope<'_>) -> View<G> {
                     new_images.push(image.clone());
                 }
 
-                let prev = new_images.last().map(|i| i.created_at);
-                let mut fetched_images = fetch_images(prev).await.unwrap(); // TODO
+                let taken_after = new_images.last().map(|i| i.taken_at);
+                let mut fetched_images = fetch_images(ImageSeachParams {
+                    page_size: API_IMAGE_PER_REQ,
+                    taken_after,
+                })
+                .await
+                .unwrap(); // TODO
 
                 if fetched_images.len() != API_IMAGE_PER_REQ {
                     images_reached_end.set(true);

@@ -6,6 +6,11 @@ pub struct Image {
     pub uuid: String,
     pub image: String,
     pub thumbnail: String,
-    pub created_at: DateTime<Utc>,
-    pub modified_at: DateTime<Utc>,
+    pub taken_at: DateTime<Utc>,
+}
+
+#[derive(Deserialize)]
+pub struct ImageSeachParams {
+    pub page_size: usize,
+    pub taken_after: Option<DateTime<Utc>>,
 }

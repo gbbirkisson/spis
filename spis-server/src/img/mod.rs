@@ -1,4 +1,5 @@
 use chrono::prelude::*;
+use exif::{In, Tag, Value};
 use eyre::{eyre, Result};
 use rayon::prelude::*;
 use sqlx::{Pool, Sqlite};
@@ -19,7 +20,7 @@ use crate::img::prelude::Thumbnail;
 pub mod prelude;
 
 static IMAGE_FORMAT: &[&str] = &[".jpg"];
-static THUMBNAIL_SIZE: u32 = 200;
+static THUMBNAIL_SIZE: u32 = 400;
 
 trait HasExt {
     fn has_ext(&self, ext: &[&str]) -> bool;
@@ -67,6 +68,13 @@ pub struct ImageProcessError {
     pub msg: String,
 }
 
+struct ImageProcessedOrientation(i32, bool);
+
+struct ImageProcessedExif {
+    orientation: ImageProcessedOrientation,
+    taken: Option<DateTime<Utc>>,
+}
+
 pub struct ProcessedImage {
     pub uuid: Uuid,
     pub image: PathBuf,
@@ -74,9 +82,7 @@ pub struct ProcessedImage {
 }
 
 pub struct ProcessedImageData {
-    pub created_at: DateTime<Utc>,
-    pub modified_at: DateTime<Utc>,
-    pub exif: Option<exif::Exif>,
+    pub taken_at: DateTime<Utc>,
 }
 
 pub async fn process(pool: Pool<Sqlite>, img_dir: PathBuf, thumb_dir: PathBuf) {
@@ -198,9 +204,33 @@ fn do_process(
     let mut image_data = None;
 
     if !image_thumbnail_path.exists() {
+        tracing::debug!("Reading EXIF data for {:?}", image_entry.path());
+        let exif = match exif_read(&image_bytes) {
+            Ok(e) => Some(e),
+            Err(_) => {
+                tracing::warn!("Failed to read EXIF data for {:?}", image_entry.path());
+                None
+            }
+        };
+
         tracing::debug!("Creating thumbnail: {:?}", image_thumbnail_path);
         let mut image = image::open(image_entry.path())?;
         image = image.thumbnail(THUMBNAIL_SIZE, THUMBNAIL_SIZE);
+        if let Some(exif) = &exif {
+            image = match exif.orientation.0 {
+                90 => image.rotate90(),
+
+                180 => image.rotate180(),
+
+                270 => image.rotate270(),
+
+                _ => image,
+            };
+            if exif.orientation.1 {
+                image = image.flipv();
+            }
+        }
+
         let image_height = image.height();
         let image_width = image.width();
         image = match image_height > image_width {
@@ -219,13 +249,22 @@ fn do_process(
         };
         image.save(image_thumbnail_path)?;
 
-        // TODO: load image exif data
+        let taken = match exif.map(|e| e.taken) {
+            Some(taken) => taken,
+            None => match image_entry.metadata() {
+                Ok(meta) => match meta.modified() {
+                    Ok(time) => Some(time.conv()),
+                    Err(_) => {
+                        tracing::warn!("Could not determin timestamp for {:?}", image_entry.path());
+                        None
+                    }
+                },
+                Err(_) => None,
+            },
+        };
 
-        let image_meta = image_entry.metadata()?;
         let data = ProcessedImageData {
-            created_at: image_meta.created()?.conv(),
-            modified_at: image_meta.modified()?.conv(),
-            exif: None,
+            taken_at: taken.unwrap_or_else(Utc::now),
         };
 
         image_data = Some(data);
@@ -242,4 +281,63 @@ fn do_process(
         .map_err(|e| eyre!("Failed sending image to channel: {:?}", e.to_string()))?;
 
     Ok(())
+}
+
+fn exif_read(bytes: &Vec<u8>) -> Result<ImageProcessedExif> {
+    let mut exif_buf_reader = std::io::Cursor::new(bytes);
+    let exif_reader = exif::Reader::new();
+    let exif = exif_reader.read_from_container(&mut exif_buf_reader)?;
+
+    let orientation = match exif_get_u32(&exif, Tag::Orientation) {
+        // http://sylvana.net/jpegcrop/exif_orientation.html
+        Ok(1) => ImageProcessedOrientation(0, false),
+        Ok(2) => ImageProcessedOrientation(0, true),
+        Ok(3) => ImageProcessedOrientation(180, false),
+        Ok(4) => ImageProcessedOrientation(180, true),
+        Ok(5) => ImageProcessedOrientation(90, true),
+        Ok(6) => ImageProcessedOrientation(90, false),
+        Ok(7) => ImageProcessedOrientation(270, true),
+        Ok(8) => ImageProcessedOrientation(270, false),
+        _ => ImageProcessedOrientation(0, false),
+    };
+
+    let timestamp_tz = exif_get_str(&exif, Tag::OffsetTimeOriginal);
+    let taken = match exif_get_str(&exif, Tag::DateTimeOriginal) {
+        Ok(time) => {
+            let pair = match timestamp_tz {
+                Ok(tz) => (time.to_string() + tz, "%Y:%m:%d %H:%M:%S %z"),
+                _ => (time.to_string(), "%Y:%m:%d %H:%M:%S"),
+            };
+            match DateTime::parse_from_str(&pair.0, pair.1) {
+                Ok(time) => Some(time.with_timezone(&Utc)),
+                _ => None,
+            }
+        }
+        _ => None,
+    };
+
+    Ok(ImageProcessedExif { orientation, taken })
+}
+
+fn exif_get_u32(exif: &exif::Exif, tag: Tag) -> Result<u32> {
+    match exif.get_field(tag, In::PRIMARY) {
+        Some(field) => match field.value.get_uint(0) {
+            Some(v) => Ok(v),
+            _ => Err(eyre!("Failed getting number")),
+        },
+        None => Err(eyre!("Value not found")),
+    }
+}
+
+fn exif_get_str(exif: &exif::Exif, tag: Tag) -> Result<&str> {
+    match exif.get_field(tag, In::PRIMARY) {
+        Some(field) => match &field.value {
+            Value::Ascii(bytes) => {
+                let bytes = bytes.get(0).ok_or(eyre!("Something is wrong"))?;
+                Ok(std::str::from_utf8(bytes)?)
+            }
+            _ => Err(eyre!("Not Ascii value")),
+        },
+        None => Err(eyre!("Value not found")),
+    }
 }

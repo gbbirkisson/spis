@@ -32,13 +32,12 @@ pub async fn image_insert(pool: &SqlitePool, img: ProcessedImage) -> Result<()> 
         Some(data) => {
             sqlx::query!(
                 r#"
-                INSERT OR REPLACE INTO images ( id, image, created_at, modified_at, walked )
-                VALUES ( ?1, ?2, ?3, ?4, 1 )
+                INSERT OR REPLACE INTO images ( id, image, taken_at, walked )
+                VALUES ( ?1, ?2, ?3, 1 )
                 "#,
                 img.uuid,
                 image,
-                data.modified_at, // TODO THIS IS FLIPPED FOR TESTING
-                data.modified_at,
+                data.taken_at,
             )
         }
         None => {
@@ -94,34 +93,33 @@ pub async fn image_count(pool: &SqlitePool) -> Result<i32> {
 struct ImgRow {
     id: uuid::Uuid,
     image: String,
-    created_at: DateTime<Utc>,
-    modified_at: DateTime<Utc>,
+    taken_at: DateTime<Utc>,
 }
 
 pub async fn image_get(
     pool: &SqlitePool,
     thumb_dir: &PathBuf,
     limit: i32,
-    prev: Option<DateTime<Utc>>,
+    taken_after: Option<DateTime<Utc>>,
 ) -> Result<Vec<Image>> {
-    let query = match prev {
+    let query = match taken_after {
         None => sqlx::query_as::<Sqlite, ImgRow>(
             r#"
-            SELECT id, image, created_at, modified_at FROM images
-            ORDER BY created_at DESC
+            SELECT id, image, taken_at FROM images
+            ORDER BY taken_at DESC
             LIMIT ?
             "#,
         )
         .bind(limit),
-        Some(prev) => sqlx::query_as::<Sqlite, ImgRow>(
+        Some(taken_after) => sqlx::query_as::<Sqlite, ImgRow>(
             r#"
-            SELECT id, image, created_at, modified_at FROM images
-            WHERE created_at < ?
-            ORDER BY created_at DESC
+            SELECT id, image, taken_at FROM images
+            WHERE taken_at < ?
+            ORDER BY taken_at DESC
             LIMIT ?
             "#,
         )
-        .bind(prev)
+        .bind(taken_after)
         .bind(limit),
     };
 
@@ -141,8 +139,7 @@ pub async fn image_get(
                 .unwrap()
                 .to_string()
                 .replace("dev/", ""), // TODO
-            created_at: i.created_at,
-            modified_at: i.modified_at,
+            taken_at: i.taken_at,
         })
         .collect())
 }

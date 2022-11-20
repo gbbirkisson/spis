@@ -1,17 +1,9 @@
 use std::{net::TcpListener, path::PathBuf};
 
 use actix_web::{dev::Server, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
-use chrono::{DateTime, Utc};
-use serde::Deserialize;
 use sqlx::{Pool, Sqlite};
 
 use crate::db;
-
-#[derive(Deserialize)]
-struct ImageParams {
-    page_size: i32,
-    prev: Option<DateTime<Utc>>,
-}
 
 async fn health(_: HttpRequest) -> impl Responder {
     HttpResponse::Ok()
@@ -20,11 +12,16 @@ async fn health(_: HttpRequest) -> impl Responder {
 async fn images(
     pool: web::Data<Pool<Sqlite>>,
     thumb_dir: web::Data<PathBuf>,
-    params: web::Query<ImageParams>,
+    params: web::Query<spis_model::ImageSeachParams>,
 ) -> actix_web::Result<impl Responder> {
-    let images = db::image_get(&pool, &thumb_dir, params.page_size, params.prev)
-        .await
-        .unwrap();
+    let images = db::image_get(
+        &pool,
+        &thumb_dir,
+        params.page_size as i32,
+        params.taken_after,
+    )
+    .await
+    .unwrap();
     Ok(web::Json(images))
 }
 
