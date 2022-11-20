@@ -10,6 +10,12 @@
 
 This project is called "Simple Private Image Server" or "SPIS" for short. It's purpose is to be a lightweight and fast server to display media hosted on a private server.
 
+![Screenshot](screenshot.jpg)
+
+---
+
+<h2>TOC<h2>
+
 - [Development](#development)
   - [Setup test dependencies](#setup-test-dependencies)
   - [Running](#running)

@@ -19,21 +19,53 @@
 
         /* Responsive media gallery rules begin*/
 
-        .media-gallery {
+        .media-list {
             display: flex;
             flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+        }
+
+        .media-view {
+            position: fixed;
+            padding: 0;
+            margin: 0;
+
+            top: 0;
+            left: 0;
+
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+
+            display: flex;
             align-items: center;
             justify-content: center;
         }
 
         li {
-            width: 20%;
+            width: 25%;
+        }
+
+        @media screen and (min-width: 1000px) {
+            li {
+                width: 10%;
+            }
         }
 
         .thumbnail {
-            padding: 5px;
+            padding-left: 2px;
+            padding-right: 2px;
+            padding-top: 1px;
+            padding-bottom: 0px;
             border-radius: 10px;
             width: 100%;
+        }
+
+        .preview {
+            max-width: 100%;
+            max-height: 100%;
         }
 
         button {
