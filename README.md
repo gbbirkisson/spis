@@ -10,9 +10,7 @@
 
 This project is called "Simple Private Image Server" or "SPIS" for short. It's purpose is to be a lightweight and fast server to display media hosted on a private server.
 
-![Screenshot](screenshot.jpg)
-
----
+<img width="100%" src="screenshot.jpg">
 
 <h2>TOC<h2>
 
