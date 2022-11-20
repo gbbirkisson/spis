@@ -6,8 +6,12 @@ use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::spawn_local;
 
-const API_MEDIA_PER_REQ: usize = 30;
-const PAGE_PX_LEFT_TO_FETCH_MORE: f64 = 200.0;
+const API_MEDIA_PER_REQ: usize = 100;
+const PAGE_PX_LEFT_TO_FETCH_MORE: f64 = 500.0;
+
+struct MediaViewData {
+    location: String,
+}
 
 async fn fetch_media(params: spis_model::MediaSearchParams) -> Result<Vec<Media>, reqwasm::Error> {
     let url = match params.taken_after {
@@ -23,15 +27,47 @@ async fn fetch_media(params: spis_model::MediaSearchParams) -> Result<Vec<Media>
 }
 
 fn render_thumbnail<G: Html>(cx: Scope<'_>, media: Media) -> View<G> {
+    let media_view = use_context::<RcSignal<Option<MediaViewData>>>(cx);
+    let media_view_data = create_signal(cx, media.clone());
+
+    let preview_display = |_| {
+        let location = media_view_data.get().as_ref().location.clone();
+        media_view.set(Some(MediaViewData { location }));
+    };
+
     view!( cx,
         li {
-          img(src=media.thumbnail, class="thumbnail", loading="lazy") {}
+          img(src=media.thumbnail, class="thumbnail", loading="lazy", on:click=preview_display) {}
         }
     )
 }
 
 #[component]
-async fn Media<G: Html>(cx: Scope<'_>) -> View<G> {
+async fn MediaView<G: Html>(cx: Scope<'_>) -> View<G> {
+    let media_view = use_context::<RcSignal<Option<MediaViewData>>>(cx);
+
+    let preview_close = |_| {
+        media_view.set(None);
+    };
+
+    view! { cx,
+        div {
+            (if media_view.get().is_some() {
+                let location = media_view.get().as_ref().as_ref().unwrap().location.clone();
+                view! { cx,
+                    div(class="media-view") {
+                        img(class="preview", src=location, on:click=preview_close) {}
+                    }
+                }
+            } else {
+                view! { cx, } // Show nothing
+            })
+        }
+    }
+}
+
+#[component]
+async fn MediaList<G: Html>(cx: Scope<'_>) -> View<G> {
     // Setup signals
     let media: RcSignal<Vec<Media>> = create_rc_signal(
         fetch_media(spis_model::MediaSearchParams {
@@ -41,9 +77,12 @@ async fn Media<G: Html>(cx: Scope<'_>) -> View<G> {
         .await
         .unwrap(),
     );
+
     let media_loading = create_rc_signal(false);
     let media_reached_end = create_rc_signal(false);
     let media_ref = create_ref(cx, media.clone());
+
+    provide_context(cx, media.clone());
 
     // Create scrolling callback
     let callback: Closure<dyn FnMut()> = Closure::new(move || {
@@ -120,7 +159,7 @@ async fn Media<G: Html>(cx: Scope<'_>) -> View<G> {
 
     // Return view
     view! { cx,
-        ul(class="media-gallery") {
+        ul(class="media-list") {
             Indexed(
                 iterable=media_ref,
                 view=|cx, media| render_thumbnail(cx, media),
@@ -130,17 +169,26 @@ async fn Media<G: Html>(cx: Scope<'_>) -> View<G> {
 }
 
 #[component]
-fn App<G: Html>(cx: Scope) -> View<G> {
-    let media: RcSignal<Vec<Media>> = create_rc_signal(vec![]);
-    let more_button_visible: RcSignal<String> = create_rc_signal("".to_string());
+fn MediaLoading<G: Html>(cx: Scope) -> View<G> {
+    view! { cx,
+        p {
+            "Loading..."
+        }
+    }
+}
 
-    provide_context(cx, media);
-    provide_context(cx, more_button_visible);
+#[component]
+fn App<G: Html>(cx: Scope) -> View<G> {
+    let media_view: RcSignal<Option<MediaViewData>> = create_rc_signal(None);
+    provide_context(cx, media_view);
 
     view! { cx,
-        div(class="container") {
-            Suspense(fallback=view! { cx, "Loading..." }) {
-                Media {}
+            Suspense(fallback=view! { cx, MediaLoading {} }) {
+                MediaView {}
+            }
+        div(class="media-galley") {
+            Suspense(fallback=view! { cx, MediaLoading {} }) {
+                MediaList {}
             }
         }
     }
