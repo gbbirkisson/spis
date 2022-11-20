@@ -12,7 +12,7 @@ This project is called "Simple Private Image Server" or "SPIS" for short. It's p
 
 <img width="100%" src="screenshot.jpg">
 
-<h2>TOC<h2>
+<h2>TOC</h2>
 
 - [Development](#development)
   - [Setup test dependencies](#setup-test-dependencies)
