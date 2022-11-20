@@ -15,11 +15,11 @@ use tokio::sync::mpsc::{channel, Receiver, Sender};
 use walkdir::WalkDir;
 
 use crate::db;
-use crate::img::prelude::Thumbnail;
+use crate::med::prelude::Thumbnail;
 
 pub mod prelude;
 
-static IMAGE_FORMAT: &[&str] = &[".jpg"];
+static MEDIA_FORMAT: &[&str] = &[".jpg", ".jpeg"];
 static THUMBNAIL_SIZE: u32 = 400;
 
 trait HasExt {
@@ -64,38 +64,38 @@ impl TimeConv for SystemTime {
     }
 }
 
-pub struct ImageProcessError {
+pub struct MediaProcessingError {
     pub msg: String,
 }
 
-struct ImageProcessedOrientation(i32, bool);
+struct MediaProcessedOrientation(i32, bool);
 
-struct ImageProcessedExif {
-    orientation: ImageProcessedOrientation,
+struct MediaProcessedExif {
+    orientation: MediaProcessedOrientation,
     taken: Option<DateTime<Utc>>,
 }
 
-pub struct ProcessedImage {
+pub struct ProcessedMedia {
     pub uuid: Uuid,
-    pub image: PathBuf,
-    pub data: Option<ProcessedImageData>,
+    pub media: PathBuf,
+    pub data: Option<ProcessedMediaData>,
 }
 
-pub struct ProcessedImageData {
+pub struct ProcessedMediaData {
     pub taken_at: DateTime<Utc>,
 }
 
-pub async fn process(pool: Pool<Sqlite>, img_dir: PathBuf, thumb_dir: PathBuf) {
+pub async fn process(pool: Pool<Sqlite>, media_dir: PathBuf, thumb_dir: PathBuf) {
     let start_time = Utc::now().time();
-    tracing::info!("Image processing started");
+    tracing::info!("Media processing started");
 
-    let mark = db::image_mark_unwalked(&pool).await;
+    let mark = db::media_mark_unwalked(&pool).await;
     if mark.is_err() {
-        tracing::error!("Failed marking images as unwalked: {:?}", &mark);
+        tracing::error!("Failed marking media as unwalked: {:?}", &mark);
     }
 
     let (tx, mut rx) = channel(1);
-    let mut done_recv = image_processor(img_dir, thumb_dir, tx);
+    let mut done_recv = media_processor(media_dir, thumb_dir, tx);
     let processor_pool = pool.clone();
 
     loop {
@@ -103,7 +103,7 @@ pub async fn process(pool: Pool<Sqlite>, img_dir: PathBuf, thumb_dir: PathBuf) {
             done = done_recv.recv() => {
                 match done {
                     Some(count) => {
-                        tracing::info!("Processed {} images", count);
+                        tracing::info!("Processed {} files", count);
                         break;
                     },
                     None => {
@@ -111,12 +111,12 @@ pub async fn process(pool: Pool<Sqlite>, img_dir: PathBuf, thumb_dir: PathBuf) {
                     }
                 }
             }
-            img = rx.recv() => {
-                match img {
-                    Some(img) => {
-                        tracing::debug!("Inserting img {}", img.uuid);
-                        if let Err(e) = db::image_insert(&processor_pool, img).await {
-                            tracing::error!("Failed inserting image into DB: {e}");
+            media = rx.recv() => {
+                match media {
+                    Some(media) => {
+                        tracing::debug!("Inserting media {}", media.uuid);
+                        if let Err(e) = db::media_insert(&processor_pool, media).await {
+                            tracing::error!("Failed inserting media into DB: {e}");
                         }
                     }
                     None => {
@@ -129,60 +129,60 @@ pub async fn process(pool: Pool<Sqlite>, img_dir: PathBuf, thumb_dir: PathBuf) {
     }
 
     if mark.is_ok() {
-        match db::image_delete_unwalked(&pool).await {
+        match db::media_delete_unwalked(&pool).await {
             Ok(count) => {
-                tracing::info!("Cleaned up {count} images");
+                tracing::info!("Cleaned up {count} media entries");
             }
             Err(e) => {
-                tracing::error!("Failed deleting unwalked images: {:?}", e);
+                tracing::error!("Failed deleting unwalked media: {:?}", e);
             }
         }
     }
 
-    if let Ok(count) = db::image_count(&pool).await {
-        tracing::info!("DB now has {count} images");
+    if let Ok(count) = db::media_count(&pool).await {
+        tracing::info!("DB now has {count} media entries");
     }
 
     let end_time = Utc::now().time();
     let diff = end_time - start_time;
     tracing::info!(
-        "Image processing ended after {} minutes",
+        "Media processing ended after {} minutes",
         diff.num_minutes()
     )
 }
 
-fn image_processor(
-    img_dir: PathBuf,
+fn media_processor(
+    media_dir: PathBuf,
     thumb_dir: PathBuf,
-    image_sender: Sender<ProcessedImage>,
+    media_sender: Sender<ProcessedMedia>,
 ) -> Receiver<usize> {
     let (done_send, done_recv) = channel(1);
     tokio::task::spawn_blocking(move || {
-        do_walk(img_dir, thumb_dir, image_sender, done_send);
+        do_walk(media_dir, thumb_dir, media_sender, done_send);
     });
     done_recv
 }
 
 fn do_walk(
-    img_dir: PathBuf,
+    media_dir: PathBuf,
     thumb_dir: PathBuf,
-    tx: Sender<ProcessedImage>,
+    tx: Sender<ProcessedMedia>,
     done_send: Sender<usize>,
 ) {
-    let walk: Vec<_> = WalkDir::new(img_dir)
+    let walk: Vec<_> = WalkDir::new(media_dir)
         .into_iter()
         .filter_map(|r| r.ok())
-        .filter(|e| e.has_ext(IMAGE_FORMAT))
+        .filter(|e| e.has_ext(MEDIA_FORMAT))
         .par_bridge()
         .map(|e| {
             if let Err(err) = do_process(thumb_dir.clone(), tx.clone(), &e) {
                 let path = e.path().to_str().unwrap();
-                tracing::error!("Failed processing image {path}: {err}")
+                tracing::error!("Failed processing media {path}: {err}")
             }
         })
         .collect();
 
-    // This sleep here is to make sure that the last image get inserted before we kill processing
+    // This sleep here is to make sure that the last media gets inserted before we kill processing
     std::thread::sleep(Duration::from_secs(5));
 
     if let Err(e) = done_send
@@ -195,29 +195,29 @@ fn do_walk(
 
 fn do_process(
     thumb_dir: PathBuf,
-    tx: Sender<ProcessedImage>,
-    image_entry: &walkdir::DirEntry,
+    tx: Sender<ProcessedMedia>,
+    media_entry: &walkdir::DirEntry,
 ) -> Result<()> {
-    let image_bytes = fs::read(image_entry.path())?;
-    let image_hash = md5::compute(&image_bytes);
-    let image_uuid = *Builder::from_md5_bytes(image_hash.into()).as_uuid();
+    let media_bytes = fs::read(media_entry.path())?;
+    let media_hash = md5::compute(&media_bytes);
+    let media_uuid = *Builder::from_md5_bytes(media_hash.into()).as_uuid();
 
-    let image_thumbnail_path = thumb_dir.get_thumbnail(&image_uuid);
+    let media_thumbnail_path = thumb_dir.get_thumbnail(&media_uuid);
 
-    let mut image_data = None;
+    let mut media_data = None;
 
-    if !image_thumbnail_path.exists() {
-        tracing::debug!("Reading EXIF data for {:?}", image_entry.path());
-        let exif = match exif_read(&image_bytes) {
+    if !media_thumbnail_path.exists() {
+        tracing::debug!("Reading EXIF data for {:?}", media_entry.path());
+        let exif = match exif_read(&media_bytes) {
             Ok(e) => Some(e),
             Err(_) => {
-                tracing::warn!("Failed to read EXIF data for {:?}", image_entry.path());
+                tracing::warn!("Failed to read EXIF data for {:?}", media_entry.path());
                 None
             }
         };
 
-        tracing::debug!("Creating thumbnail: {:?}", image_thumbnail_path);
-        let mut image = image::open(image_entry.path())?;
+        tracing::debug!("Creating thumbnail: {:?}", media_thumbnail_path);
+        let mut image = image::open(media_entry.path())?;
         image = image.thumbnail(THUMBNAIL_SIZE, THUMBNAIL_SIZE);
         if let Some(exif) = &exif {
             image = match exif.orientation.0 {
@@ -250,15 +250,15 @@ fn do_process(
                 image_height,
             ),
         };
-        image.save(image_thumbnail_path)?;
+        image.save(media_thumbnail_path)?;
 
         let taken = match exif.map(|e| e.taken) {
             Some(taken) => taken,
-            None => match image_entry.metadata() {
+            None => match media_entry.metadata() {
                 Ok(meta) => match meta.modified() {
                     Ok(time) => Some(time.conv()),
                     Err(_) => {
-                        tracing::warn!("Could not determin timestamp for {:?}", image_entry.path());
+                        tracing::warn!("Could not determin timestamp for {:?}", media_entry.path());
                         None
                     }
                 },
@@ -266,42 +266,42 @@ fn do_process(
             },
         };
 
-        let data = ProcessedImageData {
+        let data = ProcessedMediaData {
             taken_at: taken.unwrap_or_else(Utc::now),
         };
 
-        image_data = Some(data);
+        media_data = Some(data);
     }
 
-    let image = ProcessedImage {
-        uuid: image_uuid,
-        image: image_entry.path().to_path_buf(),
-        data: image_data,
+    let media = ProcessedMedia {
+        uuid: media_uuid,
+        media: media_entry.path().to_path_buf(),
+        data: media_data,
     };
 
-    tracing::debug!("Sending image to channel {:?}", image.uuid);
-    tx.blocking_send(image)
-        .map_err(|e| eyre!("Failed sending image to channel: {:?}", e.to_string()))?;
+    tracing::debug!("Sending media to channel {:?}", media.uuid);
+    tx.blocking_send(media)
+        .map_err(|e| eyre!("Failed sending media to channel: {:?}", e.to_string()))?;
 
     Ok(())
 }
 
-fn exif_read(bytes: &Vec<u8>) -> Result<ImageProcessedExif> {
+fn exif_read(bytes: &Vec<u8>) -> Result<MediaProcessedExif> {
     let mut exif_buf_reader = std::io::Cursor::new(bytes);
     let exif_reader = exif::Reader::new();
     let exif = exif_reader.read_from_container(&mut exif_buf_reader)?;
 
     let orientation = match exif_get_u32(&exif, Tag::Orientation) {
         // http://sylvana.net/jpegcrop/exif_orientation.html
-        Ok(1) => ImageProcessedOrientation(0, false),
-        Ok(2) => ImageProcessedOrientation(0, true),
-        Ok(3) => ImageProcessedOrientation(180, false),
-        Ok(4) => ImageProcessedOrientation(180, true),
-        Ok(5) => ImageProcessedOrientation(90, true),
-        Ok(6) => ImageProcessedOrientation(90, false),
-        Ok(7) => ImageProcessedOrientation(270, true),
-        Ok(8) => ImageProcessedOrientation(270, false),
-        _ => ImageProcessedOrientation(0, false),
+        Ok(1) => MediaProcessedOrientation(0, false),
+        Ok(2) => MediaProcessedOrientation(0, true),
+        Ok(3) => MediaProcessedOrientation(180, false),
+        Ok(4) => MediaProcessedOrientation(180, true),
+        Ok(5) => MediaProcessedOrientation(90, true),
+        Ok(6) => MediaProcessedOrientation(90, false),
+        Ok(7) => MediaProcessedOrientation(270, true),
+        Ok(8) => MediaProcessedOrientation(270, false),
+        _ => MediaProcessedOrientation(0, false),
     };
 
     let timestamp_tz = exif_get_str(&exif, Tag::OffsetTimeOriginal);
@@ -319,7 +319,7 @@ fn exif_read(bytes: &Vec<u8>) -> Result<ImageProcessedExif> {
         _ => None,
     };
 
-    Ok(ImageProcessedExif { orientation, taken })
+    Ok(MediaProcessedExif { orientation, taken })
 }
 
 fn exif_get_u32(exif: &exif::Exif, tag: Tag) -> Result<u32> {

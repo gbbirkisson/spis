@@ -4,14 +4,14 @@ NGINX_CONF:=dev/nginx.conf
 NGINX_CONF_TMP:=/tmp/nginx.conf
 
 BASE_DIR:=dev/api
-IMAGE_DIR:=${BASE_DIR}/images
+MEDIA_DIR:=${BASE_DIR}/media
 STATE_DIR:=${BASE_DIR}/state
 THUMBNAIL_DIR:=${STATE_DIR}/thumbnails
 DB_FILE:=${STATE_DIR}/spis.db
 
 
-${IMAGE_DIR}:
-	mkdir -p ${IMAGE_DIR}
+${MEDIA_DIR}:
+	mkdir -p ${MEDIA_DIR}
 	$(MAKE) dl-img
 
 ${STATE_DIR}:
@@ -66,7 +66,7 @@ dev-nginx: ## Run nginx
 	watchexec -r -w dev/nginx.conf -- make _dev-run-nginx-nowatch
 
 .PHONY: dev-server
-dev-server: ${IMAGE_DIR} ${THUMBNAIL_DIR} ${DB_FILE} ## Run the server
+dev-server: ${MEDIA_DIR} ${THUMBNAIL_DIR} ${DB_FILE} ## Run the server
 	watchexec -r -e rs,toml -w spis-model -w spis-server -- cargo run -p spis-server
 
 .PHONY: dev-gui
@@ -81,11 +81,11 @@ dev-test: ## Run specific test
 	watchexec -r -e rs,toml -w ${TEST_PROJ} -- cargo test -q -p ${TEST_PROJ} ${TEST_NAME} -- --nocapture
 
 .PHONY: dl-img
-dl-img: ${IMAGE_DIR} ## Download 20 random images
-	./dev/images.sh 20 ${IMAGE_DIR}
+dl-img: ${MEDIA_DIR} ## Download 20 random images
+	./dev/images.sh 20 ${MEDIA_DIR}
 
 .PHONY: setup
-setup: ${IMAGE_DIR} ${THUMBNAIL_DIR} ${DB_FILE} ## Setup project dependencies and dirs
+setup: ${MEDIA_DIR} ${THUMBNAIL_DIR} ${DB_FILE} ## Setup project dependencies and dirs
 	# Install cargo binaries
 	cargo install watchexec-cli
 	cargo install trunk

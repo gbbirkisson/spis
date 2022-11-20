@@ -1,15 +1,15 @@
 use reqwasm::http::Request;
-use spis_model::{Image, ImageSeachParams};
+use spis_model::{Media, MediaSearchParams};
 use sycamore::prelude::*;
 use sycamore::suspense::Suspense;
 use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::spawn_local;
 
-const API_IMAGE_PER_REQ: usize = 30;
+const API_MEDIA_PER_REQ: usize = 30;
 const PAGE_PX_LEFT_TO_FETCH_MORE: f64 = 200.0;
 
-async fn fetch_images(params: spis_model::ImageSeachParams) -> Result<Vec<Image>, reqwasm::Error> {
+async fn fetch_media(params: spis_model::MediaSearchParams) -> Result<Vec<Media>, reqwasm::Error> {
     let url = match params.taken_after {
         None => format!("/api/?page_size={}", params.page_size),
         Some(taken_after) => format!(
@@ -18,48 +18,48 @@ async fn fetch_images(params: spis_model::ImageSeachParams) -> Result<Vec<Image>
         ),
     };
     let res = Request::get(&url).send().await?;
-    let body = res.json::<Vec<Image>>().await?;
+    let body = res.json::<Vec<Media>>().await?;
     Ok(body)
 }
 
-fn render_image<G: Html>(cx: Scope<'_>, image: Image) -> View<G> {
+fn render_thumbnail<G: Html>(cx: Scope<'_>, media: Media) -> View<G> {
     view!( cx,
         li {
-          img(src=image.thumbnail, class="thumbnail", loading="lazy") {}
+          img(src=media.thumbnail, class="thumbnail", loading="lazy") {}
         }
     )
 }
 
 #[component]
-async fn Images<G: Html>(cx: Scope<'_>) -> View<G> {
+async fn Media<G: Html>(cx: Scope<'_>) -> View<G> {
     // Setup signals
-    let images: RcSignal<Vec<Image>> = create_rc_signal(
-        fetch_images(spis_model::ImageSeachParams {
-            page_size: API_IMAGE_PER_REQ,
+    let media: RcSignal<Vec<Media>> = create_rc_signal(
+        fetch_media(spis_model::MediaSearchParams {
+            page_size: API_MEDIA_PER_REQ,
             taken_after: None,
         })
         .await
         .unwrap(),
     );
-    let images_loading = create_rc_signal(false);
-    let images_reached_end = create_rc_signal(false);
-    let images_ref = create_ref(cx, images.clone());
+    let media_loading = create_rc_signal(false);
+    let media_reached_end = create_rc_signal(false);
+    let media_ref = create_ref(cx, media.clone());
 
     // Create scrolling callback
     let callback: Closure<dyn FnMut()> = Closure::new(move || {
-        let images = images.clone();
-        let images_loading = images_loading.clone();
-        let images_reached_end = images_reached_end.clone();
+        let media = media.clone();
+        let media_loading = media_loading.clone();
+        let media_reached_end = media_reached_end.clone();
 
         spawn_local(async move {
-            if images_reached_end.get().as_ref() == &true {
+            if media_reached_end.get().as_ref() == &true {
                 return;
             }
 
-            if images_loading.get().as_ref() == &true {
+            if media_loading.get().as_ref() == &true {
                 return;
             }
-            images_loading.set(true);
+            media_loading.set(true);
 
             let window = web_sys::window().expect("Failed to get window");
             let document = window.document().expect("Failed to get document");
@@ -79,31 +79,31 @@ async fn Images<G: Html>(cx: Scope<'_>) -> View<G> {
                 >= body_offset_height - PAGE_PX_LEFT_TO_FETCH_MORE;
 
             if near_end_of_page {
-                let old_images = images.get();
-                let mut new_images: Vec<Image> =
-                    Vec::with_capacity(old_images.len() + API_IMAGE_PER_REQ);
+                let old_media = media.get();
+                let mut new_media: Vec<Media> =
+                    Vec::with_capacity(old_media.len() + API_MEDIA_PER_REQ);
 
-                for image in old_images.iter() {
-                    new_images.push(image.clone());
+                for media in old_media.iter() {
+                    new_media.push(media.clone());
                 }
 
-                let taken_after = new_images.last().map(|i| i.taken_at);
-                let mut fetched_images = fetch_images(ImageSeachParams {
-                    page_size: API_IMAGE_PER_REQ,
+                let taken_after = new_media.last().map(|i| i.taken_at);
+                let mut fetched_media = fetch_media(MediaSearchParams {
+                    page_size: API_MEDIA_PER_REQ,
                     taken_after,
                 })
                 .await
                 .unwrap(); // TODO
 
-                if fetched_images.len() != API_IMAGE_PER_REQ {
-                    images_reached_end.set(true);
+                if fetched_media.len() != API_MEDIA_PER_REQ {
+                    media_reached_end.set(true);
                 }
 
-                new_images.append(&mut fetched_images);
-                images.set(new_images);
+                new_media.append(&mut fetched_media);
+                media.set(new_media);
             }
 
-            images_loading.set(false);
+            media_loading.set(false);
         });
     });
 
@@ -120,10 +120,10 @@ async fn Images<G: Html>(cx: Scope<'_>) -> View<G> {
 
     // Return view
     view! { cx,
-        ul(class="image-gallery") {
+        ul(class="media-gallery") {
             Indexed(
-                iterable=images_ref,
-                view=|cx, image| render_image(cx, image),
+                iterable=media_ref,
+                view=|cx, media| render_thumbnail(cx, media),
             )
         }
     }
@@ -131,16 +131,16 @@ async fn Images<G: Html>(cx: Scope<'_>) -> View<G> {
 
 #[component]
 fn App<G: Html>(cx: Scope) -> View<G> {
-    let images: RcSignal<Vec<Image>> = create_rc_signal(vec![]);
+    let media: RcSignal<Vec<Media>> = create_rc_signal(vec![]);
     let more_button_visible: RcSignal<String> = create_rc_signal("".to_string());
 
-    provide_context(cx, images);
+    provide_context(cx, media);
     provide_context(cx, more_button_visible);
 
     view! { cx,
         div(class="container") {
             Suspense(fallback=view! { cx, "Loading..." }) {
-                Images {}
+                Media {}
             }
         }
     }

@@ -1,19 +1,19 @@
 use std::path::{Path, PathBuf};
 
 use config::{Config, Environment, File};
-use img::prelude::THUMBNAIL_FORMAT;
+use med::prelude::THUMBNAIL_FORMAT;
 use serde::Deserialize;
 
 use eyre::{eyre, Result};
 use uuid::Uuid;
 
 pub mod db;
-pub mod img;
+pub mod med;
 pub mod server;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct SpisCfg {
-    image_dir: String,
+    media_dir: String,
     data_dir: String,
     pub processing: SpisCfgProcessing,
     pub api: SpisCfgApi,
@@ -27,7 +27,7 @@ pub struct SpisCfgProcessing {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct SpisCfgApi {
-    pub image_path: String,
+    pub media_path: String,
     pub thumbnail_path: String,
 }
 
@@ -39,14 +39,14 @@ impl SpisCfg {
             .add_source(Environment::with_prefix("spis"))
             .set_default("processing.schedule", "0 0 2 * * *")?
             .set_default("processing.run_on_start", false)?
-            .set_default("api.image_path", "/assets/images")?
+            .set_default("api.media_path", "/assets/media")?
             .set_default("api.thumbnail_path", "/assets/thumbnails")?
             .build()?;
 
         let c: SpisCfg = b.try_deserialize()?;
 
-        if !Path::new(&c.image_dir).is_dir() {
-            return Err(eyre!("SPIS_IMAGE_DIR {} is not a directory", c.image_dir));
+        if !Path::new(&c.media_dir).is_dir() {
+            return Err(eyre!("SPIS_MEDIA_DIR {} is not a directory", c.media_dir));
         }
 
         if !Path::new(&c.data_dir).is_dir() {
@@ -62,21 +62,21 @@ impl SpisCfg {
         std::fs::create_dir_all(&tmp).expect("Failed to create tmp dir");
         let tmp = tmp.to_str().unwrap().to_string();
         Self {
-            image_dir: tmp.clone(),
+            media_dir: tmp.clone(),
             data_dir: tmp,
             processing: SpisCfgProcessing {
                 run_on_start: false,
                 schedule: "".to_string(),
             },
             api: SpisCfgApi {
-                image_path: "".to_string(),
+                media_path: "".to_string(),
                 thumbnail_path: "".to_string(),
             },
         }
     }
 
-    pub fn image_dir(&self) -> PathBuf {
-        PathBuf::from(self.image_dir.clone())
+    pub fn media_dir(&self) -> PathBuf {
+        PathBuf::from(self.media_dir.clone())
     }
 
     pub fn thumbnail_dir(&self) -> PathBuf {
@@ -91,7 +91,7 @@ impl SpisCfg {
         self.api.thumbnail_path.clone() + "/" + &uuid.to_string() + "." + THUMBNAIL_FORMAT
     }
 
-    pub fn api_image(&self, image_path: &str) -> String {
-        image_path.replace(&self.image_dir, &self.api.image_path)
+    pub fn api_media_location(&self, media_path: &str) -> String {
+        media_path.replace(&self.media_dir, &self.api.media_path)
     }
 }
