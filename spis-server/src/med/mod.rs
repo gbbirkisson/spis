@@ -211,7 +211,7 @@ fn do_process(
         let exif = match exif_read(&media_bytes) {
             Ok(e) => Some(e),
             Err(_) => {
-                tracing::warn!("Failed to read EXIF data for {:?}", media_entry.path());
+                tracing::debug!("Failed to read EXIF data for {:?}", media_entry.path());
                 None
             }
         };

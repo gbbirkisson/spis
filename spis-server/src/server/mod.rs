@@ -1,6 +1,7 @@
 use std::net::TcpListener;
 
 use actix_web::{dev::Server, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
+use eyre::{eyre, Result};
 use spis_model::Media;
 use sqlx::{Pool, Sqlite};
 
@@ -16,11 +17,11 @@ static GUI: include_dir::Dir<'_> =
 #[cfg(feature = "release")]
 fn find_gui_file(name: &str) -> &include_dir::File {
     GUI.find(name)
-        .expect(format!("Could not find {}", name).as_str())
+        .unwrap_or_else(|_| panic!("Could not find {}", name))
         .next()
-        .expect(format!("Iterator has not file: {}", name).as_str())
+        .unwrap_or_else(|| panic!("Iterator has not file: {}", name))
         .as_file()
-        .expect(format!("Could not convert to file: {}", name).as_str())
+        .unwrap_or_else(|| panic!("Could not convert to file: {}", name))
 }
 
 #[cfg(feature = "release")]
@@ -64,15 +65,17 @@ async fn get_media(
     Ok(web::Json(media))
 }
 
-pub fn run(
-    listener: TcpListener,
-    pool: Pool<Sqlite>,
-    config: SpisCfg,
-) -> Result<Server, std::io::Error> {
+pub enum Listener {
+    Tcp(TcpListener),
+    Socket(String),
+}
+
+pub fn run(listener: Listener, pool: Pool<Sqlite>, config: SpisCfg) -> Result<Server> {
     let pool = web::Data::new(pool);
     let config = web::Data::new(config);
 
     let server = HttpServer::new(move || {
+        #[allow(unused_mut)]
         let mut app = App::new();
 
         #[cfg(feature = "release")]
@@ -116,8 +119,17 @@ pub fn run(
             .route("/api", web::get().to(get_media))
             .app_data(pool.clone())
             .app_data(config.clone())
-    })
-    .listen(listener)?
+    });
+
+    let server = match listener {
+        Listener::Tcp(listener) => server.listen(listener)?,
+        Listener::Socket(file) => {
+            if cfg!(not(unix)) {
+                return Err(eyre!("You can only use unix sockets on unix!"));
+            }
+            server.bind_uds(file)?
+        }
+    }
     .run();
 
     Ok(server)

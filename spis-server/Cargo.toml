@@ -11,7 +11,7 @@ path = "src/main.rs"
 name = "spis-server"
 
 [features]
-default = ["release"]
+default = []
 release = ["dep:include_dir"]
 
 [dependencies]

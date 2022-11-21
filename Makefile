@@ -98,7 +98,7 @@ docker-build:
 
 .PHONY: docker-run
 docker-run: docker-build
-	docker run -it --rm -p 8080:8080 test
+	docker run -it --rm -p 8080:8080 -v ${PWD}/dev/api/media:/var/lib/spis/media test
 
 .PHONY: setup
 setup: ${MEDIA_DIR} ${THUMBNAIL_DIR} ${DB_FILE} ## Setup project dependencies and dirs

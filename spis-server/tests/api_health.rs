@@ -1,4 +1,4 @@
-use spis_server::db::setup_db;
+use spis_server::{db::setup_db, server::Listener};
 use std::net::TcpListener;
 
 async fn spawn_server() -> String {
@@ -14,7 +14,8 @@ async fn spawn_server() -> String {
         .expect("Failed to create DB");
 
     // Spawn server
-    let server = spis_server::server::run(listener, pool, config).expect("Failed to bind address");
+    let server = spis_server::server::run(Listener::Tcp(listener), pool, config)
+        .expect("Failed to bind address");
     let _ = tokio::spawn(server);
 
     // Return endpoint

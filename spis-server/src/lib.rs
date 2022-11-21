@@ -17,6 +17,7 @@ pub struct SpisCfg {
     data_dir: String,
     pub processing: SpisCfgProcessing,
     pub api: SpisCfgApi,
+    pub server: SpisCfgServer,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -29,6 +30,12 @@ pub struct SpisCfgProcessing {
 pub struct SpisCfgApi {
     pub media_path: String,
     pub thumbnail_path: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct SpisCfgServer {
+    pub address: Option<String>,
+    pub socket: Option<String>,
 }
 
 impl SpisCfg {
@@ -46,11 +53,23 @@ impl SpisCfg {
         let c: SpisCfg = b.try_deserialize()?;
 
         if !Path::new(&c.media_dir).is_dir() {
-            return Err(eyre!("SPIS_MEDIA_DIR {} is not a directory", c.media_dir));
+            return Err(eyre!("SPIS_MEDIA.DIR {} is not a directory", c.media_dir));
         }
 
         if !Path::new(&c.data_dir).is_dir() {
-            return Err(eyre!("SPIS_DATA_DIR {} is not a directory", c.data_dir));
+            return Err(eyre!("SPIS_DATA.DIR {} is not a directory", c.data_dir));
+        }
+
+        if c.server.address.is_none() && c.server.socket.is_none() {
+            return Err(eyre!(
+                "You have to specify SPIS_SERVER.ADDRESS or SPIS_SERVER.SOCKET"
+            ));
+        }
+
+        if c.server.address.is_some() && c.server.socket.is_some() {
+            return Err(eyre!(
+                "You cannot specify both SPIS_SERVER.ADDRESS and SPIS_SERVER.SOCKET"
+            ));
         }
 
         tracing::debug!("Loaded config: {:?}", c);
@@ -71,6 +90,10 @@ impl SpisCfg {
             api: SpisCfgApi {
                 media_path: "".to_string(),
                 thumbnail_path: "".to_string(),
+            },
+            server: SpisCfgServer {
+                address: Some("127.0.0.1:0".to_string()),
+                socket: None,
             },
         }
     }

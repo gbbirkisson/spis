@@ -1,7 +1,11 @@
 use async_cron_scheduler::{Job, Scheduler};
 use chrono::Local;
 use eyre::Result;
-use spis_server::{db, med, server, SpisCfg};
+use spis_server::{
+    db, med,
+    server::{self, Listener},
+    SpisCfg,
+};
 use sqlx::{Pool, Sqlite};
 use std::net::TcpListener;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
@@ -21,8 +25,19 @@ async fn main() -> Result<()> {
 
     setup_processing(pool.clone(), config.clone()).await?;
 
-    tracing::info!("Start server on http://0.0.0.0:8000");
-    let listener = TcpListener::bind("0.0.0.0:8000").expect("Failed to bind random port");
+    let listener = match &config.server.address.as_ref().is_some() {
+        true => {
+            let address = &config.server.address.as_ref().unwrap();
+            tracing::info!("Start listening on http://{}", address);
+            Listener::Tcp(TcpListener::bind("0.0.0.0:8000")?)
+        }
+        false => {
+            let socket = &config.server.socket.as_ref().unwrap();
+            tracing::info!("Start listening on socket {}", socket);
+            Listener::Socket(socket.to_string())
+        }
+    };
+
     let server = server::run(listener, pool, config).expect("Failed to create server");
     server.await?;
 
