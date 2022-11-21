@@ -84,12 +84,29 @@ dev-test: ## Run specific test
 dl-img: ${MEDIA_DIR} ## Download 20 random images
 	./dev/images.sh 20 ${MEDIA_DIR}
 
+.PHONY: release
+release: ## Create release build
+	cd spis-gui && trunk build --release
+	cp -f spis-gui/manifest.json spis-gui/dist/manifest.json
+	cp -f logo.png spis-gui/dist/logo.png
+	cargo build -p spis-server --features release --release
+	#cross build -p spis-server --features release --release --target armv7-unknown-linux-gnueabihf
+
+.PHONY: docker-build
+docker-build:
+	docker build -t test -f docker/Dockerfile .
+
+.PHONY: docker-run
+docker-run: docker-build
+	docker run -it --rm -p 8080:8080 test
+
 .PHONY: setup
 setup: ${MEDIA_DIR} ${THUMBNAIL_DIR} ${DB_FILE} ## Setup project dependencies and dirs
 	# Install cargo binaries
 	cargo install watchexec-cli
 	cargo install trunk
 	cargo install cargo-watch
+	cargo install cross --git https://github.com/cross-rs/cross
 
 	# Add rust components/targets
 	rustup component add rustfmt
@@ -103,7 +120,7 @@ setup: ${MEDIA_DIR} ${THUMBNAIL_DIR} ${DB_FILE} ## Setup project dependencies an
 clean: ## Clean up
 	cargo clean
 	rm -rf ${BASE_DIR}
-	rm -rf dist
+	rm -rf spis-gui/dist
 	rm -f cobertura.xml
 
 .PHONY: help

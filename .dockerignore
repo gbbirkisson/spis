@@ -1,0 +1,5 @@
+# Ignore everything
+*
+
+!docker
+!target/release/spis-server

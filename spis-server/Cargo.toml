@@ -10,6 +10,10 @@ path = "src/lib.rs"
 path = "src/main.rs"
 name = "spis-server"
 
+[features]
+default = ["release"]
+release = ["dep:include_dir"]
+
 [dependencies]
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync"]}
 tracing = "0.1"
@@ -33,6 +37,7 @@ uuid = { version = "1", features = ["serde", "v4"] }
 chrono = "0.4"
 sqlx = { version = "0.6", features = ["runtime-tokio-native-tls", "sqlite", "macros", "chrono", "migrate", "uuid"] }
 async-cron-scheduler = "1"
+include_dir = { version = "0.7.3", features = ["glob"], optional=true }
 
 [dev-dependencies]
 reqwest = "0.11"

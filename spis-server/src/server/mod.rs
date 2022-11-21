@@ -9,6 +9,27 @@ use crate::{
     SpisCfg,
 };
 
+#[cfg(feature = "release")]
+static GUI: include_dir::Dir<'_> =
+    include_dir::include_dir!("$CARGO_MANIFEST_DIR/../spis-gui/dist");
+
+#[cfg(feature = "release")]
+fn find_gui_file(name: &str) -> &include_dir::File {
+    GUI.find(name)
+        .expect(format!("Could not find {}", name).as_str())
+        .next()
+        .expect(format!("Iterator has not file: {}", name).as_str())
+        .as_file()
+        .expect(format!("Could not convert to file: {}", name).as_str())
+}
+
+#[cfg(feature = "release")]
+fn create_gui_route(content_type: &str, file: &'static include_dir::File) -> HttpResponse {
+    HttpResponse::Ok()
+        .content_type(content_type)
+        .body(file.contents())
+}
+
 trait MediaConvert {
     fn into(self, config: &SpisCfg) -> Media;
 }
@@ -52,8 +73,46 @@ pub fn run(
     let config = web::Data::new(config);
 
     let server = HttpServer::new(move || {
-        App::new()
-            .route("/api/health", web::get().to(health))
+        let mut app = App::new();
+
+        #[cfg(feature = "release")]
+        {
+            let html_file = find_gui_file("*html");
+            app = app.route(
+                "/",
+                web::get().to(move || async move { create_gui_route("text/html", html_file) }),
+            );
+
+            let js_file = find_gui_file("*js");
+            let js_path_name = format!("/{}", js_file.path().to_str().unwrap());
+            app = app.route(
+                &js_path_name,
+                web::get()
+                    .to(move || async move { create_gui_route("application/javascript", js_file) }),
+            );
+
+            let wasm_file = find_gui_file("*wasm");
+            let wasm_path_name = format!("/{}", wasm_file.path().to_str().unwrap());
+            app = app.route(
+                &wasm_path_name,
+                web::get()
+                    .to(move || async move { create_gui_route("application/wasm", wasm_file) }),
+            );
+
+            let icon_file = find_gui_file("*png");
+            app = app.route(
+                "/favicon.png",
+                web::get().to(move || async move { create_gui_route("image/png", icon_file) }),
+            );
+
+            let manifest_file = find_gui_file("*json");
+            app = app.route(
+                "/manifest.json",
+                web::get()
+                    .to(move || async move { create_gui_route("application/json", manifest_file) }),
+            );
+        };
+        app.route("/api/health", web::get().to(health))
             .route("/api", web::get().to(get_media))
             .app_data(pool.clone())
             .app_data(config.clone())
