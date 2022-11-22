@@ -184,7 +184,7 @@ jobs:
       - name: Docker build and push
         uses: docker/build-push-action@v2
         with:
-          dockerfile: ./docker/Dockerfile
+          file: ./docker/Dockerfile
           push: false
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
           platforms: linux/amd64,linux/arm/v7
