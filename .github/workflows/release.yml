@@ -19,12 +19,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup trunk
-        uses: supplypike/setup-bin@v1
-        with:
-          uri: https://github.com/thedodd/trunk/releases/download/v0.16.0/trunk-x86_64-unknown-linux-gnu.tar.gz
-          name: trunk
-
       - name: Install trunk
         uses: jetli/trunk-action@v0.1.0
 
@@ -64,11 +58,7 @@ jobs:
         with:
           path: |
             ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/            
-          key: ${{ runner.os }}-cargo-
+          key: ${{ runner.os }}-sqlx-
           restore-keys: ${{ runner.os }}-sqlx-
       
       - name: Setup DB
