@@ -118,11 +118,6 @@ jobs:
           name: gui-artifacts
           path: spis-gui/dist
 
-      - name: DEBUG
-        run: |
-          ls -l dev/api/state
-          ls -l spis-gui/dist
-
       - name: Set up cargo cache
         uses: actions/cache@v3
         continue-on-error: false
@@ -189,8 +184,7 @@ jobs:
       - name: Docker build and push
         uses: docker/build-push-action@v2
         with:
-          context: .
-          dockerfile: docker/Dockerfile
+          dockerfile: ./docker/Dockerfile
           push: false
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
           platforms: linux/amd64,linux/arm/v7
