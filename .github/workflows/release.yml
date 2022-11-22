@@ -9,6 +9,7 @@ env:
   RUST_VERSION: "1.65.0"
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  VERSION: ${{ github.ref_name }}
 
 jobs:
   build-gui:
@@ -19,7 +20,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install Rust toolchain
+      - name: Install rust toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ env.RUST_VERSION }}
@@ -57,7 +58,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install Rust
+      - name: Install rust toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ env.RUST_VERSION }}
@@ -98,7 +99,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install Rust toolchain
+      - name: Install rust toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ env.RUST_VERSION }}
@@ -109,11 +110,13 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: db-artifact
+          path: dev/api/state/spis.db
 
       - name: Get GUI artifacts
         uses: actions/download-artifact@v3
         with:
           name: gui-artifacts
+          path: spis-gui/dist
 
       - name: Set up cargo cache
         uses: actions/cache@v3
@@ -128,7 +131,8 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-
 
-      - uses: actions-rs/cargo@v1
+      - name: Compile server
+        uses: actions-rs/cargo@v1
         with:
           use-cross: true
           command: build
@@ -153,11 +157,13 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: server-artifact-x86_64-unknown-linux-gnu
+          path: target/x86_64-unknown-linux-gnu/release/spis-server
 
       - name: Get armv7 server artifact
         uses: actions/download-artifact@v3
         with:
           name: server-artifact-armv7-unknown-linux-gnueabihf
+          path: target/armv7-unknown-linux-gnueabihf/release/spis-server 
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v1
@@ -181,5 +187,18 @@ jobs:
           context: .
           dockerfile: docker/Dockerfile
           push: false
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:FIX
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
           platforms: linux/amd64,linux/arm/v7
+
+      - name: Collect bins
+        run: |
+          mkdir -p release
+          mv target/x86_64-unknown-linux-gnu/release/spis-server release/spis-server-x86_64-unknown-linux-gnu
+          mv target/armv7-unknown-linux-gnueabihf/release/spis-server release/spis-server-armv7-unknown-linux-gnueabihf
+      
+      - name: Upload artifacts to release
+        uses: AButler/upload-release-assets@v2.0
+        with:
+          files: 'release/*'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          release-tag: ${{ env.VERSION }}

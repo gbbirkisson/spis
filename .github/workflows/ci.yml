@@ -26,9 +26,7 @@
 #       - name: Install Rust
 #         uses: actions-rs/toolchain@v1
 #         with:
-#           profile: minimal
 #           toolchain: ${{ env.RUST_VERSION }}
-#           override: true
 #           components: rustfmt, clippy
 
 #       - name: Set up cargo cache
@@ -58,10 +56,7 @@
 #       - name: Install Rust
 #         uses: actions-rs/toolchain@v1
 #         with:
-#           profile: minimal
 #           toolchain: ${{ env.RUST_VERSION }}
-#           override: true
-#           components: rustfmt, clippy
 
 #       - name: Set up cargo cache
 #         uses: actions/cache@v3
