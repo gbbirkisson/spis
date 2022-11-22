@@ -165,6 +165,11 @@ jobs:
           name: server-artifact-armv7-unknown-linux-gnueabihf
           path: target/armv7-unknown-linux-gnueabihf/release/spis-server 
 
+      - name: DEBUG
+        run: |
+          ls -l
+          tree target
+
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v1
         with:
