@@ -79,7 +79,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: db-artifact
-          path: dev/api/state/spis.db
+          path: dev/api/state
 
   build-server:
     name: Build server for ${{ matrix.target }}
@@ -110,13 +110,18 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: db-artifact
-          path: dev/api/state/spis.db
+          path: dev/api/state
 
       - name: Get GUI artifacts
         uses: actions/download-artifact@v3
         with:
           name: gui-artifacts
           path: spis-gui/dist
+
+      - name: DEBUG
+        run: |
+          ls -l dev/api/state
+          ls -l spis-gui/dist
 
       - name: Set up cargo cache
         uses: actions/cache@v3
