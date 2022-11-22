@@ -4,7 +4,7 @@ ENV \
     TARGET_DIR=/target \
     BIN_LOCATION=/usr/bin/spis-server
 
-COPY target ${TARGET_DIR}
+COPY target /target
 
 COPY docker/pick-release.sh /pick-release.sh
 RUN /pick-release.sh

@@ -157,13 +157,13 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: server-artifact-x86_64-unknown-linux-gnu
-          path: target/x86_64-unknown-linux-gnu/release/spis-server
+          path: target/x86_64-unknown-linux-gnu/release
 
       - name: Get armv7 server artifact
         uses: actions/download-artifact@v3
         with:
           name: server-artifact-armv7-unknown-linux-gnueabihf
-          path: target/armv7-unknown-linux-gnueabihf/release/spis-server 
+          path: target/armv7-unknown-linux-gnueabihf/release 
 
       - name: DEBUG
         run: |
