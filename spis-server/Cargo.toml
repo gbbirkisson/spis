@@ -35,7 +35,7 @@ kamadak-exif = "0.5"
 
 uuid = { version = "1", features = ["serde", "v4"] }
 chrono = "0.4"
-sqlx = { version = "0.6", features = ["runtime-tokio-native-tls", "sqlite", "macros", "chrono", "migrate", "uuid"] }
+sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "sqlite", "macros", "chrono", "migrate", "uuid"] }
 async-cron-scheduler = "1"
 include_dir = { version = "0.7.3", features = ["glob"], optional=true }
 
