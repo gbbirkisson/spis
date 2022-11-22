@@ -4,6 +4,7 @@ RELEASE_X86_60_GNU:=target/x86_64-unknown-linux-gnu/release/spis-server
 RELEASE_ARMV7_GNUEABIHF:=target/armv7-unknown-linux-gnueabihf/release/spis-server
 
 ${RELEASE_GUI}:
+	trunk --version > /dev/null || cargo install --locked trunk
 	cd spis-gui && trunk build --release
 	cp -f spis-gui/manifest.json spis-gui/dist/manifest.json
 	cp -f logo.png spis-gui/dist/logo.png

@@ -19,15 +19,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install trunk
-        uses: jetli/trunk-action@v0.1.0
-
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
-          profile: minimal
           toolchain: ${{ env.RUST_VERSION }}
-          target: wasm32-unknown-unknown
+
+      - name: Add target wasm32-unknown-unknown
+        run: rustup target add wasm32-unknown-unknown
+
+      - name: Set up cargo cache
+        uses: actions/cache@v3
+        continue-on-error: false
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/            
+          key: ${{ runner.os }}-cargo-gui-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
 
       - name: Build gui
         run: make release-gui
@@ -49,7 +60,6 @@ jobs:
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
-          profile: minimal
           toolchain: ${{ env.RUST_VERSION }}
 
       - name: Set up cargo cache
@@ -58,8 +68,8 @@ jobs:
         with:
           path: |
             ~/.cargo/bin/
-          key: ${{ runner.os }}-sqlx-
-          restore-keys: ${{ runner.os }}-sqlx-
+          key: ${{ runner.os }}-cargo-db-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
       
       - name: Setup DB
         run: make dev/api/state/spis.db
@@ -91,7 +101,6 @@ jobs:
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
-          profile: minimal
           toolchain: ${{ env.RUST_VERSION }}
           target: ${{ matrix.target }}
           override: true
@@ -105,6 +114,19 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: gui-artifacts
+
+      - name: Set up cargo cache
+        uses: actions/cache@v3
+        continue-on-error: false
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/            
+          key: ${{ runner.os }}-cargo-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
 
       - uses: actions-rs/cargo@v1
         with:
