@@ -43,7 +43,8 @@ COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
 
 # Setup SPIS and smoketest
 COPY --from=builder /usr/bin/spis-server /usr/bin/spis-server
-RUN mkdir -p ${SPIS_MEDIA_DIR} ${SPIS_DATA_DIR} && \
-    spis-server --version
+RUN chmod +x /usr/bin/spis-server && \
+    /usr/bin/spis-server --version && \
+    mkdir -p ${SPIS_MEDIA_DIR} ${SPIS_DATA_DIR}
 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
