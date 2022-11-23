@@ -96,6 +96,7 @@ jobs:
         target:
           - x86_64-unknown-linux-gnu
           - armv7-unknown-linux-gnueabihf
+          - aarch64-unknown-linux-gnu
 
     steps:
       - name: Checkout
@@ -167,11 +168,18 @@ jobs:
           name: server-artifact-armv7-unknown-linux-gnueabihf
           path: /tmp/armv7-unknown-linux-gnueabihf
 
+      - name: Get aarch64 server artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: server-artifact-aarch64-unknown-linux-gnu
+          path: /tmp/aarch64-unknown-linux-gnu
+
       - name: Collect bins
         run: |
           mkdir -p release
           mv /tmp/x86_64-unknown-linux-gnu/spis-server release/spis-server-x86_64-unknown-linux-gnu
           mv /tmp/armv7-unknown-linux-gnueabihf/spis-server release/spis-server-armv7-unknown-linux-gnueabihf
+          mv /tmp/aarch64-unknown-linux-gnu/spis-server release/spis-server-aarch64-unknown-linux-gnu
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v1
@@ -196,7 +204,7 @@ jobs:
           file: docker/Dockerfile
           push: false # TODO
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
-          platforms: linux/amd64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/armhf
 
       # - name: Upload artifacts to release
       #   uses: AButler/upload-release-assets@v2.0
