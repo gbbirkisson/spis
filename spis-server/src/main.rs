@@ -1,5 +1,6 @@
 use async_cron_scheduler::{Job, Scheduler};
 use chrono::Local;
+use clap::Parser;
 use eyre::Result;
 use spis_server::{
     db, med,
@@ -10,8 +11,15 @@ use sqlx::{Pool, Sqlite};
 use std::net::TcpListener;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {}
+
 #[tokio::main]
 async fn main() -> Result<()> {
+    // Enable version printing
+    let _ = Args::parse();
+
     // Setup logging
     dotenv::dotenv().ok();
     tracing_subscriber::registry()

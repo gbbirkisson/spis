@@ -20,6 +20,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "std"] }
 dotenv = "0.15"
 eyre = "0.6"
+clap = { version = "4", features = ["derive"] }
 
 actix-web = "4"
 spis-model = { path = "../spis-model" }

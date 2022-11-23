@@ -41,8 +41,9 @@ COPY docker/40-user-fix.sh /docker-entrypoint.d/40-user-fix.sh
 COPY docker/nginx.conf /etc/nginx/templates/default.conf.template
 COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
 
-# Setup SPIS
+# Setup SPIS and smoketest
 COPY --from=builder /usr/bin/spis-server /usr/bin/spis-server
-RUN mkdir -p ${SPIS_MEDIA_DIR} ${SPIS_DATA_DIR}
+RUN mkdir -p ${SPIS_MEDIA_DIR} ${SPIS_DATA_DIR} && \
+    spis-server --version
 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
