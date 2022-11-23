@@ -1,80 +1,80 @@
-# ---
-# name: CI
+---
+name: CI
 
-# on:
-#   pull_request:
-#   push:
-#     branches: main
+on:
+  pull_request:
+  push:
+    branches: main
 
-# env:
-#   RUST_VERSION: "1.65.0"
+env:
+  RUST_VERSION: "1.65.0"
 
-# jobs:
-#   lint:
-#     name: Run ${{ matrix.check }}
-#     runs-on: ubuntu-latest
+jobs:
+  lint:
+    name: Run ${{ matrix.check }}
+    runs-on: ubuntu-latest
 
-#     strategy:
-#       fail-fast: false
-#       matrix:
-#         check: [fmt, lint, audit]
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [fmt, lint, audit]
 
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
-#       - name: Install Rust
-#         uses: actions-rs/toolchain@v1
-#         with:
-#           toolchain: ${{ env.RUST_VERSION }}
-#           components: rustfmt, clippy
+      - name: Install rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          components: rustfmt, clippy
 
-#       - name: Set up cargo cache
-#         uses: actions/cache@v3
-#         continue-on-error: false
-#         with:
-#           path: |
-#             ~/.cargo/bin/
-#             ~/.cargo/registry/index/
-#             ~/.cargo/registry/cache/
-#             ~/.cargo/git/db/
-#             target/            
-#           key: ${{ runner.os }}-cargo-${{ matrix.check }}-${{ hashFiles('**/Cargo.lock') }}
-#           restore-keys: ${{ runner.os }}-cargo-
+      - name: Set up cargo cache
+        uses: actions/cache@v3
+        continue-on-error: false
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/            
+          key: ${{ runner.os }}-cargo-${{ matrix.check }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
 
-#       - name: Run ${{ matrix.check }}
-#         run: make ${{ matrix.check }}
+      - name: Run ${{ matrix.check }}
+        run: make ${{ matrix.check }}
 
-#   test:
-#     name: Run test
-#     runs-on: ubuntu-latest
+  test:
+    name: Run test
+    runs-on: ubuntu-latest
 
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
 
-#       - name: Install Rust
-#         uses: actions-rs/toolchain@v1
-#         with:
-#           toolchain: ${{ env.RUST_VERSION }}
+      - name: Install rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
 
-#       - name: Set up cargo cache
-#         uses: actions/cache@v3
-#         continue-on-error: false
-#         with:
-#           path: |
-#             ~/.cargo/bin/
-#             ~/.cargo/registry/index/
-#             ~/.cargo/registry/cache/
-#             ~/.cargo/git/db/
-#             target/            
-#           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-#           restore-keys: ${{ runner.os }}-cargo-
+      - name: Set up cargo cache
+        uses: actions/cache@v3
+        continue-on-error: false
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/            
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
       
-#       - name: Run test
-#         run: make test
+      - name: Run test
+        run: make test
 
-#       - name: Upload test coverage
-#         uses: codecov/codecov-action@v2
-#         with:
-#           fail_ci_if_error: true
+      - name: Upload test coverage
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: true
