@@ -1,10 +1,10 @@
 FROM nginx:1.23.2 as builder
 
 ENV \
-    TARGET_DIR=/target \
+    RELEASE_DIR=/tmp/release \
     BIN_LOCATION=/usr/bin/spis-server
 
-COPY target /target
+COPY release ${RELEASE_DIR}
 
 COPY docker/pick-release.sh /pick-release.sh
 RUN /pick-release.sh

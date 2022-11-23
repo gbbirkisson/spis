@@ -11,4 +11,4 @@ else
     exit 1
 fi
 
-cp ${TARGET_DIR}/${TARGET}/release/spis-server ${BIN_LOCATION}
+cp ${RELEASE_DIR}/spis-server-${TARGET} ${BIN_LOCATION}

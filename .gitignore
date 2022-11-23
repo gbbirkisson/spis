@@ -1,5 +1,6 @@
 dev/api
 dist
+release
 target
 
 cobertura.xml

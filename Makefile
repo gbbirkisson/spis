@@ -21,4 +21,5 @@ clean: ## Clean up
 	cargo clean
 	rm -rf ${DEV_BASE_DIR}
 	rm -rf spis-gui/dist
+	rm -rf release
 	rm -f cobertura.xml

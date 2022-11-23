@@ -157,18 +157,24 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: server-artifact-x86_64-unknown-linux-gnu
-          path: target/x86_64-unknown-linux-gnu/release
+          path: /tmp/x86_64-unknown-linux-gnu
 
       - name: Get armv7 server artifact
         uses: actions/download-artifact@v3
         with:
           name: server-artifact-armv7-unknown-linux-gnueabihf
-          path: target/armv7-unknown-linux-gnueabihf/release 
+          path: /tmp/armv7-unknown-linux-gnueabihf
+
+      - name: Collect bins
+        run: |
+          mkdir -p release
+          mv /tmp/x86_64-unknown-linux-gnu/spis-server release/spis-server-x86_64-unknown-linux-gnu
+          mv /tmp/armv7-unknown-linux-gnueabihf/spis-server release/spis-server-armv7-unknown-linux-gnueabihf
 
       - name: DEBUG
         run: |
           ls -l
-          tree target
+          tree release
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v1
@@ -189,20 +195,15 @@ jobs:
       - name: Docker build and push
         uses: docker/build-push-action@v2
         with:
-          file: ./docker/Dockerfile
+          context: .
+          file: docker/Dockerfile
           push: false
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
           platforms: linux/amd64,linux/arm/v7
 
-      - name: Collect bins
-        run: |
-          mkdir -p release
-          mv target/x86_64-unknown-linux-gnu/release/spis-server release/spis-server-x86_64-unknown-linux-gnu
-          mv target/armv7-unknown-linux-gnueabihf/release/spis-server release/spis-server-armv7-unknown-linux-gnueabihf
-      
-      - name: Upload artifacts to release
-        uses: AButler/upload-release-assets@v2.0
-        with:
-          files: 'release/*'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          release-tag: ${{ env.VERSION }}
+      # - name: Upload artifacts to release
+      #   uses: AButler/upload-release-assets@v2.0
+      #   with:
+      #     files: 'release/*'
+      #     repo-token: ${{ secrets.GITHUB_TOKEN }}
+      #     release-tag: ${{ env.VERSION }}
