@@ -3,7 +3,7 @@ use chrono::Local;
 use clap::Parser;
 use eyre::Result;
 use spis_server::{
-    db, med,
+    db, media,
     server::{self, Listener},
     SpisCfg,
 };
@@ -29,7 +29,9 @@ async fn main() -> Result<()> {
     tracing::info!("Starting spis");
 
     let config = SpisCfg::new()?;
-    let pool = db::setup_db(config.db_file()).await.unwrap();
+    let pool = db::setup_db(config.db_file().to_str().unwrap())
+        .await
+        .unwrap();
 
     setup_processing(pool.clone(), config.clone()).await?;
 
@@ -63,7 +65,7 @@ async fn setup_processing(pool: Pool<Sqlite>, config: SpisCfg) -> Result<()> {
     tokio::spawn(async move {
         if config.processing.run_on_start {
             tracing::info!("Running on-start processing");
-            med::process(pool.clone(), media_dir.clone(), thumb_dir.clone()).await;
+            media::process(pool.clone(), media_dir.clone(), thumb_dir.clone()).await;
             tracing::info!("Done with on-start processing");
         }
 
@@ -78,7 +80,7 @@ async fn setup_processing(pool: Pool<Sqlite>, config: SpisCfg) -> Result<()> {
 
             tokio::spawn(async move {
                 tracing::info!("Processing schedule triggered: {}", schedule);
-                med::process(pool, media_dir, thumb_dir).await;
+                media::process(pool, media_dir, thumb_dir).await;
                 tracing::info!("Processing schedule finished: {}", schedule);
             });
         });

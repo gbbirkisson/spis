@@ -1,14 +1,14 @@
 use std::path::{Path, PathBuf};
 
 use config::{Config, Environment, File};
-use med::prelude::THUMBNAIL_FORMAT;
+use media::prelude::THUMBNAIL_FORMAT;
 use serde::Deserialize;
 
 use eyre::{eyre, Result};
 use uuid::Uuid;
 
 pub mod db;
-pub mod med;
+pub mod media;
 pub mod server;
 
 #[derive(Debug, Clone, Deserialize)]

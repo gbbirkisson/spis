@@ -1,13 +1,11 @@
 use chrono::prelude::*;
-use exif::{In, Tag, Value};
 use eyre::{eyre, Result};
 use rayon::prelude::*;
 use sqlx::{Pool, Sqlite};
-use std::time::{Duration, UNIX_EPOCH};
+use std::time::Duration;
 use std::{
     fs::{self},
     path::PathBuf,
-    time::SystemTime,
 };
 use uuid::{Builder, Uuid};
 
@@ -15,8 +13,9 @@ use tokio::sync::mpsc::{channel, Receiver, Sender};
 use walkdir::WalkDir;
 
 use crate::db;
-use crate::med::prelude::Thumbnail;
+use crate::media::prelude::Thumbnail;
 
+mod meta;
 pub mod prelude;
 
 static MEDIA_FORMAT: &[&str] = &[".jpg", ".jpeg"];
@@ -42,39 +41,6 @@ impl HasExt for walkdir::DirEntry {
     }
 }
 
-trait TimeConv {
-    fn conv(&self) -> DateTime<Utc>;
-}
-
-impl TimeConv for SystemTime {
-    fn conv(&self) -> DateTime<Utc> {
-        let (sec, nsec) = match self.duration_since(UNIX_EPOCH) {
-            Ok(dur) => (dur.as_secs() as i64, dur.subsec_nanos()),
-            Err(e) => {
-                let dur = e.duration();
-                let (sec, nsec) = (dur.as_secs() as i64, dur.subsec_nanos());
-                if nsec == 0 {
-                    (-sec, 0)
-                } else {
-                    (-sec - 1, 1_000_000_000 - nsec)
-                }
-            }
-        };
-        Utc.timestamp_opt(sec, nsec).unwrap()
-    }
-}
-
-pub struct MediaProcessingError {
-    pub msg: String,
-}
-
-struct MediaProcessedOrientation(i32, bool);
-
-struct MediaProcessedExif {
-    orientation: MediaProcessedOrientation,
-    taken: Option<DateTime<Utc>>,
-}
-
 pub struct ProcessedMedia {
     pub uuid: Uuid,
     pub media: PathBuf,
@@ -89,11 +55,13 @@ pub async fn process(pool: Pool<Sqlite>, media_dir: PathBuf, thumb_dir: PathBuf)
     let start_time = Utc::now().time();
     tracing::info!("Media processing started");
 
+    tracing::debug!("Mark entire database as unwalked");
     let mark = db::media_mark_unwalked(&pool).await;
     if mark.is_err() {
         tracing::error!("Failed marking media as unwalked: {:?}", &mark);
     }
 
+    tracing::debug!("Setup processing channels and pool");
     let (tx, mut rx) = channel(1);
     let mut done_recv = media_processor(media_dir, thumb_dir, tx);
     let processor_pool = pool.clone();
@@ -128,6 +96,7 @@ pub async fn process(pool: Pool<Sqlite>, media_dir: PathBuf, thumb_dir: PathBuf)
         }
     }
 
+    tracing::debug!("Delete all media that was not walked");
     if mark.is_ok() {
         match db::media_delete_unwalked(&pool).await {
             Ok(count) => {
@@ -138,6 +107,8 @@ pub async fn process(pool: Pool<Sqlite>, media_dir: PathBuf, thumb_dir: PathBuf)
             }
         }
     }
+
+    // TODO: Cleanup thumbnails?
 
     if let Ok(count) = db::media_count(&pool).await {
         tracing::info!("DB now has {count} media entries");
@@ -208,7 +179,7 @@ fn do_process(
 
     if !media_thumbnail_path.exists() {
         tracing::debug!("Reading EXIF data for {:?}", media_entry.path());
-        let exif = match exif_read(&media_bytes) {
+        let exif = match meta::exif_read(&media_bytes) {
             Ok(e) => Some(e),
             Err(_) => {
                 tracing::debug!("Failed to read EXIF data for {:?}", media_entry.path());
@@ -256,7 +227,7 @@ fn do_process(
             Some(taken) => taken,
             None => match media_entry.metadata() {
                 Ok(meta) => match meta.modified() {
-                    Ok(time) => Some(time.conv()),
+                    Ok(time) => Some(time.into()),
                     Err(_) => {
                         tracing::warn!("Could not determin timestamp for {:?}", media_entry.path());
                         None
@@ -284,63 +255,4 @@ fn do_process(
         .map_err(|e| eyre!("Failed sending media to channel: {:?}", e.to_string()))?;
 
     Ok(())
-}
-
-fn exif_read(bytes: &Vec<u8>) -> Result<MediaProcessedExif> {
-    let mut exif_buf_reader = std::io::Cursor::new(bytes);
-    let exif_reader = exif::Reader::new();
-    let exif = exif_reader.read_from_container(&mut exif_buf_reader)?;
-
-    let orientation = match exif_get_u32(&exif, Tag::Orientation) {
-        // http://sylvana.net/jpegcrop/exif_orientation.html
-        Ok(1) => MediaProcessedOrientation(0, false),
-        Ok(2) => MediaProcessedOrientation(0, true),
-        Ok(3) => MediaProcessedOrientation(180, false),
-        Ok(4) => MediaProcessedOrientation(180, true),
-        Ok(5) => MediaProcessedOrientation(90, true),
-        Ok(6) => MediaProcessedOrientation(90, false),
-        Ok(7) => MediaProcessedOrientation(270, true),
-        Ok(8) => MediaProcessedOrientation(270, false),
-        _ => MediaProcessedOrientation(0, false),
-    };
-
-    let timestamp_tz = exif_get_str(&exif, Tag::OffsetTimeOriginal);
-    let taken = match exif_get_str(&exif, Tag::DateTimeOriginal) {
-        Ok(time) => {
-            let pair = match timestamp_tz {
-                Ok(tz) => (time.to_string() + tz, "%Y:%m:%d %H:%M:%S %z"),
-                _ => (time.to_string(), "%Y:%m:%d %H:%M:%S"),
-            };
-            match DateTime::parse_from_str(&pair.0, pair.1) {
-                Ok(time) => Some(time.with_timezone(&Utc)),
-                _ => None,
-            }
-        }
-        _ => None,
-    };
-
-    Ok(MediaProcessedExif { orientation, taken })
-}
-
-fn exif_get_u32(exif: &exif::Exif, tag: Tag) -> Result<u32> {
-    match exif.get_field(tag, In::PRIMARY) {
-        Some(field) => match field.value.get_uint(0) {
-            Some(v) => Ok(v),
-            _ => Err(eyre!("Failed getting number")),
-        },
-        None => Err(eyre!("Value not found")),
-    }
-}
-
-fn exif_get_str(exif: &exif::Exif, tag: Tag) -> Result<&str> {
-    match exif.get_field(tag, In::PRIMARY) {
-        Some(field) => match &field.value {
-            Value::Ascii(bytes) => {
-                let bytes = bytes.get(0).ok_or(eyre!("Something is wrong"))?;
-                Ok(std::str::from_utf8(bytes)?)
-            }
-            _ => Err(eyre!("Not Ascii value")),
-        },
-        None => Err(eyre!("Value not found")),
-    }
 }

@@ -5,10 +5,10 @@
     * Minimize heap allocations
     * Clean config
     * Make socket default
-- [ ] Create releases github action
-    - [ ] x86
-    - [ ] rpi
-    - [ ] docker (multi arch)
+- [x] Create releases github action
+    - [x] x86
+    - [x] rpi
+    - [x] docker (multi arch)
 - [ ] Write tests
     * Write Makefile dev-test target
 - [ ] Write nice readme

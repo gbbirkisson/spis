@@ -1,21 +1,19 @@
 use chrono::{DateTime, Utc};
 use eyre::{eyre, Result};
-use std::path::PathBuf;
 
 use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
 
-use crate::med::ProcessedMedia;
+use crate::media::ProcessedMedia;
 
-pub async fn setup_db(db_file: PathBuf) -> Result<Pool<Sqlite>> {
+pub async fn setup_db(db_file: &str) -> Result<Pool<Sqlite>> {
     tracing::info!("Setup db: {:?}", db_file);
 
-    // Ensure db exits
-    let db_file = db_file.to_str().ok_or(eyre!("Unable to get db file"))?;
+    tracing::debug!("Ensure db exists");
     if !Sqlite::database_exists(db_file).await.unwrap_or(false) {
         Sqlite::create_database(db_file).await?;
     }
 
-    // Create pool and run migrations
+    tracing::debug!("Create pool and run migrations");
     let pool = SqlitePool::connect(db_file).await?;
     sqlx::migrate!("./migrations").run(&pool).await?;
 
