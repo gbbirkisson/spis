@@ -38,7 +38,7 @@ dev-gui: ## Run the gui
 	cd spis-gui && trunk serve --port 9000
 
 .PHONY: dev-check-server
-dev-check-server: ## Run check continuously on server
+dev-check-server: ${DEV_DB_FILE} ## Run check continuously on server
 	watchexec -r -e rs,toml -w spis-model -w spis-server -- cargo check -p spis-server
 
 TEST_PROJ?=spis-server

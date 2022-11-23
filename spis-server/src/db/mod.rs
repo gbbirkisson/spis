@@ -22,38 +22,30 @@ pub async fn setup_db(db_file: &str) -> Result<Pool<Sqlite>> {
 }
 
 pub async fn media_insert(pool: &SqlitePool, processed_media: ProcessedMedia) -> Result<()> {
-    // Get media path
-    let media_path = processed_media
-        .media
-        .to_str()
-        .ok_or(eyre!("Unable to get media path"))?;
-
-    // Create query
-    let query = match &processed_media.data {
+    match &processed_media.data {
         Some(data) => {
             sqlx::query!(
                 r#"
-                INSERT OR REPLACE INTO media ( id, media, taken_at, walked )
+                INSERT OR REPLACE INTO media ( id, path, taken_at, walked )
                 VALUES ( ?1, ?2, ?3, 1 )
                 "#,
                 processed_media.uuid,
-                media_path,
+                processed_media.path,
                 data.taken_at,
             )
         }
         None => {
             sqlx::query!(
                 r#"
-                UPDATE media SET walked = 1, media = ?1 WHERE ID = ?2
+                UPDATE media SET walked = 1, path = ?2 WHERE ID = ?1
                 "#,
-                media_path,
                 processed_media.uuid,
+                processed_media.path,
             )
         }
-    };
-
-    // Execute query
-    query.execute(pool).await?;
+    }
+    .execute(pool)
+    .await?;
     Ok(())
 }
 
@@ -93,7 +85,7 @@ pub async fn media_count(pool: &SqlitePool) -> Result<i32> {
 #[derive(sqlx::FromRow)]
 pub struct MediaRow {
     pub id: uuid::Uuid,
-    pub media: String,
+    pub path: String,
     pub taken_at: DateTime<Utc>,
 }
 
@@ -102,10 +94,10 @@ pub async fn media_get(
     limit: i32,
     taken_after: Option<DateTime<Utc>>,
 ) -> Result<Vec<MediaRow>> {
-    let query = match taken_after {
+    match taken_after {
         None => sqlx::query_as::<Sqlite, MediaRow>(
             r#"
-            SELECT id, media, taken_at FROM media
+            SELECT id, path, taken_at FROM media
             ORDER BY taken_at DESC
             LIMIT ?
             "#,
@@ -121,10 +113,8 @@ pub async fn media_get(
         )
         .bind(taken_after)
         .bind(limit),
-    };
-
-    query
-        .fetch_all(pool)
-        .await
-        .map_err(|e| eyre!("Failed to fetch rows: {e}"))
+    }
+    .fetch_all(pool)
+    .await
+    .map_err(|e| eyre!("Failed to fetch rows: {e}"))
 }

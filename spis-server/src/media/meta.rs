@@ -9,7 +9,7 @@ pub(crate) struct MediaProcessedExif {
     pub(crate) taken: Option<DateTime<Utc>>,
 }
 
-pub(crate) fn exif_read(bytes: &Vec<u8>) -> Result<MediaProcessedExif> {
+pub(crate) fn image_exif_read(bytes: &[u8]) -> Result<MediaProcessedExif> {
     let mut exif_buf_reader = std::io::Cursor::new(bytes);
     let exif_reader = exif::Reader::new();
     let exif = exif_reader.read_from_container(&mut exif_buf_reader)?;

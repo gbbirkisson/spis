@@ -40,7 +40,7 @@ impl MediaConvert for MediaRow {
         Media {
             uuid: self.id.to_string(),
             taken_at: self.taken_at,
-            location: config.api_media_location(&self.media),
+            location: config.api_media_location(&self.path),
             thumbnail: config.api_thumbnail(&self.id),
         }
     }

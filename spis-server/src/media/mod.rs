@@ -43,7 +43,7 @@ impl HasExt for walkdir::DirEntry {
 
 pub struct ProcessedMedia {
     pub uuid: Uuid,
-    pub media: PathBuf,
+    pub path: String,
     pub data: Option<ProcessedMediaData>,
 }
 
@@ -179,7 +179,7 @@ fn do_process(
 
     if !media_thumbnail_path.exists() {
         tracing::debug!("Reading EXIF data for {:?}", media_entry.path());
-        let exif = match meta::exif_read(&media_bytes) {
+        let exif = match meta::image_exif_read(&media_bytes) {
             Ok(e) => Some(e),
             Err(_) => {
                 tracing::debug!("Failed to read EXIF data for {:?}", media_entry.path());
@@ -246,7 +246,7 @@ fn do_process(
 
     let media = ProcessedMedia {
         uuid: media_uuid,
-        media: media_entry.path().to_path_buf(),
+        path: media_entry.path().display().to_string(),
         data: media_data,
     };
 

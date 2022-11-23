@@ -9,7 +9,7 @@ async fn spawn_server() -> String {
     let config = spis_server::SpisCfg::new_testing();
 
     // Create DB
-    let pool = setup_db(config.db_file())
+    let pool = setup_db(&config.db_file().display().to_string())
         .await
         .expect("Failed to create DB");
 
