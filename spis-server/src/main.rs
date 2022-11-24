@@ -5,7 +5,7 @@ use eyre::Result;
 use spis_server::{
     db, media,
     server::{self, Listener},
-    SpisCfg,
+    SpisCfg, SpisServerListener,
 };
 use sqlx::{Pool, Sqlite};
 use std::net::TcpListener;
@@ -35,20 +35,19 @@ async fn main() -> Result<()> {
 
     setup_processing(pool.clone(), config.clone()).await?;
 
-    let listener = match &config.server.address.as_ref().is_some() {
-        true => {
-            let address = &config.server.address.as_ref().unwrap();
+    let listener = match &config.server_listener() {
+        SpisServerListener::Address(address) => {
             tracing::info!("Start listening on http://{}", address);
-            Listener::Tcp(TcpListener::bind("0.0.0.0:8000")?)
+            Listener::Tcp(TcpListener::bind(address)?)
         }
-        false => {
-            let socket = &config.server.socket.as_ref().unwrap();
+        SpisServerListener::Socket(socket) => {
             tracing::info!("Start listening on socket {}", socket);
-            Listener::Socket(socket.to_string())
+            Listener::Socket(socket.clone())
         }
     };
+    let converter = config.media_converter();
 
-    let server = server::run(listener, pool, config).expect("Failed to create server");
+    let server = server::run(listener, pool, converter).expect("Failed to create server");
     server.await?;
 
     Ok(())

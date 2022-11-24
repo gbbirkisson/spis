@@ -5,10 +5,7 @@ use eyre::{eyre, Result};
 use spis_model::Media;
 use sqlx::{Pool, Sqlite};
 
-use crate::{
-    db::{self, MediaRow},
-    SpisCfg,
-};
+use crate::db::{self, MediaRow};
 
 #[cfg(feature = "release")]
 static GUI: include_dir::Dir<'_> =
@@ -31,17 +28,37 @@ fn create_gui_route(content_type: &str, file: &'static include_dir::File) -> Htt
         .body(file.contents())
 }
 
-trait MediaConvert {
-    fn into(self, config: &SpisCfg) -> Media;
+pub struct MediaConverter {
+    media_dir: String,
+    media_path: String,
+    thumbnail_path: String,
+    thumbnail_ext: String,
 }
 
-impl MediaConvert for MediaRow {
-    fn into(self, config: &SpisCfg) -> Media {
+impl MediaConverter {
+    pub fn new(
+        media_dir: &str,
+        media_path: &str,
+        thumbnail_path: &str,
+        thumbnail_ext: &str,
+    ) -> Self {
+        Self {
+            media_dir: media_dir.to_string(),
+            media_path: media_path.to_string(),
+            thumbnail_path: thumbnail_path.to_string(),
+            thumbnail_ext: thumbnail_ext.to_string(),
+        }
+    }
+
+    fn convert(&self, media: MediaRow) -> Media {
         Media {
-            uuid: self.id.to_string(),
-            taken_at: self.taken_at,
-            location: config.api_media_location(&self.path),
-            thumbnail: config.api_thumbnail(&self.id),
+            uuid: media.id.to_string(),
+            taken_at: media.taken_at,
+            location: media.path.replace(&self.media_dir, &self.media_path),
+            thumbnail: format!(
+                "{}/{}.{}",
+                self.thumbnail_path, media.id, self.thumbnail_ext
+            ),
         }
     }
 }
@@ -52,14 +69,14 @@ async fn health(_: HttpRequest) -> impl Responder {
 
 async fn get_media(
     pool: web::Data<Pool<Sqlite>>,
-    config: web::Data<SpisCfg>,
+    converter: web::Data<MediaConverter>,
     params: web::Query<spis_model::MediaSearchParams>,
 ) -> actix_web::Result<impl Responder> {
     let media: Vec<Media> = db::media_get(&pool, params.page_size as i32, params.taken_after)
         .await
         .unwrap()
         .into_iter()
-        .map(|i| MediaConvert::into(i, &config))
+        .map(|m| converter.convert(m))
         .collect();
 
     Ok(web::Json(media))
@@ -70,9 +87,9 @@ pub enum Listener {
     Socket(String),
 }
 
-pub fn run(listener: Listener, pool: Pool<Sqlite>, config: SpisCfg) -> Result<Server> {
+pub fn run(listener: Listener, pool: Pool<Sqlite>, converter: MediaConverter) -> Result<Server> {
     let pool = web::Data::new(pool);
-    let config = web::Data::new(config);
+    let converter = web::Data::new(converter);
 
     let server = HttpServer::new(move || {
         #[allow(unused_mut)]
@@ -118,7 +135,7 @@ pub fn run(listener: Listener, pool: Pool<Sqlite>, config: SpisCfg) -> Result<Se
         app.route("/api/health", web::get().to(health))
             .route("/api", web::get().to(get_media))
             .app_data(pool.clone())
-            .app_data(config.clone())
+            .app_data(converter.clone())
     });
 
     let server = match listener {

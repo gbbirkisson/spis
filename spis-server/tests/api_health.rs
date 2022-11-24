@@ -1,20 +1,28 @@
-use spis_server::{db::setup_db, server::Listener};
+use spis_server::{
+    db::setup_db,
+    server::{Listener, MediaConverter},
+};
 use std::net::TcpListener;
+use tempfile::NamedTempFile;
 
 async fn spawn_server() -> String {
     // Create listener
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
     let port = listener.local_addr().unwrap().port();
 
-    let config = spis_server::SpisCfg::new_testing();
+    // let config = spis_server::SpisCfg::new_testing();
+
+    let db_file = NamedTempFile::new().expect("Failed to create file");
 
     // Create DB
-    let pool = setup_db(&config.db_file().display().to_string())
+    let pool = setup_db(&db_file.path().to_str().unwrap())
         .await
         .expect("Failed to create DB");
 
+    let converter = MediaConverter::new("", "", "", "");
+
     // Spawn server
-    let server = spis_server::server::run(Listener::Tcp(listener), pool, config)
+    let server = spis_server::server::run(Listener::Tcp(listener), pool, converter)
         .expect("Failed to bind address");
     let _ = tokio::spawn(server);
 
