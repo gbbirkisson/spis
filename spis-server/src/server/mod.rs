@@ -1,9 +1,13 @@
-use crate::db::{self, MediaRow};
+use crate::db::{self};
 use actix_web::{dev::Server, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use eyre::{eyre, Result};
 use spis_model::Media;
 use sqlx::{Pool, Sqlite};
 use std::net::TcpListener;
+
+use self::convert::MediaConverter;
+
+pub mod convert;
 
 #[cfg(feature = "release")]
 static GUI: include_dir::Dir<'_> =
@@ -24,41 +28,6 @@ fn create_gui_route(content_type: &str, file: &'static include_dir::File) -> Htt
     HttpResponse::Ok()
         .content_type(content_type)
         .body(file.contents())
-}
-
-pub struct MediaConverter {
-    media_dir: String,
-    media_path: String,
-    thumbnail_path: String,
-    thumbnail_ext: String,
-}
-
-impl MediaConverter {
-    pub fn new(
-        media_dir: &str,
-        media_path: &str,
-        thumbnail_path: &str,
-        thumbnail_ext: &str,
-    ) -> Self {
-        Self {
-            media_dir: media_dir.to_string(),
-            media_path: media_path.to_string(),
-            thumbnail_path: thumbnail_path.to_string(),
-            thumbnail_ext: thumbnail_ext.to_string(),
-        }
-    }
-
-    fn convert(&self, media: MediaRow) -> Media {
-        Media {
-            uuid: media.id.to_string(),
-            taken_at: media.taken_at,
-            location: media.path.replace(&self.media_dir, &self.media_path),
-            thumbnail: format!(
-                "{}/{}.{}",
-                self.thumbnail_path, media.id, self.thumbnail_ext
-            ),
-        }
-    }
 }
 
 async fn health(_: HttpRequest) -> impl Responder {

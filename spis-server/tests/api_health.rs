@@ -1,6 +1,6 @@
 use spis_server::{
     db::setup_db,
-    server::{Listener, MediaConverter},
+    server::{convert::MediaConverter, Listener},
 };
 use std::net::TcpListener;
 use tempfile::NamedTempFile;

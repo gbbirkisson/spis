@@ -29,9 +29,7 @@ async fn main() -> Result<()> {
     tracing::info!("Starting spis");
 
     let config = SpisCfg::new()?;
-    let pool = db::setup_db(config.db_file().to_str().unwrap())
-        .await
-        .unwrap();
+    let pool = db::setup_db(&config.db_file()).await.unwrap();
 
     setup_processing(pool.clone(), config.clone()).await?;
 
@@ -58,11 +56,11 @@ async fn setup_processing(pool: Pool<Sqlite>, config: SpisCfg) -> Result<()> {
 
     let media_dir = config.media_dir();
     let thumb_dir = config.thumbnail_dir();
-    let schedule = config.processing.schedule;
+    let schedule = config.processing_schedule();
     std::fs::create_dir_all(&thumb_dir)?;
 
     tokio::spawn(async move {
-        if config.processing.run_on_start {
+        if config.processing_run_on_start() {
             tracing::info!("Running on-start processing");
             media::process(pool.clone(), media_dir.clone(), thumb_dir.clone()).await;
             tracing::info!("Done with on-start processing");

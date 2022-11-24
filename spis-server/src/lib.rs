@@ -1,10 +1,9 @@
 use config::{Config, Environment};
+use eyre::{eyre, Result};
 use media::util::THUMBNAIL_FORMAT;
 use serde::Deserialize;
+use server::convert::MediaConverter;
 use std::path::{Path, PathBuf};
-
-use eyre::{eyre, Result};
-use server::MediaConverter;
 
 pub mod db;
 pub mod media;
@@ -19,15 +18,15 @@ pub enum SpisServerListener {
 pub struct SpisCfg {
     media_dir: String,
     data_dir: String,
-    pub processing: SpisCfgProcessing,
+    processing: SpisCfgProcessing,
     api: SpisCfgApi,
     server: SpisCfgServer,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct SpisCfgProcessing {
-    pub run_on_start: bool,
-    pub schedule: String,
+    run_on_start: bool,
+    schedule: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -93,7 +92,15 @@ impl SpisCfg {
         PathBuf::from(self.data_dir.clone()).join("thumbnails")
     }
 
-    pub fn db_file(&self) -> PathBuf {
-        PathBuf::from(self.data_dir.clone()).join("spis.db")
+    pub fn db_file(&self) -> String {
+        self.data_dir.clone() + "/spis.db"
+    }
+
+    pub fn processing_schedule(&self) -> String {
+        self.processing.schedule.clone()
+    }
+
+    pub fn processing_run_on_start(&self) -> bool {
+        self.processing.run_on_start
     }
 }
