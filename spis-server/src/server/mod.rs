@@ -1,11 +1,9 @@
-use std::net::TcpListener;
-
+use crate::db::{self, MediaRow};
 use actix_web::{dev::Server, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use eyre::{eyre, Result};
 use spis_model::Media;
 use sqlx::{Pool, Sqlite};
-
-use crate::db::{self, MediaRow};
+use std::net::TcpListener;
 
 #[cfg(feature = "release")]
 static GUI: include_dir::Dir<'_> =

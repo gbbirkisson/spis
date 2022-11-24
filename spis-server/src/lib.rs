@@ -1,8 +1,7 @@
-use std::path::{Path, PathBuf};
-
 use config::{Config, Environment};
-use media::prelude::THUMBNAIL_FORMAT;
+use media::util::THUMBNAIL_FORMAT;
 use serde::Deserialize;
+use std::path::{Path, PathBuf};
 
 use eyre::{eyre, Result};
 use server::MediaConverter;

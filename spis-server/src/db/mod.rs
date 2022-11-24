@@ -1,9 +1,7 @@
+use crate::media::ProcessedMedia;
 use chrono::{DateTime, Utc};
 use eyre::{eyre, Result};
-
 use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
-
-use crate::media::ProcessedMedia;
 
 pub async fn setup_db(db_file: &str) -> Result<Pool<Sqlite>> {
     tracing::info!("Setup db: {:?}", db_file);

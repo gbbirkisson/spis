@@ -2,11 +2,20 @@ use chrono::{DateTime, Utc};
 use exif::{In, Tag, Value};
 use eyre::{eyre, Result};
 
-pub(crate) struct MediaProcessedOrientation(pub(crate) i32, pub(crate) bool);
-
 pub(crate) struct MediaProcessedExif {
     pub(crate) orientation: MediaProcessedOrientation,
     pub(crate) taken: Option<DateTime<Utc>>,
+}
+
+pub(crate) struct MediaProcessedOrientation {
+    pub(crate) rotation: i32,
+    pub(crate) mirrored: bool,
+}
+
+impl MediaProcessedOrientation {
+    fn new(rotation: i32, mirrored: bool) -> Self {
+        Self { rotation, mirrored }
+    }
 }
 
 pub(crate) fn image_exif_read(bytes: &[u8]) -> Result<MediaProcessedExif> {
@@ -16,15 +25,15 @@ pub(crate) fn image_exif_read(bytes: &[u8]) -> Result<MediaProcessedExif> {
 
     let orientation = match exif_get_u32(&exif, Tag::Orientation) {
         // http://sylvana.net/jpegcrop/exif_orientation.html
-        Ok(1) => MediaProcessedOrientation(0, false),
-        Ok(2) => MediaProcessedOrientation(0, true),
-        Ok(3) => MediaProcessedOrientation(180, false),
-        Ok(4) => MediaProcessedOrientation(180, true),
-        Ok(5) => MediaProcessedOrientation(90, true),
-        Ok(6) => MediaProcessedOrientation(90, false),
-        Ok(7) => MediaProcessedOrientation(270, true),
-        Ok(8) => MediaProcessedOrientation(270, false),
-        _ => MediaProcessedOrientation(0, false),
+        Ok(1) => MediaProcessedOrientation::new(0, false),
+        Ok(2) => MediaProcessedOrientation::new(0, true),
+        Ok(3) => MediaProcessedOrientation::new(180, false),
+        Ok(4) => MediaProcessedOrientation::new(180, true),
+        Ok(5) => MediaProcessedOrientation::new(90, true),
+        Ok(6) => MediaProcessedOrientation::new(90, false),
+        Ok(7) => MediaProcessedOrientation::new(270, true),
+        Ok(8) => MediaProcessedOrientation::new(270, false),
+        _ => MediaProcessedOrientation::new(0, false),
     };
 
     let timestamp_tz = exif_get_str(&exif, Tag::OffsetTimeOriginal);

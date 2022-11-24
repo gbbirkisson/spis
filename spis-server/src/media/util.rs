@@ -1,15 +1,14 @@
+use chrono::prelude::*;
+use chrono::{DateTime, Utc};
 use std::{
     path::PathBuf,
     time::{SystemTime, UNIX_EPOCH},
 };
-
-use chrono::prelude::*;
-use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
 pub static THUMBNAIL_FORMAT: &str = "webp";
 
-pub trait Thumbnail {
+pub(crate) trait Thumbnail {
     fn get_thumbnail(&self, uuid: &Uuid) -> PathBuf;
 }
 
