@@ -202,7 +202,7 @@ jobs:
           file: docker/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
-          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/armhf
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
 
       - name: Upload artifacts to release
         uses: AButler/upload-release-assets@v2.0
