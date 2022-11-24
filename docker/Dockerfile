@@ -20,15 +20,13 @@ RUN apt-get update && apt-get install -y \
 
 # Set spis variables
 ENV \
-    RUST_LOG=error,spis_server=info \
-    SPIS_PROCESSING.RUN_ON_START=true \
-    SPIS_MEDIA_DIR=/var/lib/spis/media \
-    SPIS_DATA_DIR=/var/lib/spis/data
-
-# Set nginx variables
-ENV \
     NGINX_PORT=8080 \
-    NGINX_SOCKET=/var/run/spis.sock
+    RUST_LOG=error,spis_server=info \
+    SPIS_MEDIA_DIR=/var/lib/spis/media \
+    SPIS_DATA_DIR=/var/lib/spis/data \
+    SPIS_API_MEDIA_PATH=/assets/media \
+    SPIS_API_THUMBNAIL_PATH=/assets/thumbnails \
+    SPIS_SERVER_SOCKET=/var/run/spis.sock
 
 # Copy default nginx configuration
 COPY --from=builder /etc/nginx /etc/nginx

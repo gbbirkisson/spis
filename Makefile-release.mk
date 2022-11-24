@@ -28,4 +28,8 @@ release: ${RELEASE_X86_60_GNU} ${RELEASE_ARMV7_GNUEABIHF}
 .PHONY: docker-local
 docker-local: ${RELEASE_X86_60_GNU} ## Run docker image
 	docker build -t spis-local -f docker/Dockerfile .
-	docker run -it --rm -p 8080:8080 -v ${PWD}/dev/api/media:/var/lib/spis/media spis-local
+	docker run -it --rm \
+		-p 8080:8080 \
+		-v ${PWD}/dev/api/media:/var/lib/spis/media \
+		-e SPIS_PROCESSING_RUN_ON_START=true \
+		spis-local
