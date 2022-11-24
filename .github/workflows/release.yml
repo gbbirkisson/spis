@@ -2,10 +2,8 @@
 name: Release
 
 on:
-  push:
-    branches: dist
-  # release:
-  #   types: [published]
+  release:
+    types: [published]
 
 env:
   RUST_VERSION: "1.65.0"
@@ -206,9 +204,9 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
           platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/armhf
 
-      # - name: Upload artifacts to release
-      #   uses: AButler/upload-release-assets@v2.0
-      #   with:
-      #     files: 'release/*'
-      #     repo-token: ${{ secrets.GITHUB_TOKEN }}
-      #     release-tag: ${{ env.VERSION }}
+      - name: Upload artifacts to release
+        uses: AButler/upload-release-assets@v2.0
+        with:
+          files: 'release/*'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          release-tag: ${{ env.VERSION }}
