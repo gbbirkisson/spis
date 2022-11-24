@@ -24,8 +24,11 @@ fn find_gui_file(name: &str) -> &include_dir::File {
 }
 
 #[cfg(feature = "release")]
-fn create_gui_route(content_type: &str, file: &'static include_dir::File) -> HttpResponse {
-    HttpResponse::Ok()
+fn create_gui_route(
+    content_type: &str,
+    file: &'static include_dir::File,
+) -> actix_web::HttpResponse {
+    actix_web::HttpResponse::Ok()
         .content_type(content_type)
         .body(file.contents())
 }

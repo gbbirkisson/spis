@@ -8,7 +8,7 @@
 [![codecov](https://codecov.io/github/gbbirkisson/spis/branch/main/graph/badge.svg?token=5VQHEBQ7JV)](https://codecov.io/github/gbbirkisson/spis)
 [![GitHub](https://img.shields.io/github/license/gbbirkisson/spis)](https://github.com/gbbirkisson/spis/blob/main/LICENSE)
 
-This project is called "Simple Private Image Server" or "SPIS" for short. It's purpose is to be a lightweight and fast server to display media hosted on a private server. This project came about when I was searching for a solution like this and found nothing. Everything seemed way to feature heavy and slow, requiring you to setup heavy databases and other unnecessary components.
+This project is called "Simple Private Image Server" or `SPIS` for short. It's purpose is to be a lightweight and fast server to display media hosted on a private server. This project came about when I was searching for a solution like this and found nothing. Everything seemed way to feature heavy and slow, requiring you to setup heavy databases and other unnecessary components.
 
 The goals for this project are:
 * Simple to setup 🏝️
@@ -40,21 +40,21 @@ Everything is configured via environmental variables:
 
 Variable Name | Required | Default | Description
 --- | --- | --- | ---
-`RUST_LOG` | `No` | ` ` | Loglevels of the application, i.e. `error,spis_server=info`
-`SPIS_MEDIA_DIR` | `Yes` | ` ` | Where should the server look for media
-`SPIS_DATA_DIR` | `Yes` | ` ` | Where should the server store its data
+`SPIS_MEDIA_DIR` | `Yes` | | Where should the server look for media
+`SPIS_DATA_DIR` | `Yes` | | Where should the server store its data
 `SPIS_PROCESSING_SCHEDULE` | `No` | `0 0 2 * * *` | When should the server look for media (default is every night at 2)
 `SPIS_PROCESSING_RUN_ON_START` | `No` | `false` | Should the server look for media on start
 `SPIS_API_MEDIA_PATH` | `No` | `/assets/media` | Where will the media be served by webserver
 `SPIS_API_THUMBNAIL_PATH` | `No` | `/assets/thumbnails` | Where will the thumbnails be served by webserver
 `SPIS_SERVER_SOCKET` | `No` | `/var/run/spis.sock` | Path of the socket the server will listen to
-`SPIS_SERVER_ADDRESS` | `No` | ` ` | Address to listen to rather than socket, i.e. `0.0.0.0:8000` 
+`SPIS_SERVER_ADDRESS` | `No` | | Address to listen to rather than socket, i.e. `0.0.0.0:8000` 
+`RUST_LOG` | `No` | | Loglevels of the application, i.e. `error,spis_server=info`
 
 ## Setup
 
 ### Docker
 
-Easiest way to run the server is with the docker image:
+Easiest way to run `SPIS` is with the docker image:
 
 ```console
 $ docker run -it \
@@ -66,7 +66,7 @@ $ docker run -it \
 
 ### Binary
 
-Just [download the binary](https://github.com/gbbirkisson/spis/releases) for your architecture and run it. Note that the `spis-server` binary does not serve images. For that you can use something like nginx. See [nginx config](./docker/nginx.conf) for an example.
+Just [download a binary](https://github.com/gbbirkisson/spis/releases) for your architecture and run it. Note that the `spis-server` binary does not serve images. For that you can use something like nginx. See [nginx config](./docker/nginx.conf) for an example.
 
 ## Progressive Web App
 
