@@ -1,9 +1,6 @@
 DEV_NGINX_CONF_TEMPLATE:=dev/nginx.conf
 DEV_NGINX_CONF:=/tmp/nginx.conf
 
-${DEV_NGINX_CONF}:
-	cat $(DEV_NGINX_CONF_TEMPLATE) | DOLLAR='$$' envsubst > $(DEV_NGINX_CONF)
-
 ${DEV_MEDIA_DIR}:
 	mkdir -p ${DEV_MEDIA_DIR}
 
@@ -22,7 +19,8 @@ dev: ## Run all dev processes
 	xdg-open http://localhost:7000
 
 .PHONY: _dev-run-nginx-nowatch
-_dev-run-nginx-nowatch: ${DEV_NGINX_CONF}
+_dev-run-nginx-nowatch:
+	cat $(DEV_NGINX_CONF_TEMPLATE) | DOLLAR='$$' envsubst > $(DEV_NGINX_CONF)
 	nginx -c ${DEV_NGINX_CONF}
 
 .PHONY: dev-nginx

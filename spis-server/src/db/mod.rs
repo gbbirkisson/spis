@@ -105,7 +105,7 @@ pub async fn media_get(
         .bind(limit),
         Some(taken_after) => sqlx::query_as::<Sqlite, MediaRow>(
             r#"
-            SELECT id, media, taken_at FROM media
+            SELECT id, path, taken_at FROM media
             WHERE taken_at < ?
             ORDER BY taken_at DESC
             LIMIT ?
