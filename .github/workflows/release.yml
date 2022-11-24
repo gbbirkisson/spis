@@ -180,7 +180,7 @@ jobs:
           mv /tmp/aarch64-unknown-linux-gnu/spis-server release/spis-server-aarch64-unknown-linux-gnu
 
       - name: Setup QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
         with:
           image: tonistiigi/binfmt:qemu-v6.1.0-20
           platforms: all
