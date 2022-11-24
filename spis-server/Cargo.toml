@@ -10,31 +10,43 @@ path = "src/lib.rs"
 path = "src/main.rs"
 name = "spis-server"
 
+[features]
+default = []
+release = ["dep:include_dir"]
+
 [dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync"]}
+# Basics
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "std"] }
 dotenv = "0.15"
 eyre = "0.6"
+config = "0.13"
+clap = { version = "4", features = ["derive"] }
 
+# Runtime
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync"]}
 actix-web = "4"
+async-cron-scheduler = "1"
+sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "sqlite", "macros", "chrono", "migrate", "uuid"] }
+
+# Model
 spis-model = { path = "../spis-model" }
 serde = { version = "1", features = ["derive"] }
-config = "0.13"
 
+# Processing
 walkdir = "2"
 rayon = "1"
+uuid = { version = "1", features = ["serde", "v4"] }
+chrono = "0.4"
 
+# Image processing
 md5 = "0.7"
 image = { version = "0.24.4", features = ["jpeg", "webp-encoder"]}
 kamadak-exif = "0.5"
 
-uuid = { version = "1", features = ["serde", "v4"] }
-chrono = "0.4"
-sqlx = { version = "0.6", features = ["runtime-tokio-native-tls", "sqlite", "macros", "chrono", "migrate", "uuid"] }
-async-cron-scheduler = "1"
+# Bake GUI into bin
+include_dir = { version = "0.7.3", features = ["glob"], optional=true }
 
 [dev-dependencies]
-reqwest = "0.11"
-ctor = "0.1"
+reqwest = { version = "0.11", features = ["json"] }
 tempfile = "3"

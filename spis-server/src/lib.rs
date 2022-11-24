@@ -1,46 +1,41 @@
+use config::{Config, Environment};
+use eyre::{eyre, Result};
+use media::util::THUMBNAIL_FORMAT;
+use serde::Deserialize;
+use server::convert::MediaConverter;
 use std::path::{Path, PathBuf};
 
-use config::{Config, Environment, File};
-use med::prelude::THUMBNAIL_FORMAT;
-use serde::Deserialize;
-
-use eyre::{eyre, Result};
-use uuid::Uuid;
-
 pub mod db;
-pub mod med;
+pub mod media;
 pub mod server;
+
+pub enum SpisServerListener {
+    Address(String),
+    Socket(String),
+}
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct SpisCfg {
     media_dir: String,
     data_dir: String,
-    pub processing: SpisCfgProcessing,
-    pub api: SpisCfgApi,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct SpisCfgProcessing {
-    pub run_on_start: bool,
-    pub schedule: String,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct SpisCfgApi {
-    pub media_path: String,
-    pub thumbnail_path: String,
+    processing_schedule: String,
+    processing_run_on_start: bool,
+    api_media_path: String,
+    api_thumbnail_path: String,
+    server_address: Option<String>,
+    server_socket: Option<String>,
 }
 
 impl SpisCfg {
     pub fn new() -> Result<Self> {
         tracing::info!("Loading config");
         let b = Config::builder()
-            .add_source(File::with_name("/etc/spis/config.yaml").required(false))
             .add_source(Environment::with_prefix("spis"))
-            .set_default("processing.schedule", "0 0 2 * * *")?
-            .set_default("processing.run_on_start", false)?
-            .set_default("api.media_path", "/assets/media")?
-            .set_default("api.thumbnail_path", "/assets/thumbnails")?
+            .set_default("processing_schedule", "0 0 2 * * *")?
+            .set_default("processing_run_on_start", false)?
+            .set_default("api_media_path", "/assets/media")?
+            .set_default("api_thumbnail_path", "/assets/thumbnails")?
+            .set_default("server_socket", "/var/run/spis.sock")?
             .build()?;
 
         let c: SpisCfg = b.try_deserialize()?;
@@ -57,22 +52,21 @@ impl SpisCfg {
         Ok(c)
     }
 
-    pub fn new_testing() -> Self {
-        let tmp = PathBuf::from("/tmp/").join(Uuid::new_v4().to_string());
-        std::fs::create_dir_all(&tmp).expect("Failed to create tmp dir");
-        let tmp = tmp.to_str().unwrap().to_string();
-        Self {
-            media_dir: tmp.clone(),
-            data_dir: tmp,
-            processing: SpisCfgProcessing {
-                run_on_start: false,
-                schedule: "".to_string(),
-            },
-            api: SpisCfgApi {
-                media_path: "".to_string(),
-                thumbnail_path: "".to_string(),
-            },
+    pub fn server_listener(&self) -> SpisServerListener {
+        match (&self.server_address, &self.server_socket) {
+            (Some(address), _) => SpisServerListener::Address(address.clone()),
+            (None, Some(socket)) => SpisServerListener::Socket(socket.clone()),
+            _ => unreachable!("This should never happen"),
         }
+    }
+
+    pub fn media_converter(&self) -> MediaConverter {
+        MediaConverter::new(
+            &self.media_dir,
+            &self.api_media_path,
+            &self.api_thumbnail_path,
+            THUMBNAIL_FORMAT,
+        )
     }
 
     pub fn media_dir(&self) -> PathBuf {
@@ -83,15 +77,15 @@ impl SpisCfg {
         PathBuf::from(self.data_dir.clone()).join("thumbnails")
     }
 
-    pub fn db_file(&self) -> PathBuf {
-        PathBuf::from(self.data_dir.clone()).join("spis.db")
+    pub fn db_file(&self) -> String {
+        self.data_dir.clone() + "/spis.db"
     }
 
-    pub fn api_thumbnail(&self, uuid: &Uuid) -> String {
-        self.api.thumbnail_path.clone() + "/" + &uuid.to_string() + "." + THUMBNAIL_FORMAT
+    pub fn processing_schedule(&self) -> String {
+        self.processing_schedule.clone()
     }
 
-    pub fn api_media_location(&self, media_path: &str) -> String {
-        media_path.replace(&self.media_dir, &self.api.media_path)
+    pub fn processing_run_on_start(&self) -> bool {
+        self.processing_run_on_start
     }
 }
