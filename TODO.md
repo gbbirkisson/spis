@@ -1,4 +1,4 @@
-- [ ] Refactor
+- [x] Refactor
     * Write Makefile dev-check target
     * Using multi match statements
     * Seperate concerns
