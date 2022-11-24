@@ -1,0 +1,20 @@
+version: 2
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+    assignees:
+      - "gbbirkisson"
+    reviewers:
+      - "gbbirkisson"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 10
+    assignees:
+      - "gbbirkisson"
+    reviewers:
+      - "gbbirkisson"

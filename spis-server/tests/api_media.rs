@@ -1,5 +1,7 @@
+use spis_model::Media;
 use spis_server::{
-    db::setup_db,
+    db::{self},
+    media::{ProcessedMedia, ProcessedMediaData},
     server::{convert::MediaConverter, Listener},
 };
 use std::net::TcpListener;
@@ -15,9 +17,23 @@ async fn spawn_server() -> String {
     let db_file = NamedTempFile::new().expect("Failed to create file");
 
     // Create DB
-    let pool = setup_db(&db_file.path().to_str().unwrap())
+    let pool = db::setup_db(&db_file.path().to_str().unwrap())
         .await
         .expect("Failed to create DB");
+
+    // Insert phony record
+    db::media_insert(
+        &pool,
+        ProcessedMedia {
+            uuid: uuid::Uuid::new_v4(),
+            path: "".to_string(),
+            data: Some(ProcessedMediaData {
+                taken_at: chrono::Utc::now(),
+            }),
+        },
+    )
+    .await
+    .expect("Failed to insert record");
 
     let converter = MediaConverter::new("", "", "", "");
 
@@ -31,16 +47,22 @@ async fn spawn_server() -> String {
 }
 
 #[tokio::test]
-async fn health_check_works() {
+async fn media_works() {
     let address = spawn_server().await;
     let client = reqwest::Client::new();
 
     let response = client
-        .get(&format!("{}/api/health", &address))
+        .get(&format!("{}/api?page_size=5", &address))
         .send()
         .await
         .expect("Failed to execute request.");
 
     assert!(response.status().is_success());
-    assert_eq!(Some(0), response.content_length());
+
+    let response = response
+        .json::<Vec<Media>>()
+        .await
+        .expect("Failed to parse json");
+
+    assert_eq!(1, response.len())
 }

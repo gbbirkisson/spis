@@ -34,12 +34,13 @@ pub async fn process(pool: Pool<Sqlite>, media_dir: PathBuf, thumb_dir: PathBuf)
     let mut done_recv = processing::media_processor(media_dir, thumb_dir, tx);
     let processor_pool = pool.clone();
 
+    let mut count = 0;
     loop {
         tokio::select! {
             done = done_recv.recv() => {
                 match done {
                     Some(count) => {
-                        tracing::info!("Processed {} files", count);
+                        tracing::info!("Processed {} files in total!", count);
                         break;
                     },
                     None => {
@@ -53,6 +54,11 @@ pub async fn process(pool: Pool<Sqlite>, media_dir: PathBuf, thumb_dir: PathBuf)
                         tracing::debug!("Inserting media {}", media.uuid);
                         if let Err(e) = db::media_insert(&processor_pool, media).await {
                             tracing::error!("Failed inserting media into DB: {e}");
+                        } else {
+                            count += 1;
+                            if count % 100 == 0 {
+                                tracing::info!("Processed {} files so far ...", count);
+                            }
                         }
                     }
                     None => {

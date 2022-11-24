@@ -1,5 +1,5 @@
 use crate::db::{self};
-use actix_web::{dev::Server, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
+use actix_web::{dev::Server, web, App, HttpServer, Responder};
 use eyre::{eyre, Result};
 use spis_model::Media;
 use sqlx::{Pool, Sqlite};
@@ -28,10 +28,6 @@ fn create_gui_route(content_type: &str, file: &'static include_dir::File) -> Htt
     HttpResponse::Ok()
         .content_type(content_type)
         .body(file.contents())
-}
-
-async fn health(_: HttpRequest) -> impl Responder {
-    HttpResponse::Ok()
 }
 
 async fn get_media(
@@ -99,8 +95,7 @@ pub fn run(listener: Listener, pool: Pool<Sqlite>, converter: MediaConverter) ->
                     .to(move || async move { create_gui_route("application/json", manifest_file) }),
             );
         };
-        app.route("/api/health", web::get().to(health))
-            .route("/api", web::get().to(get_media))
+        app.route("/api", web::get().to(get_media))
             .app_data(pool.clone())
             .app_data(converter.clone())
     });

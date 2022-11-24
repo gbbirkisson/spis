@@ -48,5 +48,5 @@ kamadak-exif = "0.5"
 include_dir = { version = "0.7.3", features = ["glob"], optional=true }
 
 [dev-dependencies]
-reqwest = "0.11"
+reqwest = { version = "0.11", features = ["json"] }
 tempfile = "3"
