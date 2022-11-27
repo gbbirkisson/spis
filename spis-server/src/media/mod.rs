@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use tokio::sync::mpsc::channel;
 use uuid::Uuid;
 
-pub(crate) mod metadata;
+pub mod metadata;
 mod processing;
 pub(crate) mod util;
 

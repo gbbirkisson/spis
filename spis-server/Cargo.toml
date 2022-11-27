@@ -1,6 +1,6 @@
 [package]
 name = "spis-server"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 [lib]
@@ -19,7 +19,7 @@ release = ["dep:include_dir"]
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "std"] }
 dotenv = "0.15"
-eyre = "0.6"
+color-eyre = "0.6"
 config = "0.13"
 clap = { version = "4", features = ["derive"] }
 

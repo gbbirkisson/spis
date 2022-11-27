@@ -1,6 +1,6 @@
 use crate::media::ProcessedMedia;
 use chrono::{DateTime, Utc};
-use eyre::{eyre, Result};
+use color_eyre::{eyre::eyre, Result};
 use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
 
 pub async fn setup_db(db_file: &str) -> Result<Pool<Sqlite>> {

@@ -1,13 +1,15 @@
 use chrono::{DateTime, Utc};
+use color_eyre::{eyre::eyre, Result};
 use exif::{In, Tag, Value};
-use eyre::{eyre, Result};
 
-pub(crate) struct MediaProcessedExif {
+#[derive(Debug)]
+pub struct MediaProcessedExif {
     pub(crate) orientation: MediaProcessedOrientation,
     pub(crate) taken: Option<DateTime<Utc>>,
 }
 
-pub(crate) struct MediaProcessedOrientation {
+#[derive(Debug)]
+pub struct MediaProcessedOrientation {
     pub(crate) rotation: i32,
     pub(crate) mirrored: bool,
 }
@@ -18,10 +20,19 @@ impl MediaProcessedOrientation {
     }
 }
 
-pub(crate) fn image_exif_read(bytes: &[u8]) -> Result<MediaProcessedExif> {
+pub fn image_exif_read(bytes: &[u8]) -> Result<MediaProcessedExif> {
     let mut exif_buf_reader = std::io::Cursor::new(bytes);
     let exif_reader = exif::Reader::new();
     let exif = exif_reader.read_from_container(&mut exif_buf_reader)?;
+
+    // for f in exif.fields() {
+    //     println!(
+    //         "{} {} {}",
+    //         f.tag,
+    //         f.ifd_num,
+    //         f.display_value().with_unit(&exif)
+    //     );
+    // }
 
     let orientation = match exif_get_u32(&exif, Tag::Orientation) {
         // http://sylvana.net/jpegcrop/exif_orientation.html
@@ -39,13 +50,13 @@ pub(crate) fn image_exif_read(bytes: &[u8]) -> Result<MediaProcessedExif> {
     let timestamp_tz = exif_get_str(&exif, Tag::OffsetTimeOriginal);
     let taken = match exif_get_str(&exif, Tag::DateTimeOriginal) {
         Ok(time) => {
-            let pair = match timestamp_tz {
-                Ok(tz) => (time.to_string() + tz, "%Y:%m:%d %H:%M:%S %z"),
-                _ => (time.to_string(), "%Y:%m:%d %H:%M:%S"),
-            };
-            match DateTime::parse_from_str(&pair.0, pair.1) {
+            let time = time.to_owned() + " " + timestamp_tz.unwrap_or("+02:00"); // TODO: Make configurable
+            match DateTime::parse_from_str(&time, "%Y:%m:%d %H:%M:%S %z") {
                 Ok(time) => Some(time.with_timezone(&Utc)),
-                _ => None,
+                Err(e) => {
+                    tracing::warn!("Failed parsing time '{}': {}", time, e);
+                    None
+                }
             }
         }
         _ => None,

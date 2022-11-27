@@ -1,6 +1,6 @@
 use crate::db::{self};
 use actix_web::{dev::Server, web, App, HttpServer, Responder};
-use eyre::{eyre, Result};
+use color_eyre::{eyre::eyre, Result};
 use spis_model::Media;
 use sqlx::{Pool, Sqlite};
 use std::net::TcpListener;
