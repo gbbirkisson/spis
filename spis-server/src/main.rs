@@ -8,7 +8,7 @@ use spis_server::{
     SpisCfg, SpisServerListener,
 };
 use sqlx::{Pool, Sqlite};
-use std::{fs, net::TcpListener, path::PathBuf};
+use std::{net::TcpListener, path::PathBuf};
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
 /// The SPIS server application
@@ -32,10 +32,10 @@ async fn main() -> Result<()> {
 
     // Enable version printing
     let args = Args::parse();
-    if let Some(media) = args.test_media {
-        let media_bytes = fs::read(media)?;
-        let meta = media::metadata::image_exif_read(&media_bytes)?;
-        println!("{:?}", meta);
+    if let Some(_) = args.test_media {
+        // let media_bytes = fs::read(media)?;
+        // let meta = media::metadata::image_exif_read(&media_bytes)?;
+        // println!("{:?}", meta);
         return Ok(());
     }
 
