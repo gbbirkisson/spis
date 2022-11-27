@@ -1,7 +1,7 @@
 use spis_model::Media;
 use spis_server::{
     db::{self},
-    media::{ProcessedMedia, ProcessedMediaData},
+    media::{ProcessedMedia, ProcessedMediaData, ProcessedMediaType},
     server::{convert::MediaConverter, Listener},
 };
 use std::net::TcpListener;
@@ -30,6 +30,7 @@ async fn spawn_server() -> String {
             data: Some(ProcessedMediaData {
                 taken_at: chrono::Utc::now(),
             }),
+            media_type: ProcessedMediaType::Image,
         },
     )
     .await

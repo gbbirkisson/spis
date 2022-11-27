@@ -12,7 +12,13 @@ pub(crate) mod util;
 pub struct ProcessedMedia {
     pub uuid: Uuid,
     pub path: String,
+    pub media_type: ProcessedMediaType,
     pub data: Option<ProcessedMediaData>,
+}
+
+pub enum ProcessedMediaType {
+    Image,
+    Video,
 }
 
 pub struct ProcessedMediaData {

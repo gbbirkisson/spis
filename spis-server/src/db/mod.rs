@@ -1,7 +1,31 @@
-use crate::media::ProcessedMedia;
+use crate::media::{ProcessedMedia, ProcessedMediaType};
 use chrono::{DateTime, Utc};
 use color_eyre::{eyre::eyre, Result};
+use spis_model::MediaType;
 use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
+
+pub trait MediaTypeConverter<T> {
+    fn convert(&self) -> T;
+}
+
+impl MediaTypeConverter<i32> for ProcessedMediaType {
+    fn convert(&self) -> i32 {
+        match self {
+            ProcessedMediaType::Image => 0,
+            ProcessedMediaType::Video => 1,
+        }
+    }
+}
+
+impl MediaTypeConverter<MediaType> for i32 {
+    fn convert(&self) -> MediaType {
+        match self {
+            0 => MediaType::Image,
+            1 => MediaType::Video,
+            _ => unreachable!(),
+        }
+    }
+}
 
 pub async fn setup_db(db_file: &str) -> Result<Pool<Sqlite>> {
     tracing::info!("Setup db: {:?}", db_file);
@@ -20,16 +44,18 @@ pub async fn setup_db(db_file: &str) -> Result<Pool<Sqlite>> {
 }
 
 pub async fn media_insert(pool: &SqlitePool, processed_media: ProcessedMedia) -> Result<()> {
+    let media_type = processed_media.media_type.convert();
     match &processed_media.data {
         Some(data) => {
             sqlx::query!(
                 r#"
-                INSERT OR REPLACE INTO media ( id, path, taken_at, walked )
-                VALUES ( ?1, ?2, ?3, 1 )
+                INSERT OR REPLACE INTO media ( id, path, taken_at, type, walked )
+                VALUES ( ?1, ?2, ?3, ?4, 1 )
                 "#,
                 processed_media.uuid,
                 processed_media.path,
                 data.taken_at,
+                media_type,
             )
         }
         None => {
@@ -85,6 +111,7 @@ pub struct MediaRow {
     pub id: uuid::Uuid,
     pub path: String,
     pub taken_at: DateTime<Utc>,
+    pub media_type: i32,
 }
 
 pub async fn media_get(
@@ -95,7 +122,7 @@ pub async fn media_get(
     match taken_after {
         None => sqlx::query_as::<Sqlite, MediaRow>(
             r#"
-            SELECT id, path, taken_at FROM media
+            SELECT id, path, taken_at, type as media_type FROM media
             ORDER BY taken_at DESC
             LIMIT ?
             "#,
@@ -103,7 +130,7 @@ pub async fn media_get(
         .bind(limit),
         Some(taken_after) => sqlx::query_as::<Sqlite, MediaRow>(
             r#"
-            SELECT id, path, taken_at FROM media
+            SELECT id, path, taken_at, type as media_type FROM media
             WHERE taken_at < ?
             ORDER BY taken_at DESC
             LIMIT ?

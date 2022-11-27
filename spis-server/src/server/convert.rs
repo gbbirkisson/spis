@@ -1,6 +1,5 @@
+use crate::db::{MediaRow, MediaTypeConverter};
 use spis_model::Media;
-
-use crate::db::MediaRow;
 
 pub struct MediaConverter {
     media_dir: String,
@@ -33,6 +32,7 @@ impl MediaConverter {
                 "{}/{}.{}",
                 self.thumbnail_path, media.id, self.thumbnail_ext
             ),
+            media_type: media.media_type.convert(),
         }
     }
 }

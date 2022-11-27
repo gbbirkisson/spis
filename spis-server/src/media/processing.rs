@@ -1,6 +1,6 @@
 use super::ProcessedMedia;
 use crate::media::util::Thumbnail;
-use crate::media::{metadata, ProcessedMediaData};
+use crate::media::{metadata, ProcessedMediaData, ProcessedMediaType};
 use chrono::prelude::*;
 use color_eyre::{eyre::eyre, Result};
 use rayon::prelude::*;
@@ -171,6 +171,7 @@ fn do_process(
         uuid: media_uuid,
         path: media_entry.path().display().to_string(),
         data: media_data,
+        media_type: ProcessedMediaType::Image,
     };
 
     tracing::debug!("Sending media to channel {:?}", media.uuid);
