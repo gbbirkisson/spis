@@ -1,5 +1,5 @@
+use color_eyre::{eyre::eyre, Result};
 use config::{Config, Environment};
-use eyre::{eyre, Result};
 use media::util::THUMBNAIL_FORMAT;
 use serde::Deserialize;
 use server::convert::MediaConverter;

@@ -107,11 +107,13 @@ async fn MediaList<G: Html>(cx: Scope<'_>) -> View<G> {
                 .await
                 .unwrap(); // TODO
 
+                let at_the_end = fetched_media.len() != API_MEDIA_PER_REQ;
+
                 new_media.append(&mut fetched_media);
                 media_list.set(new_media);
 
-                if fetched_media.len() != API_MEDIA_PER_REQ {
-                    media_load_more.set(false);
+                if !at_the_end {
+                    media_load_more.set(true);
                 }
             } else {
                 media_load_more.set(true)

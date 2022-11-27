@@ -2,7 +2,7 @@ use super::ProcessedMedia;
 use crate::media::util::Thumbnail;
 use crate::media::{metadata, ProcessedMediaData};
 use chrono::prelude::*;
-use eyre::{eyre, Result};
+use color_eyre::{eyre::eyre, Result};
 use rayon::prelude::*;
 use std::time::Duration;
 use std::{
@@ -139,16 +139,25 @@ fn do_process(
 
         let taken = match exif.map(|e| e.taken) {
             Some(taken) => taken,
-            None => match media_entry.metadata() {
-                Ok(meta) => match meta.modified() {
-                    Ok(time) => Some(time.into()),
-                    Err(_) => {
-                        tracing::warn!("Could not determin timestamp for {:?}", media_entry.path());
-                        None
-                    }
-                },
-                Err(_) => None,
-            },
+            None => {
+                tracing::warn!(
+                    "Could not read timestamp from metadata: {:?}",
+                    media_entry.path()
+                );
+                match media_entry.metadata() {
+                    Ok(meta) => match meta.modified() {
+                        Ok(time) => Some(time.into()),
+                        Err(_) => {
+                            tracing::warn!(
+                                "Could not determin timestamp for {:?}",
+                                media_entry.path()
+                            );
+                            None
+                        }
+                    },
+                    Err(_) => None,
+                }
+            }
         };
 
         let data = ProcessedMediaData {

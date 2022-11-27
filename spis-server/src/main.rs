@@ -1,31 +1,44 @@
 use async_cron_scheduler::{Job, Scheduler};
 use chrono::Local;
 use clap::Parser;
-use eyre::Result;
+use color_eyre::Result;
 use spis_server::{
     db, media,
     server::{self, Listener},
     SpisCfg, SpisServerListener,
 };
 use sqlx::{Pool, Sqlite};
-use std::net::TcpListener;
+use std::{fs, net::TcpListener, path::PathBuf};
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
+/// The SPIS server application
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
-struct Args {}
+struct Args {
+    /// File to test process, and then exit
+    #[arg(short, long)]
+    test_media: Option<PathBuf>,
+}
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Enable version printing
-    let _ = Args::parse();
-
     // Setup logging
     dotenv::dotenv().ok();
     tracing_subscriber::registry()
         .with(fmt::layer())
         .with(EnvFilter::from_default_env())
         .init();
+    color_eyre::install()?;
+
+    // Enable version printing
+    let args = Args::parse();
+    if let Some(media) = args.test_media {
+        let media_bytes = fs::read(media)?;
+        let meta = media::metadata::image_exif_read(&media_bytes)?;
+        println!("{:?}", meta);
+        return Ok(());
+    }
+
     tracing::info!("Starting spis");
 
     let config = SpisCfg::new()?;
