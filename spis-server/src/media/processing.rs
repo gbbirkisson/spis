@@ -44,26 +44,6 @@ impl GetMediaType for walkdir::DirEntry {
     }
 }
 
-// trait HasExt {
-//     fn has_ext(&self, ext: &[&str]) -> bool;
-// }
-
-// impl HasExt for walkdir::DirEntry {
-//     fn has_ext(&self, ext: &[&str]) -> bool {
-//         match self.file_name().to_str() {
-//             None => (),
-//             Some(name) => {
-//                 for e in ext {
-//                     if name.ends_with(e) {
-//                         return true;
-//                     }
-//                 }
-//             }
-//         }
-//         false
-//     }
-// }
-
 pub fn media_processor(
     media_dir: PathBuf,
     thumb_dir: PathBuf,
@@ -167,7 +147,7 @@ fn do_process(
             }
             (_, ProcessedMediaType::Image) => {
                 tracing::debug!("Processing image: {}", media_path);
-                let image_processor = ImageProcessor::new(&media_entry.path())?;
+                let image_processor = ImageProcessor::new(media_entry.path())?;
                 let thumb = image_processor.get_thumbnail(THUMBNAIL_SIZE)?;
                 let taken_at = image_processor.get_timestamp()?;
                 Some((thumb, taken_at))
@@ -198,101 +178,6 @@ fn do_process(
 
     tx.blocking_send(processed_media)
         .map_err(|e| eyre!("Failed sending media to channel: {:?}", e.to_string()))?;
-
-    // let media_bytes = fs::read(media_entry.path())?;
-    // let media_hash = md5::compute(&media_bytes);
-    // let media_uuid = *Builder::from_md5_bytes(media_hash.into()).as_uuid();
-
-    // let media_thumbnail_path = thumb_dir.get_thumbnail(&media_uuid);
-
-    // let mut media_data = None;
-
-    // if !media_thumbnail_path.exists() {
-    //     tracing::debug!("Reading EXIF data for {:?}", media_entry.path());
-    //     let exif = match metadata::image_exif_read(&media_bytes) {
-    //         Ok(e) => Some(e),
-    //         Err(_) => {
-    //             tracing::debug!("Failed to read EXIF data for {:?}", media_entry.path());
-    //             None
-    //         }
-    //     };
-
-    //     tracing::debug!("Creating thumbnail: {:?}", media_thumbnail_path);
-    //     let mut image = image::open(media_entry.path())?;
-    //     image = image.thumbnail(THUMBNAIL_SIZE, THUMBNAIL_SIZE);
-    //     if let Some(exif) = &exif {
-    //         image = match exif.orientation.rotation {
-    //             90 => image.rotate90(),
-
-    //             180 => image.rotate180(),
-
-    //             270 => image.rotate270(),
-
-    //             _ => image,
-    //         };
-    //         if exif.orientation.mirrored {
-    //             image = image.flipv();
-    //         }
-    //     }
-
-    //     let image_height = image.height();
-    //     let image_width = image.width();
-    //     image = match image_height > image_width {
-    //         true => image.crop(
-    //             0,
-    //             (image_height - image_width) / 2,
-    //             image_width,
-    //             image_width,
-    //         ),
-    //         false => image.crop(
-    //             (image_width - image_height) / 2,
-    //             0,
-    //             image_height,
-    //             image_height,
-    //         ),
-    //     };
-    //     image.save(media_thumbnail_path)?;
-
-    //     let taken = match exif.map(|e| e.taken) {
-    //         Some(taken) => taken,
-    //         None => {
-    //             tracing::warn!(
-    //                 "Could not read timestamp from metadata: {:?}",
-    //                 media_entry.path()
-    //             );
-    //             match media_entry.metadata() {
-    //                 Ok(meta) => match meta.modified() {
-    //                     Ok(time) => Some(time.into()),
-    //                     Err(_) => {
-    //                         tracing::warn!(
-    //                             "Could not determin timestamp for {:?}",
-    //                             media_entry.path()
-    //                         );
-    //                         None
-    //                     }
-    //                 },
-    //                 Err(_) => None,
-    //             }
-    //         }
-    //     };
-
-    //     let data = ProcessedMediaData {
-    //         taken_at: taken.unwrap_or_else(Utc::now),
-    //     };
-
-    //     media_data = Some(data);
-    // }
-
-    // let media = ProcessedMedia {
-    //     uuid: media_uuid,
-    //     path: media_entry.path().display().to_string(),
-    //     data: media_data,
-    //     media_type,
-    // };
-
-    // tracing::debug!("Sending media to channel {:?}", media.uuid);
-    // tx.blocking_send(media)
-    //     .map_err(|e| eyre!("Failed sending media to channel: {:?}", e.to_string()))?;
 
     Ok(())
 }

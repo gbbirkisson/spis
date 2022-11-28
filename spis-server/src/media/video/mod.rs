@@ -1,3 +1,4 @@
+use super::images::crop;
 use chrono::{DateTime, NaiveDateTime, TimeZone, Utc};
 use chrono_tz::Europe::Oslo;
 use color_eyre::{eyre::eyre, Result};
@@ -8,8 +9,6 @@ use rusttype::{Font, Scale};
 use std::io::{Cursor, Read};
 use std::sync::Arc;
 use subprocess::{Exec, Redirection};
-
-use super::images::crop;
 
 const FONT_BYTES: &[u8; 781460] = include_bytes!("Kelvinch-1GY8j.ttf");
 const WHITE: Rgba<u8> = Rgba([200u8, 200u8, 200u8, 50u8]);
@@ -44,7 +43,7 @@ impl<'a> VideoProcessor<'a> {
             .capture()?
             .stdout_str();
         let timestamp = timestamp
-            .split_once(".")
+            .split_once('.')
             .ok_or(eyre!("Failed to split timestamp"))?
             .0;
 

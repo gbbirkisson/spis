@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     supervisor \
     nginx \
     gettext-base \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Set spis variables
