@@ -1,38 +1,46 @@
+use super::video::VideoProcessor;
 use super::ProcessedMedia;
+use crate::media::images::ImageProcessor;
 use crate::media::util::Thumbnail;
-use crate::media::{metadata, ProcessedMediaData};
-use chrono::prelude::*;
+use crate::media::{ProcessedMediaData, ProcessedMediaType};
 use color_eyre::{eyre::eyre, Result};
+use md5::{Digest, Md5};
 use rayon::prelude::*;
+use std::fs::File;
+use std::io::Read;
+use std::path::Path;
+use std::path::PathBuf;
 use std::time::Duration;
-use std::{
-    fs::{self},
-    path::PathBuf,
-};
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use uuid::Builder;
 use walkdir::WalkDir;
 
-static MEDIA_FORMAT: &[&str] = &[".jpg", ".jpeg"];
+static EXT_IMAGE: &[&str] = &[".jpg", ".jpeg"];
+static EXT_VIDEO: &[&str] = &[".mp4"];
 static THUMBNAIL_SIZE: u32 = 400;
 
-trait HasExt {
-    fn has_ext(&self, ext: &[&str]) -> bool;
+trait GetMediaType {
+    fn media_type(&self) -> Option<ProcessedMediaType>;
 }
 
-impl HasExt for walkdir::DirEntry {
-    fn has_ext(&self, ext: &[&str]) -> bool {
+impl GetMediaType for walkdir::DirEntry {
+    fn media_type(&self) -> Option<ProcessedMediaType> {
         match self.file_name().to_str() {
-            None => (),
+            None => None,
             Some(name) => {
-                for e in ext {
+                for e in EXT_IMAGE {
                     if name.ends_with(e) {
-                        return true;
+                        return Some(ProcessedMediaType::Image);
                     }
                 }
+                for e in EXT_VIDEO {
+                    if name.ends_with(e) {
+                        return Some(ProcessedMediaType::Video);
+                    }
+                }
+                None
             }
         }
-        false
     }
 }
 
@@ -54,14 +62,32 @@ fn do_walk(
     tx: Sender<ProcessedMedia>,
     done_send: Sender<usize>,
 ) {
+    let video_processor = match VideoProcessor::new() {
+        Ok(proc) => Some(proc),
+        Err(e) => {
+            tracing::warn!(
+                "Failed initializing video processor. No videos will be processed: {}",
+                e
+            );
+            None
+        }
+    };
+
     let walk: Vec<_> = WalkDir::new(media_dir)
         .into_iter()
         .filter_map(|r| r.ok())
-        .filter(|e| e.has_ext(MEDIA_FORMAT))
+        .filter_map(|e| e.media_type().map(|t| (e, t)))
         .par_bridge()
         .map(|e| {
-            if let Err(err) = do_process(thumb_dir.clone(), tx.clone(), &e) {
-                let path = e.path().to_str().unwrap();
+            let (entry, media_type) = e;
+            if let Err(err) = do_process(
+                video_processor.clone(),
+                thumb_dir.clone(),
+                tx.clone(),
+                &entry,
+                media_type,
+            ) {
+                let path = entry.path().to_str().unwrap();
                 tracing::error!("Failed processing media {path}: {err}")
             }
         })
@@ -78,103 +104,79 @@ fn do_walk(
     }
 }
 
+fn get_uuid(path: &Path) -> Result<uuid::Uuid> {
+    const BUFFER_SIZE: usize = 1024 * 1024; // 1mb
+
+    let mut file = File::open(path)?;
+    let mut buffer = [0; BUFFER_SIZE];
+    let mut hasher = Md5::new();
+
+    loop {
+        let read = file.read(&mut buffer)?;
+        if read == 0 {
+            break;
+        }
+        hasher.update(&buffer[..read]);
+    }
+
+    let result = hasher.finalize();
+    Ok(*Builder::from_md5_bytes(result.into()).as_uuid())
+}
+
 fn do_process(
+    video_processor: Option<VideoProcessor>,
     thumb_dir: PathBuf,
     tx: Sender<ProcessedMedia>,
     media_entry: &walkdir::DirEntry,
+    media_type: ProcessedMediaType,
 ) -> Result<()> {
-    let media_bytes = fs::read(media_entry.path())?;
-    let media_hash = md5::compute(&media_bytes);
-    let media_uuid = *Builder::from_md5_bytes(media_hash.into()).as_uuid();
+    let media_uuid = get_uuid(media_entry.path())?;
+    let media_path = media_entry.path().display().to_string();
+
+    tracing::info!("Processing {}: {}", media_uuid, media_path);
 
     let media_thumbnail_path = thumb_dir.get_thumbnail(&media_uuid);
 
-    let mut media_data = None;
-
-    if !media_thumbnail_path.exists() {
-        tracing::debug!("Reading EXIF data for {:?}", media_entry.path());
-        let exif = match metadata::image_exif_read(&media_bytes) {
-            Ok(e) => Some(e),
-            Err(_) => {
-                tracing::debug!("Failed to read EXIF data for {:?}", media_entry.path());
-                None
+    let processed = if !media_thumbnail_path.exists() {
+        match (video_processor, &media_type) {
+            (Some(video_processor), ProcessedMediaType::Video) => {
+                tracing::debug!("Processing video: {}", media_path);
+                let thumb = video_processor.get_thumbnail(&media_path, THUMBNAIL_SIZE)?;
+                let taken_at = video_processor.get_timestamp(&media_path)?;
+                Some((thumb, taken_at))
             }
-        };
-
-        tracing::debug!("Creating thumbnail: {:?}", media_thumbnail_path);
-        let mut image = image::open(media_entry.path())?;
-        image = image.thumbnail(THUMBNAIL_SIZE, THUMBNAIL_SIZE);
-        if let Some(exif) = &exif {
-            image = match exif.orientation.rotation {
-                90 => image.rotate90(),
-
-                180 => image.rotate180(),
-
-                270 => image.rotate270(),
-
-                _ => image,
-            };
-            if exif.orientation.mirrored {
-                image = image.flipv();
+            (_, ProcessedMediaType::Image) => {
+                tracing::debug!("Processing image: {}", media_path);
+                let image_processor = ImageProcessor::new(media_entry.path())?;
+                let thumb = image_processor.get_thumbnail(THUMBNAIL_SIZE)?;
+                let taken_at = image_processor.get_timestamp()?;
+                Some((thumb, taken_at))
             }
+            (_, _) => None,
         }
-
-        let image_height = image.height();
-        let image_width = image.width();
-        image = match image_height > image_width {
-            true => image.crop(
-                0,
-                (image_height - image_width) / 2,
-                image_width,
-                image_width,
-            ),
-            false => image.crop(
-                (image_width - image_height) / 2,
-                0,
-                image_height,
-                image_height,
-            ),
-        };
-        image.save(media_thumbnail_path)?;
-
-        let taken = match exif.map(|e| e.taken) {
-            Some(taken) => taken,
-            None => {
-                tracing::warn!(
-                    "Could not read timestamp from metadata: {:?}",
-                    media_entry.path()
-                );
-                match media_entry.metadata() {
-                    Ok(meta) => match meta.modified() {
-                        Ok(time) => Some(time.into()),
-                        Err(_) => {
-                            tracing::warn!(
-                                "Could not determin timestamp for {:?}",
-                                media_entry.path()
-                            );
-                            None
-                        }
-                    },
-                    Err(_) => None,
-                }
-            }
-        };
-
-        let data = ProcessedMediaData {
-            taken_at: taken.unwrap_or_else(Utc::now),
-        };
-
-        media_data = Some(data);
-    }
-
-    let media = ProcessedMedia {
-        uuid: media_uuid,
-        path: media_entry.path().display().to_string(),
-        data: media_data,
+    } else {
+        None
     };
 
-    tracing::debug!("Sending media to channel {:?}", media.uuid);
-    tx.blocking_send(media)
+    let processed_media = match processed {
+        Some((thumb, taken_at)) => {
+            thumb.save(media_thumbnail_path)?;
+            ProcessedMedia {
+                uuid: media_uuid,
+                path: media_path,
+                data: Some(ProcessedMediaData { taken_at }),
+                media_type,
+            }
+        }
+        None => ProcessedMedia {
+            uuid: media_uuid,
+            path: media_path,
+            data: None,
+            media_type,
+        },
+    };
+
+    tx.blocking_send(processed_media)
         .map_err(|e| eyre!("Failed sending media to channel: {:?}", e.to_string()))?;
 
     Ok(())

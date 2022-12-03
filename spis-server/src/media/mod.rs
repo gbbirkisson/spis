@@ -5,14 +5,21 @@ use std::path::PathBuf;
 use tokio::sync::mpsc::channel;
 use uuid::Uuid;
 
-pub mod metadata;
+mod images;
 mod processing;
 pub(crate) mod util;
+mod video;
 
 pub struct ProcessedMedia {
     pub uuid: Uuid,
     pub path: String,
+    pub media_type: ProcessedMediaType,
     pub data: Option<ProcessedMediaData>,
+}
+
+pub enum ProcessedMediaType {
+    Image,
+    Video,
 }
 
 pub struct ProcessedMediaData {

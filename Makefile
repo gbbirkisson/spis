@@ -19,7 +19,7 @@ help: ## Show this help
 .PHONY: clean
 clean: ## Clean up
 	cargo clean
-	rm -rf ${DEV_BASE_DIR}
+	rm -rf ${DEV_STATE_DIR}
 	rm -rf spis-gui/dist
 	rm -rf release
 	rm -f cobertura.xml

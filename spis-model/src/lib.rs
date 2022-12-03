@@ -7,6 +7,16 @@ pub struct Media {
     pub location: String,
     pub thumbnail: String,
     pub taken_at: DateTime<Utc>,
+    #[serde(rename = "type")]
+    pub media_type: MediaType,
+}
+
+#[derive(Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub enum MediaType {
+    #[serde(rename = "img")]
+    Image,
+    #[serde(rename = "vid")]
+    Video,
 }
 
 #[derive(Deserialize)]

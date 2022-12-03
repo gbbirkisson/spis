@@ -1,4 +1,4 @@
-use spis_model::{Media, MediaSearchParams};
+use spis_model::{Media, MediaSearchParams, MediaType};
 use sycamore::prelude::*;
 use sycamore::suspense::Suspense;
 use wasm_bindgen::prelude::Closure;
@@ -12,6 +12,7 @@ const API_MEDIA_PER_REQ: usize = 100;
 
 struct MediaPreviewData {
     location: String,
+    media_type: MediaType,
 }
 
 fn render_thumbnail<G: Html>(cx: Scope<'_>, media: Media) -> View<G> {
@@ -23,8 +24,10 @@ fn render_thumbnail<G: Html>(cx: Scope<'_>, media: Media) -> View<G> {
     let preview_display = |_| {
         // Called when a thumbnail is pressed
         let media_data_location = media_data.get().as_ref().location.clone();
+        let media_data_type = media_data.get().as_ref().media_type.clone();
         media_preview_signal.set(Some(MediaPreviewData {
             location: media_data_location,
+            media_type: media_data_type,
         }));
     };
 
@@ -48,10 +51,22 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
     view! { cx,
         div {
             (if media_preview.get().is_some() {
-                let location = media_preview.get().as_ref().as_ref().unwrap().location.clone();
+                let media_type = media_preview.get().as_ref().as_ref().unwrap().media_type.clone();
                 view! { cx,
-                    div(class="media-preview") {
-                        img(class="img-preview", src=location, on:click=preview_close) {}
+                    div(class="media-preview", on:click=preview_close) {
+                        ({
+                            let location = media_preview.get().as_ref().as_ref().unwrap().location.clone();
+                            match media_type {
+                                MediaType::Image => view! {cx,
+                                    img(class="img-preview", src=location) {}
+                                },
+                                MediaType::Video => view! {cx,
+                                    video(class="img-preview", autoplay=true, controls=true) {
+                                        source(type="video/mp4", src=location) {}
+                                    }
+                                }
+                            }
+                    })
                     }
                 }
             } else {
