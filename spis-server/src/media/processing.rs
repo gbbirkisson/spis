@@ -133,7 +133,7 @@ fn do_process(
     let media_uuid = get_uuid(media_entry.path())?;
     let media_path = media_entry.path().display().to_string();
 
-    tracing::info!("Processing {}: {}", media_uuid, media_path);
+    tracing::debug!("Processing {}: {}", media_uuid, media_path);
 
     let media_thumbnail_path = thumb_dir.get_thumbnail(&media_uuid);
 
