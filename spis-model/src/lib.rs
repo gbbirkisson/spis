@@ -19,8 +19,9 @@ pub enum MediaType {
     Video,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct MediaSearchParams {
     pub page_size: usize,
+    pub taken_after: Option<DateTime<Utc>>,
     pub taken_before: Option<DateTime<Utc>>,
 }

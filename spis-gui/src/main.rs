@@ -82,6 +82,7 @@ async fn MediaList<G: Html>(cx: Scope<'_>) -> View<G> {
     let media_list: RcSignal<Vec<Media>> = create_rc_signal(
         api::fetch_media_list(spis_model::MediaSearchParams {
             page_size: API_MEDIA_PER_REQ,
+            taken_after: None,
             taken_before: None,
         })
         .await
@@ -117,6 +118,7 @@ async fn MediaList<G: Html>(cx: Scope<'_>) -> View<G> {
                 let taken_before = new_media.last().map(|i| i.taken_at);
                 let mut fetched_media = api::fetch_media_list(MediaSearchParams {
                     page_size: API_MEDIA_PER_REQ,
+                    taken_after: None,
                     taken_before,
                 })
                 .await

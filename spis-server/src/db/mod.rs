@@ -117,10 +117,11 @@ pub struct MediaRow {
 pub async fn media_get(
     pool: &SqlitePool,
     limit: i32,
+    taken_after: Option<DateTime<Utc>>,
     taken_before: Option<DateTime<Utc>>,
 ) -> Result<Vec<MediaRow>> {
-    match taken_before {
-        None => sqlx::query_as::<Sqlite, MediaRow>(
+    match (taken_after, taken_before) {
+        (None, None) => sqlx::query_as::<Sqlite, MediaRow>(
             r#"
             SELECT id, path, taken_at, type as media_type FROM media
             ORDER BY taken_at DESC
@@ -128,7 +129,7 @@ pub async fn media_get(
             "#,
         )
         .bind(limit),
-        Some(taken_before) => sqlx::query_as::<Sqlite, MediaRow>(
+        (None, Some(taken_before)) => sqlx::query_as::<Sqlite, MediaRow>(
             r#"
             SELECT id, path, taken_at, type as media_type FROM media
             WHERE taken_at < ?
@@ -136,6 +137,27 @@ pub async fn media_get(
             LIMIT ?
             "#,
         )
+        .bind(taken_before)
+        .bind(limit),
+        (Some(taken_after), None) => sqlx::query_as::<Sqlite, MediaRow>(
+            r#"
+            SELECT id, path, taken_at, type as media_type FROM media
+            WHERE taken_at > ?
+            ORDER BY taken_at DESC
+            LIMIT ?
+            "#,
+        )
+        .bind(taken_after)
+        .bind(limit),
+        (Some(taken_after), Some(taken_before)) => sqlx::query_as::<Sqlite, MediaRow>(
+            r#"
+            SELECT id, path, taken_at, type as media_type FROM media
+            WHERE taken_at > ? AND taken_at < ?
+            ORDER BY taken_at DESC
+            LIMIT ?
+            "#,
+        )
+        .bind(taken_after)
         .bind(taken_before)
         .bind(limit),
     }
