@@ -5,8 +5,35 @@
     "display": "fullscreen",
     "background_color": "#2b2b2b",
     "theme_color": "#db9b38",
-    "orientation": "portrait-primary",
     "icons": [
+      {
+        "src": "/favicon.png",
+        "type": "image/png", "sizes": "72x72"
+      },
+      {
+        "src": "/favicon.png",
+        "type": "image/png", "sizes": "96x96"
+      },
+      {
+        "src": "/favicon.png",
+        "type": "image/png","sizes": "128x128"
+      },
+      {
+        "src": "/favicon.png",
+        "type": "image/png", "sizes": "144x144"
+      },
+      {
+        "src": "/favicon.png",
+        "type": "image/png", "sizes": "152x152"
+      },
+      {
+        "src": "/favicon.png",
+        "type": "image/png", "sizes": "192x192"
+      },
+      {
+        "src": "/favicon.png",
+        "type": "image/png", "sizes": "384x384"
+      },
       {
         "src": "/favicon.png",
         "type": "image/png","sizes": "512x512"
