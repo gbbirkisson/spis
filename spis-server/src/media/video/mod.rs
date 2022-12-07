@@ -1,6 +1,5 @@
 use super::images::crop;
-use chrono::{DateTime, NaiveDateTime, TimeZone, Utc};
-use chrono_tz::Europe::Oslo;
+use chrono::{DateTime, Utc};
 use color_eyre::{eyre::eyre, Result};
 use image::io::Reader;
 use image::{DynamicImage, Rgba};
@@ -41,15 +40,10 @@ impl<'a> VideoProcessor<'a> {
             .arg(file)
             .stdout(Redirection::Pipe)
             .capture()?
-            .stdout_str();
-        let timestamp = timestamp
-            .split_once('.')
-            .ok_or(eyre!("Failed to split timestamp"))?
-            .0;
-
-        let parsed_time = NaiveDateTime::parse_from_str(timestamp, "%Y-%m-%dT%H:%M:%S")?;
-        let parsed_time = Oslo.from_local_datetime(&parsed_time).unwrap();
-        Ok(parsed_time.with_timezone(&Utc))
+            .stdout_str()
+            .trim()
+            .replace('z', "Z");
+        Ok(DateTime::parse_from_rfc3339(&timestamp)?.with_timezone(&Utc))
     }
 
     pub fn get_thumbnail(&self, file: &str, size: u32) -> Result<DynamicImage> {

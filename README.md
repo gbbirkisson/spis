@@ -19,8 +19,8 @@ The goals for this project are:
 <h2>Table of contents</h2>
 
 - [Screenshot](#screenshot)
-- [Configuration](#configuration)
 - [Setup](#setup)
+  - [Configuration](#configuration)
   - [Docker](#docker)
   - [Binary](#binary)
 - [Progressive Web App](#progressive-web-app)
@@ -34,7 +34,9 @@ This is how the GUI looks!
 
 <img width="100%" src="screenshot.jpg">
 
-## Configuration
+## Setup
+
+### Configuration
 
 Everything is configured via environmental variables:
 
@@ -49,8 +51,6 @@ Variable Name | Required | Default | Description
 `SPIS_SERVER_SOCKET` | `No` | `/var/run/spis.sock` | Path of the socket the server will listen to
 `SPIS_SERVER_ADDRESS` | `No` | | Address to listen to rather than socket, i.e. `0.0.0.0:8000` 
 `RUST_LOG` | `No` | | Loglevels of the application, i.e. `error,spis_server=info`
-
-## Setup
 
 ### Docker
 
@@ -67,6 +67,8 @@ $ docker run -it \
 ### Binary
 
 Just [download a binary](https://github.com/gbbirkisson/spis/releases) for your architecture and run it. Note that the `spis-server` binary does not serve images. For that you can use something like nginx. See [nginx config](./docker/nginx.conf) for an example.
+
+> **Note**: To get video support both `ffmpeg` and `ffprobe` must be present in path!
 
 ## Progressive Web App
 

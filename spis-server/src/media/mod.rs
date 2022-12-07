@@ -1,9 +1,16 @@
 use crate::db;
 use chrono::{DateTime, Utc};
+use color_eyre::{eyre::eyre, Result};
+use image::DynamicImage;
 use sqlx::{Pool, Sqlite};
 use std::path::PathBuf;
 use tokio::sync::mpsc::channel;
 use uuid::Uuid;
+
+use self::{
+    processing::{single_media_process, GetMediaType},
+    video::VideoProcessor,
+};
 
 mod images;
 mod processing;
@@ -100,4 +107,11 @@ pub async fn process(pool: Pool<Sqlite>, media_dir: PathBuf, thumb_dir: PathBuf)
         "Media processing ended after {} minutes",
         diff.num_minutes()
     )
+}
+
+pub fn process_single(path: PathBuf) -> Result<(DynamicImage, DateTime<Utc>)> {
+    let video_processor = VideoProcessor::new()?;
+    let media_type = path.media_type().ok_or(eyre!("Invalid file type"))?;
+    let res = single_media_process(&Some(video_processor), &media_type, path.as_path())?;
+    res.ok_or(eyre!("No data produced"))
 }
