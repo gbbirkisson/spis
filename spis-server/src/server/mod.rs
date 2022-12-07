@@ -38,7 +38,7 @@ async fn get_media(
     converter: web::Data<MediaConverter>,
     params: web::Query<spis_model::MediaSearchParams>,
 ) -> actix_web::Result<impl Responder> {
-    let media: Vec<Media> = db::media_get(&pool, params.page_size as i32, params.taken_after)
+    let media: Vec<Media> = db::media_get(&pool, params.page_size as i32, params.taken_before)
         .await
         .unwrap()
         .into_iter()

@@ -4,11 +4,11 @@ use spis_model::Media;
 pub(crate) async fn fetch_media_list(
     params: spis_model::MediaSearchParams,
 ) -> Result<Vec<Media>, reqwasm::Error> {
-    let url = match params.taken_after {
+    let url = match params.taken_before {
         None => format!("/api?page_size={}", params.page_size),
-        Some(taken_after) => format!(
-            "/api?page_size={}&taken_after={}",
-            params.page_size, taken_after
+        Some(taken_before) => format!(
+            "/api?page_size={}&taken_before={}",
+            params.page_size, taken_before
         ),
     };
     let res = Request::get(&url).send().await?;
