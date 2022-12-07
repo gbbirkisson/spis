@@ -30,14 +30,13 @@ async fn main() -> Result<()> {
         .init();
     color_eyre::install()?;
 
-    // Enable version printing
-    let _ = Args::parse();
-    // if let Some(_) = args.test_media {
-    // let media_bytes = fs::read(media)?;
-    // let meta = media::metadata::image_exif_read(&media_bytes)?;
-    // println!("{:?}", meta);
-    // return Ok(());
-    // }
+    // Parse args
+    let args = Args::parse();
+    if let Some(file) = args.test_media {
+        let data = media::process_single(file)?;
+        println!("{:?}", data.1);
+        return Ok(());
+    }
 
     tracing::info!("Starting spis");
 

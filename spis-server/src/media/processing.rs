@@ -3,7 +3,9 @@ use super::ProcessedMedia;
 use crate::media::images::ImageProcessor;
 use crate::media::util::Thumbnail;
 use crate::media::{ProcessedMediaData, ProcessedMediaType};
+use chrono::{DateTime, Utc};
 use color_eyre::{eyre::eyre, Result};
+use image::DynamicImage;
 use md5::{Digest, Md5};
 use rayon::prelude::*;
 use std::fs::File;
@@ -15,36 +17,41 @@ use tokio::sync::mpsc::{channel, Receiver, Sender};
 use uuid::Builder;
 use walkdir::WalkDir;
 
-static EXT_IMAGE: &[&str] = &[".jpg", ".jpeg"];
-static EXT_VIDEO: &[&str] = &[".mp4"];
+static EXT_IMAGE: &[&str] = &["jpg", "jpeg"];
+static EXT_VIDEO: &[&str] = &["mp4"];
 static THUMBNAIL_SIZE: u32 = 400;
 
-trait GetMediaType {
+pub(crate) trait GetMediaType {
     fn media_type(&self) -> Option<ProcessedMediaType>;
 }
 
-impl GetMediaType for walkdir::DirEntry {
+impl GetMediaType for Path {
     fn media_type(&self) -> Option<ProcessedMediaType> {
-        match self.file_name().to_str() {
-            None => None,
-            Some(name) => {
+        if let Some(ext) = self.extension() {
+            if let Some(ext) = ext.to_str() {
                 for e in EXT_IMAGE {
-                    if name.ends_with(e) {
+                    if e.eq(&ext) {
                         return Some(ProcessedMediaType::Image);
                     }
                 }
                 for e in EXT_VIDEO {
-                    if name.ends_with(e) {
+                    if e.eq(&ext) {
                         return Some(ProcessedMediaType::Video);
                     }
                 }
-                None
             }
         }
+        None
     }
 }
 
-pub fn media_processor(
+impl GetMediaType for walkdir::DirEntry {
+    fn media_type(&self) -> Option<ProcessedMediaType> {
+        self.path().media_type()
+    }
+}
+
+pub(crate) fn media_processor(
     media_dir: PathBuf,
     thumb_dir: PathBuf,
     media_sender: Sender<ProcessedMedia>,
@@ -138,22 +145,7 @@ fn do_process(
     let media_thumbnail_path = thumb_dir.get_thumbnail(&media_uuid);
 
     let processed = if !media_thumbnail_path.exists() {
-        match (video_processor, &media_type) {
-            (Some(video_processor), ProcessedMediaType::Video) => {
-                tracing::debug!("Processing video: {}", media_path);
-                let thumb = video_processor.get_thumbnail(&media_path, THUMBNAIL_SIZE)?;
-                let taken_at = video_processor.get_timestamp(&media_path)?;
-                Some((thumb, taken_at))
-            }
-            (_, ProcessedMediaType::Image) => {
-                tracing::debug!("Processing image: {}", media_path);
-                let image_processor = ImageProcessor::new(media_entry.path())?;
-                let thumb = image_processor.get_thumbnail(THUMBNAIL_SIZE)?;
-                let taken_at = image_processor.get_timestamp()?;
-                Some((thumb, taken_at))
-            }
-            (_, _) => None,
-        }
+        single_media_process(&video_processor, &media_type, media_entry.path())?
     } else {
         None
     };
@@ -180,4 +172,31 @@ fn do_process(
         .map_err(|e| eyre!("Failed sending media to channel: {:?}", e.to_string()))?;
 
     Ok(())
+}
+
+pub(crate) fn single_media_process(
+    video_processor: &Option<VideoProcessor>,
+    media_type: &ProcessedMediaType,
+    media_path: &Path,
+) -> Result<Option<(DynamicImage, DateTime<Utc>)>> {
+    let media_path_str = media_path.display().to_string();
+
+    let res = match (video_processor, &media_type) {
+        (Some(video_processor), ProcessedMediaType::Video) => {
+            tracing::debug!("Processing video: {}", media_path_str);
+            let thumb = video_processor.get_thumbnail(&media_path_str, THUMBNAIL_SIZE)?;
+            let taken_at = video_processor.get_timestamp(&media_path_str)?;
+            Some((thumb, taken_at))
+        }
+        (_, ProcessedMediaType::Image) => {
+            tracing::debug!("Processing image: {}", media_path_str);
+            let image_processor = ImageProcessor::new(media_path)?;
+            let thumb = image_processor.get_thumbnail(THUMBNAIL_SIZE)?;
+            let taken_at = image_processor.get_timestamp()?;
+            Some((thumb, taken_at))
+        }
+        (_, _) => None,
+    };
+
+    Ok(res)
 }
