@@ -55,17 +55,28 @@ fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
 
 #[component]
 async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
+    // Setup signals
     let media_list = use_context::<RcSignal<MediaData>>(cx);
-
-    // Get preview signal
     let media_preview = use_context::<RcSignal<Option<MediaDataEntry>>>(cx);
-
     let archive_color = create_signal(cx, "white");
 
-    // Setup preview close handler
     let preview_close = |_| {
         archive_color.set("white");
         media_preview.set(None);
+    };
+
+    let preview_previous = |_| {
+        let index = media_preview.get().as_ref().as_ref().unwrap().index - 1;
+        let prev = media_list.get().get(index).unwrap().clone();
+        archive_color.set("white");
+        media_preview.set(Some(prev));
+    };
+
+    let preview_next = |_| {
+        let index = media_preview.get().as_ref().as_ref().unwrap().index + 1;
+        let prev = media_list.get().get(index).unwrap().clone();
+        archive_color.set("white");
+        media_preview.set(Some(prev));
     };
 
     let archive = move |_| {
@@ -106,6 +117,10 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
         div {
             (if media_preview.get().is_some() {
                 let media_type = media_preview.get().as_ref().as_ref().unwrap().media.media_type.clone();
+                let media_index = media_preview.get().as_ref().as_ref().unwrap().index.clone();
+                let media_total = media_preview.get().as_ref().as_ref().unwrap().total.clone();
+                let media_prev = media_index > 0;
+                let media_next = media_index + 1 != media_total;
                 view! { cx,
                     div(class="media-preview") {
                         div(class="media-preview-content", on:click=preview_close) {
@@ -124,14 +139,26 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
                             })
                         }
                         div(class="media-action") {
-                            div(class="media-action-button") {
-                                svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
-                                    path(
-                                        fill="white",
-                                        d="M10 22 0 12 10 2l1.775 1.775L3.55 12l8.225 8.225Z"
-                                    )
+                            ({
+                                if media_prev {
+                                    view! {cx,
+                                        div(class="media-action-button", on:click=preview_previous) {
+                                            svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
+                                                path(
+                                                    fill="white",
+                                                    d="M10 22 0 12 10 2l1.775 1.775L3.55 12l8.225 8.225Z"
+                                                )
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    view! {cx,
+                                        div(class="media-action-button") {
+                                            svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {}
+                                        }
+                                    }
                                 }
-                            }
+                            })
                             div(class="media-action-button", on:click=archive) {
                                 svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
                                     path(
@@ -148,14 +175,26 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
                                     )
                                 }
                             }
-                            div(class="media-action-button") {
-                                svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
-                                    path(
-                                        fill="white",
-                                        d="M8.025 22 6.25 20.225 14.475 12 6.25 3.775 8.025 2l10 10Z"
-                                    )
+                            ({
+                                if media_next {
+                                    view! {cx,
+                                        div(class="media-action-button", on:click=preview_next) {
+                                            svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
+                                                path(
+                                                    fill="white",
+                                                    d="M8.025 22 6.25 20.225 14.475 12 6.25 3.775 8.025 2l10 10Z"
+                                                )
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    view! {cx,
+                                        div(class="media-action-button") {
+                                            svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {}
+                                        }
+                                    }
                                 }
-                            }
+                            })
                         }
                     }
                 }
