@@ -11,48 +11,54 @@ mod scroll;
 
 const API_MEDIA_PER_REQ: usize = 100;
 
-struct MediaPreviewData {
+#[derive(Clone, PartialEq)]
+struct MediaDataEntry {
     index: usize,
-    uuid: String,
-    location: String,
-    media_type: MediaType,
+    total: usize,
+    media: Media,
 }
 
-fn render_thumbnail<G: Html>(cx: Scope<'_>, media_entry: (usize, Media)) -> View<G> {
-    let media_index = media_entry.0;
-    let media = media_entry.1;
+type MediaData = Vec<MediaDataEntry>;
 
-    let media_preview_signal = use_context::<RcSignal<Option<MediaPreviewData>>>(cx);
+trait ToMediaData {
+    fn to_media_data(self) -> MediaData;
+}
 
-    // This is a "private" signal to access media to create previews
+impl ToMediaData for Vec<Media> {
+    fn to_media_data(self) -> MediaData {
+        let total = self.len();
+        self.into_iter()
+            .enumerate()
+            .map(|(index, media)| MediaDataEntry {
+                index,
+                media,
+                total,
+            })
+            .collect()
+    }
+}
+
+fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
+    let media_preview_signal = use_context::<RcSignal<Option<MediaDataEntry>>>(cx);
+
     let media_data = create_signal(cx, media.clone());
-
-    let preview_display = move |_| {
-        // Called when a thumbnail is pressed
-        let media_uuid = media_data.get().as_ref().uuid.clone();
-        let media_data_location = media_data.get().as_ref().location.clone();
-        let media_data_type = media_data.get().as_ref().media_type.clone();
-        media_preview_signal.set(Some(MediaPreviewData {
-            index: media_index,
-            uuid: media_uuid,
-            location: media_data_location,
-            media_type: media_data_type,
-        }));
+    let preview_display = |_| {
+        media_preview_signal.set(Some(media_data.get().as_ref().clone()));
     };
 
     view!( cx,
         li {
-          img(src=media.thumbnail, class="media-thumbnail", loading="lazy", on:click=preview_display) {}
+          img(src=media.media.thumbnail, class="media-thumbnail", loading="lazy", on:click=preview_display) {}
         }
     )
 }
 
 #[component]
 async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
-    let media_list = use_context::<RcSignal<Vec<(usize, Media)>>>(cx);
+    let media_list = use_context::<RcSignal<MediaData>>(cx);
 
     // Get preview signal
-    let media_preview = use_context::<RcSignal<Option<MediaPreviewData>>>(cx);
+    let media_preview = use_context::<RcSignal<Option<MediaDataEntry>>>(cx);
 
     let archive_color = create_signal(cx, "white");
 
@@ -63,7 +69,14 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
     };
 
     let archive = move |_| {
-        let uuid = media_preview.get().as_ref().as_ref().unwrap().uuid.clone();
+        let uuid = media_preview
+            .get()
+            .as_ref()
+            .as_ref()
+            .unwrap()
+            .media
+            .uuid
+            .clone();
 
         spawn_local_scoped(cx, async move {
             let confirm_color = "red";
@@ -77,13 +90,10 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
                 .await
                 .unwrap();
 
-                let old_media = media_list.get();
-                let mut new_media: Vec<Media> =
-                    Vec::from_iter(old_media.iter().map(|m| m.1.clone()));
                 let index = media_preview.get().as_ref().as_ref().unwrap().index;
-                new_media.remove(index);
-                let new_media = new_media.into_iter().enumerate().collect();
-                media_list.set(new_media);
+                let mut old_media = media_list.get().as_ref().clone();
+                old_media.remove(index);
+                media_list.set(old_media);
                 archive_color.set("white");
                 media_preview.set(None);
             } else {
@@ -95,12 +105,12 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
     view! { cx,
         div {
             (if media_preview.get().is_some() {
-                let media_type = media_preview.get().as_ref().as_ref().unwrap().media_type.clone();
+                let media_type = media_preview.get().as_ref().as_ref().unwrap().media.media_type.clone();
                 view! { cx,
                     div(class="media-preview") {
                         div(class="media-preview-content", on:click=preview_close) {
                             ({
-                                let location = media_preview.get().as_ref().as_ref().unwrap().location.clone();
+                                let location = media_preview.get().as_ref().as_ref().unwrap().media.location.clone();
                                 match media_type {
                                     MediaType::Image => view! {cx,
                                         img(class="img-preview", src=location) {}
@@ -158,7 +168,7 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
 
 #[component]
 async fn MediaList<G: Html>(cx: Scope<'_>) -> View<G> {
-    let media_list = use_context::<RcSignal<Vec<(usize, Media)>>>(cx);
+    let media_list = use_context::<RcSignal<MediaData>>(cx);
     view! { cx,
         ul(class="media-list") {
             Indexed(
@@ -181,11 +191,11 @@ fn MediaLoading<G: Html>(cx: Scope) -> View<G> {
 #[component]
 async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
     // Setup global preview context
-    let media_preview_signal: RcSignal<Option<MediaPreviewData>> = create_rc_signal(None);
+    let media_preview_signal: RcSignal<Option<MediaDataEntry>> = create_rc_signal(None);
     provide_context(cx, media_preview_signal);
 
     // Setup media list signal, and fetch the first data
-    let media_list: RcSignal<Vec<(usize, Media)>> = create_rc_signal(
+    let media_list: RcSignal<MediaData> = create_rc_signal(
         api::media_list(spis_model::MediaListParams {
             page_size: API_MEDIA_PER_REQ,
             archived: None,
@@ -194,9 +204,7 @@ async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
         })
         .await
         .unwrap()
-        .into_iter()
-        .enumerate()
-        .collect(),
+        .to_media_data(),
     );
     provide_context(cx, media_list.clone());
 
@@ -220,8 +228,8 @@ async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
                 let mut new_media: Vec<Media> =
                     Vec::with_capacity(old_media.len() + API_MEDIA_PER_REQ);
 
-                for media in old_media.iter() {
-                    new_media.push(media.1.clone());
+                for entry in old_media.iter() {
+                    new_media.push(entry.media.clone());
                 }
 
                 let taken_before = new_media.last().map(|i| i.taken_at);
@@ -237,7 +245,7 @@ async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
                 let at_the_end = fetched_media.len() != API_MEDIA_PER_REQ;
 
                 new_media.append(&mut fetched_media);
-                let new_media = new_media.into_iter().enumerate().collect();
+                let new_media = new_media.to_media_data();
                 media_list.set(new_media);
 
                 if !at_the_end {
