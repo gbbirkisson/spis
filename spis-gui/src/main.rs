@@ -1,3 +1,4 @@
+use data::*;
 use spis_model::{Media, MediaListParams, MediaType};
 use sycamore::futures::spawn_local_scoped;
 use sycamore::prelude::*;
@@ -7,48 +8,10 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::spawn_local;
 
 mod api;
+mod data;
 mod scroll;
 
 const API_MEDIA_PER_REQ: usize = 100;
-
-#[derive(Clone, PartialEq)]
-struct MediaDataEntry {
-    index: usize,
-    total: usize,
-    media: Media,
-}
-
-type MediaData = Vec<MediaDataEntry>;
-
-trait ToMediaData {
-    fn to_media_data(self) -> MediaData;
-}
-
-impl ToMediaData for Vec<Media> {
-    fn to_media_data(self) -> MediaData {
-        let total = self.len();
-        self.into_iter()
-            .enumerate()
-            .map(|(index, media)| MediaDataEntry {
-                index,
-                media,
-                total,
-            })
-            .collect()
-    }
-}
-
-trait SafeRemove {
-    fn safe_remove(self, index: usize) -> MediaData;
-}
-
-impl SafeRemove for MediaData {
-    fn safe_remove(mut self, index: usize) -> MediaData {
-        self.remove(index);
-        let res: Vec<Media> = self.into_iter().map(|e| e.media).collect();
-        res.to_media_data()
-    }
-}
 
 fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
     let media_preview_signal = use_context::<RcSignal<Option<MediaDataEntry>>>(cx);
@@ -116,9 +79,10 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
                 let index = media_preview.get().as_ref().as_ref().unwrap().index;
                 let old_media = media_list.get().as_ref().clone();
                 let old_media = old_media.safe_remove(index);
+                let next = old_media.get(index).map(|e| e.clone());
                 media_list.set(old_media);
                 archive_color.set("white");
-                media_preview.set(None);
+                media_preview.set(next)
             } else {
                 archive_color.set("red");
             }
