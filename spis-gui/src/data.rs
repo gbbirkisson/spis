@@ -1,5 +1,7 @@
 use spis_model::Media;
 
+pub type IconColor<'a> = &'a str;
+
 #[derive(Clone, PartialEq)]
 pub struct MediaDataEntry {
     pub index: usize,

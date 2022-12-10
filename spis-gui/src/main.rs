@@ -8,11 +8,10 @@ use wasm_bindgen_futures::spawn_local;
 
 mod api;
 mod data;
+mod preview;
 mod scroll;
 
 const API_MEDIA_PER_REQ: usize = 100;
-
-type IconColor<'a> = &'a str;
 
 fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
     let media_preview_signal = use_context::<RcSignal<Option<MediaDataEntry>>>(cx);
@@ -29,97 +28,6 @@ fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
     )
 }
 
-fn preview_set_previous(
-    media_list: &RcSignal<MediaData>,
-    media_preview: &RcSignal<Option<MediaDataEntry>>,
-    archive_color: &RcSignal<IconColor>,
-) {
-    if media_preview.get().is_none() {
-        return;
-    }
-
-    let index = media_preview.get().as_ref().as_ref().unwrap().index;
-    if index == 0 {
-        return;
-    }
-
-    archive_color.set("white");
-    let prev = media_list.get().get(index - 1).map(|e| e.clone());
-    media_preview.set(prev);
-}
-
-fn preview_set_next(
-    media_list: &RcSignal<MediaData>,
-    media_preview: &RcSignal<Option<MediaDataEntry>>,
-    archive_color: &RcSignal<IconColor>,
-) {
-    if media_preview.get().is_none() {
-        return;
-    }
-
-    let index = media_preview.get().as_ref().as_ref().unwrap().index + 1;
-    let prev = media_list.get().get(index).map(|e| e.clone());
-    if prev.is_none() {
-        return;
-    }
-    archive_color.set("white");
-    media_preview.set(prev);
-}
-
-fn preview_close(
-    media_preview: &RcSignal<Option<MediaDataEntry>>,
-    archive_color: &RcSignal<IconColor>,
-) {
-    archive_color.set("white");
-    media_preview.set(None);
-}
-
-fn preview_archive<'a>(
-    media_list: &'a RcSignal<MediaData>,
-    media_preview: &'a RcSignal<Option<MediaDataEntry>>,
-    archive_color: &'a RcSignal<IconColor>,
-) {
-    if media_preview.get().is_none() {
-        return;
-    }
-
-    let uuid = media_preview
-        .get()
-        .as_ref()
-        .as_ref()
-        .unwrap()
-        .media
-        .uuid
-        .clone();
-
-    let media_list = media_list.clone();
-    let media_preview = media_preview.clone();
-    let archive_color = archive_color.clone();
-
-    let confirm_color = "red";
-    if !archive_color.get().as_ref().contains(confirm_color) {
-        archive_color.set("red");
-    } else {
-        let index = media_preview.get().as_ref().as_ref().unwrap().index;
-        let old_media = media_list.get().as_ref().clone();
-        let old_media = old_media.safe_remove(index);
-        let next = old_media.get(index).map(|e| e.clone());
-        media_list.set(old_media);
-        archive_color.set("white");
-        media_preview.set(next);
-        spawn_local(async move {
-            api::media_edit(
-                &uuid,
-                spis_model::MediaEditParams {
-                    archive: Some(true),
-                },
-            )
-            .await
-            .unwrap();
-        });
-    }
-}
-
 #[component]
 async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
     // Setup signals
@@ -128,19 +36,19 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
     let archive_color = use_context::<RcSignal<IconColor>>(cx);
 
     let preview_close = |_| {
-        preview_close(media_preview, archive_color);
+        preview::close(media_preview, archive_color);
     };
 
     let preview_previous = |_| {
-        preview_set_previous(media_list, media_preview, archive_color);
+        preview::set_previous(media_list, media_preview, archive_color);
     };
 
     let preview_next = |_| {
-        preview_set_next(media_list, media_preview, archive_color);
+        preview::set_next(media_list, media_preview, archive_color);
     };
 
     let archive = move |_| {
-        preview_archive(media_list, media_preview, archive_color);
+        preview::archive(media_list, media_preview, archive_color);
     };
 
     view! { cx,
@@ -351,10 +259,10 @@ async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
             let media_preview = keyboard_closure_media_preview_signal.clone();
             let media_list = keyboard_closure_media_list.clone();
             match e.key().as_str() {
-                "ArrowRight" => preview_set_next(&media_list, &media_preview, &archive_color),
-                "ArrowLeft" => preview_set_previous(&media_list, &media_preview, &archive_color),
-                "Escape" => preview_close(&media_preview, &archive_color),
-                "Delete" => preview_archive(&media_list, &media_preview, &archive_color),
+                "ArrowRight" => preview::set_next(&media_list, &media_preview, &archive_color),
+                "ArrowLeft" => preview::set_previous(&media_list, &media_preview, &archive_color),
+                "Escape" => preview::close(&media_preview, &archive_color),
+                "Delete" => preview::archive(&media_list, &media_preview, &archive_color),
                 _ => (),
             }
         });
