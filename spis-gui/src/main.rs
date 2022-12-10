@@ -38,6 +38,18 @@ impl ToMediaData for Vec<Media> {
     }
 }
 
+trait SafeRemove {
+    fn safe_remove(self, index: usize) -> MediaData;
+}
+
+impl SafeRemove for MediaData {
+    fn safe_remove(mut self, index: usize) -> MediaData {
+        self.remove(index);
+        let res: Vec<Media> = self.into_iter().map(|e| e.media).collect();
+        res.to_media_data()
+    }
+}
+
 fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
     let media_preview_signal = use_context::<RcSignal<Option<MediaDataEntry>>>(cx);
 
@@ -102,8 +114,8 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
                 .unwrap();
 
                 let index = media_preview.get().as_ref().as_ref().unwrap().index;
-                let mut old_media = media_list.get().as_ref().clone();
-                old_media.remove(index);
+                let old_media = media_list.get().as_ref().clone();
+                let old_media = old_media.safe_remove(index);
                 media_list.set(old_media);
                 archive_color.set("white");
                 media_preview.set(None);
