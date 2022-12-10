@@ -1,6 +1,5 @@
 use data::*;
 use spis_model::{Media, MediaListParams, MediaType};
-use sycamore::futures::spawn_local_scoped;
 use sycamore::prelude::*;
 use sycamore::suspense::Suspense;
 use wasm_bindgen::prelude::Closure;
@@ -12,6 +11,8 @@ mod data;
 mod scroll;
 
 const API_MEDIA_PER_REQ: usize = 100;
+
+type IconColor<'a> = &'a str;
 
 fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
     let media_preview_signal = use_context::<RcSignal<Option<MediaDataEntry>>>(cx);
@@ -28,65 +29,118 @@ fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
     )
 }
 
+fn preview_set_previous(
+    media_list: &RcSignal<MediaData>,
+    media_preview: &RcSignal<Option<MediaDataEntry>>,
+    archive_color: &RcSignal<IconColor>,
+) {
+    if media_preview.get().is_none() {
+        return;
+    }
+
+    let index = media_preview.get().as_ref().as_ref().unwrap().index;
+    if index == 0 {
+        return;
+    }
+
+    archive_color.set("white");
+    let prev = media_list.get().get(index - 1).map(|e| e.clone());
+    media_preview.set(prev);
+}
+
+fn preview_set_next(
+    media_list: &RcSignal<MediaData>,
+    media_preview: &RcSignal<Option<MediaDataEntry>>,
+    archive_color: &RcSignal<IconColor>,
+) {
+    if media_preview.get().is_none() {
+        return;
+    }
+
+    let index = media_preview.get().as_ref().as_ref().unwrap().index + 1;
+    let prev = media_list.get().get(index).map(|e| e.clone());
+    if prev.is_none() {
+        return;
+    }
+    archive_color.set("white");
+    media_preview.set(prev);
+}
+
+fn preview_close(
+    media_preview: &RcSignal<Option<MediaDataEntry>>,
+    archive_color: &RcSignal<IconColor>,
+) {
+    archive_color.set("white");
+    media_preview.set(None);
+}
+
+fn preview_archive<'a>(
+    media_list: &'a RcSignal<MediaData>,
+    media_preview: &'a RcSignal<Option<MediaDataEntry>>,
+    archive_color: &'a RcSignal<IconColor>,
+) {
+    if media_preview.get().is_none() {
+        return;
+    }
+
+    let uuid = media_preview
+        .get()
+        .as_ref()
+        .as_ref()
+        .unwrap()
+        .media
+        .uuid
+        .clone();
+
+    let media_list = media_list.clone();
+    let media_preview = media_preview.clone();
+    let archive_color = archive_color.clone();
+
+    let confirm_color = "red";
+    if !archive_color.get().as_ref().contains(confirm_color) {
+        archive_color.set("red");
+    } else {
+        let index = media_preview.get().as_ref().as_ref().unwrap().index;
+        let old_media = media_list.get().as_ref().clone();
+        let old_media = old_media.safe_remove(index);
+        let next = old_media.get(index).map(|e| e.clone());
+        media_list.set(old_media);
+        archive_color.set("white");
+        media_preview.set(next);
+        spawn_local(async move {
+            api::media_edit(
+                &uuid,
+                spis_model::MediaEditParams {
+                    archive: Some(true),
+                },
+            )
+            .await
+            .unwrap();
+        });
+    }
+}
+
 #[component]
 async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
     // Setup signals
     let media_list = use_context::<RcSignal<MediaData>>(cx);
     let media_preview = use_context::<RcSignal<Option<MediaDataEntry>>>(cx);
-    let archive_color = create_signal(cx, "white");
+    let archive_color = use_context::<RcSignal<IconColor>>(cx);
 
     let preview_close = |_| {
-        archive_color.set("white");
-        media_preview.set(None);
+        preview_close(media_preview, archive_color);
     };
 
     let preview_previous = |_| {
-        let index = media_preview.get().as_ref().as_ref().unwrap().index - 1;
-        let prev = media_list.get().get(index).unwrap().clone();
-        archive_color.set("white");
-        media_preview.set(Some(prev));
+        preview_set_previous(media_list, media_preview, archive_color);
     };
 
     let preview_next = |_| {
-        let index = media_preview.get().as_ref().as_ref().unwrap().index + 1;
-        let prev = media_list.get().get(index).unwrap().clone();
-        archive_color.set("white");
-        media_preview.set(Some(prev));
+        preview_set_next(media_list, media_preview, archive_color);
     };
 
     let archive = move |_| {
-        let uuid = media_preview
-            .get()
-            .as_ref()
-            .as_ref()
-            .unwrap()
-            .media
-            .uuid
-            .clone();
-
-        spawn_local_scoped(cx, async move {
-            let confirm_color = "red";
-            if archive_color.get().as_ref().contains(confirm_color) {
-                api::media_edit(
-                    &uuid,
-                    spis_model::MediaEditParams {
-                        archive: Some(true),
-                    },
-                )
-                .await
-                .unwrap();
-
-                let index = media_preview.get().as_ref().as_ref().unwrap().index;
-                let old_media = media_list.get().as_ref().clone();
-                let old_media = old_media.safe_remove(index);
-                let next = old_media.get(index).map(|e| e.clone());
-                media_list.set(old_media);
-                archive_color.set("white");
-                media_preview.set(next)
-            } else {
-                archive_color.set("red");
-            }
-        })
+        preview_archive(media_list, media_preview, archive_color);
     };
 
     view! { cx,
@@ -207,7 +261,7 @@ fn MediaLoading<G: Html>(cx: Scope) -> View<G> {
 async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
     // Setup global preview context
     let media_preview_signal: RcSignal<Option<MediaDataEntry>> = create_rc_signal(None);
-    provide_context(cx, media_preview_signal);
+    provide_context(cx, media_preview_signal.clone());
 
     // Setup media list signal, and fetch the first data
     let media_list: RcSignal<MediaData> = create_rc_signal(
@@ -223,11 +277,16 @@ async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
     );
     provide_context(cx, media_list.clone());
 
+    let icon_archive_color: RcSignal<IconColor> = create_rc_signal("white");
+    provide_context(cx, icon_archive_color.clone());
+
     let media_load_more = create_rc_signal(true);
 
+    let scroll_closure_media_list = media_list.clone();
+
     // Create scrolling callback
-    let callback: Closure<dyn FnMut()> = Closure::new(move || {
-        let media_list = media_list.clone();
+    let scroll_closure: Closure<dyn FnMut()> = Closure::new(move || {
+        let media_list = scroll_closure_media_list.clone();
         let media_load_more = media_load_more.clone();
 
         spawn_local(async move {
@@ -277,11 +336,36 @@ async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
     window
         .add_event_listener_with_callback_and_bool(
             "scroll",
-            callback.as_ref().unchecked_ref(),
+            scroll_closure.as_ref().unchecked_ref(),
             false,
         )
         .expect("Failed to set listener");
-    callback.forget();
+    scroll_closure.forget();
+
+    let keyboard_closure_media_list = media_list.clone();
+    let keyboard_closure_media_preview_signal = media_preview_signal.clone();
+    let keyboard_closure_icon_archive_color = icon_archive_color.clone();
+    let keyboard_callback: Closure<dyn FnMut(_)> =
+        Closure::new(move |e: web_sys::KeyboardEvent| {
+            let archive_color = keyboard_closure_icon_archive_color.clone();
+            let media_preview = keyboard_closure_media_preview_signal.clone();
+            let media_list = keyboard_closure_media_list.clone();
+            match e.key().as_str() {
+                "ArrowRight" => preview_set_next(&media_list, &media_preview, &archive_color),
+                "ArrowLeft" => preview_set_previous(&media_list, &media_preview, &archive_color),
+                "Escape" => preview_close(&media_preview, &archive_color),
+                "Delete" => preview_archive(&media_list, &media_preview, &archive_color),
+                _ => (),
+            }
+        });
+    window
+        .add_event_listener_with_callback_and_bool(
+            "keydown",
+            keyboard_callback.as_ref().unchecked_ref(),
+            false,
+        )
+        .expect("Failed to set listener");
+    keyboard_callback.forget();
 
     view! { cx,
         Suspense(fallback=view! { cx, MediaLoading {} }) {
