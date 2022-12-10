@@ -1,6 +1,6 @@
 .PHONY: scp-img
 scp-img:  ## Fetch media from server
-	scp -r stufur:media ${DEV_MEDIA_DIR}
+	scp -r stufur:media ${DEV_BASE_DIR}
 
 .PHONY: dl-img
 dl-img: ${DEV_MEDIA_DIR} ## Download 20 random images

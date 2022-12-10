@@ -1,4 +1,5 @@
 use spis_model::{Media, MediaListParams, MediaType};
+use sycamore::futures::spawn_local_scoped;
 use sycamore::prelude::*;
 use sycamore::suspense::Suspense;
 use wasm_bindgen::prelude::Closure;
@@ -11,21 +12,29 @@ mod scroll;
 const API_MEDIA_PER_REQ: usize = 100;
 
 struct MediaPreviewData {
+    index: usize,
+    uuid: String,
     location: String,
     media_type: MediaType,
 }
 
-fn render_thumbnail<G: Html>(cx: Scope<'_>, media: Media) -> View<G> {
+fn render_thumbnail<G: Html>(cx: Scope<'_>, media_entry: (usize, Media)) -> View<G> {
+    let media_index = media_entry.0;
+    let media = media_entry.1;
+
     let media_preview_signal = use_context::<RcSignal<Option<MediaPreviewData>>>(cx);
 
     // This is a "private" signal to access media to create previews
     let media_data = create_signal(cx, media.clone());
 
-    let preview_display = |_| {
+    let preview_display = move |_| {
         // Called when a thumbnail is pressed
+        let media_uuid = media_data.get().as_ref().uuid.clone();
         let media_data_location = media_data.get().as_ref().location.clone();
         let media_data_type = media_data.get().as_ref().media_type.clone();
         media_preview_signal.set(Some(MediaPreviewData {
+            index: media_index,
+            uuid: media_uuid,
             location: media_data_location,
             media_type: media_data_type,
         }));
@@ -40,12 +49,47 @@ fn render_thumbnail<G: Html>(cx: Scope<'_>, media: Media) -> View<G> {
 
 #[component]
 async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
+    let media_list = use_context::<RcSignal<Vec<(usize, Media)>>>(cx);
+
     // Get preview signal
     let media_preview = use_context::<RcSignal<Option<MediaPreviewData>>>(cx);
 
+    let archive_color = create_signal(cx, "white");
+
     // Setup preview close handler
     let preview_close = |_| {
+        archive_color.set("white");
         media_preview.set(None);
+    };
+
+    let archive = move |_| {
+        let uuid = media_preview.get().as_ref().as_ref().unwrap().uuid.clone();
+
+        spawn_local_scoped(cx, async move {
+            let confirm_color = "red";
+            if archive_color.get().as_ref().contains(confirm_color) {
+                api::media_edit(
+                    &uuid,
+                    spis_model::MediaEditParams {
+                        archive: Some(true),
+                    },
+                )
+                .await
+                .unwrap();
+
+                let old_media = media_list.get();
+                let mut new_media: Vec<Media> =
+                    Vec::from_iter(old_media.iter().map(|m| m.1.clone()));
+                let index = media_preview.get().as_ref().as_ref().unwrap().index;
+                new_media.remove(index);
+                let new_media = new_media.into_iter().enumerate().collect();
+                media_list.set(new_media);
+                archive_color.set("white");
+                media_preview.set(None);
+            } else {
+                archive_color.set("red");
+            }
+        })
     };
 
     view! { cx,
@@ -53,20 +97,56 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
             (if media_preview.get().is_some() {
                 let media_type = media_preview.get().as_ref().as_ref().unwrap().media_type.clone();
                 view! { cx,
-                    div(class="media-preview", on:click=preview_close) {
-                        ({
-                            let location = media_preview.get().as_ref().as_ref().unwrap().location.clone();
-                            match media_type {
-                                MediaType::Image => view! {cx,
-                                    img(class="img-preview", src=location) {}
-                                },
-                                MediaType::Video => view! {cx,
-                                    video(class="img-preview", autoplay=true, controls=true) {
-                                        source(type="video/mp4", src=location) {}
+                    div(class="media-preview") {
+                        div(class="media-preview-content", on:click=preview_close) {
+                            ({
+                                let location = media_preview.get().as_ref().as_ref().unwrap().location.clone();
+                                match media_type {
+                                    MediaType::Image => view! {cx,
+                                        img(class="img-preview", src=location) {}
+                                    },
+                                    MediaType::Video => view! {cx,
+                                        video(class="img-preview", autoplay=true, controls=true) {
+                                            source(type="video/mp4", src=location) {}
+                                        }
                                     }
                                 }
+                            })
+                        }
+                        div(class="media-action") {
+                            div(class="media-action-button") {
+                                svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
+                                    path(
+                                        fill="white",
+                                        d="M10 22 0 12 10 2l1.775 1.775L3.55 12l8.225 8.225Z"
+                                    )
+                                }
                             }
-                    })
+                            div(class="media-action-button", on:click=archive) {
+                                svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
+                                    path(
+                                        fill=archive_color,
+                                        d="M7 21q-.825 0-1.412-.587Q5 19.825 5 19V6H4V4h5V3h6v1h5v2h-1v13q0 .825-.587 1.413Q17.825 21 17 21ZM17 6H7v13h10ZM9 17h2V8H9Zm4 0h2V8h-2ZM7 6v13Z"
+                                    )
+                                }
+                            }
+                            div(class="media-action-button", on:click=preview_close) {
+                                svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
+                                    path(
+                                        fill="white",
+                                        d="M6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5l5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6Z"
+                                    )
+                                }
+                            }
+                            div(class="media-action-button") {
+                                svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
+                                    path(
+                                        fill="white",
+                                        d="M8.025 22 6.25 20.225 14.475 12 6.25 3.775 8.025 2l10 10Z"
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             } else {
@@ -78,19 +158,47 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
 
 #[component]
 async fn MediaList<G: Html>(cx: Scope<'_>) -> View<G> {
+    let media_list = use_context::<RcSignal<Vec<(usize, Media)>>>(cx);
+    view! { cx,
+        ul(class="media-list") {
+            Indexed(
+                iterable=media_list,
+                view=|cx, media| render_thumbnail(cx, media),
+            )
+        }
+    }
+}
+
+#[component]
+fn MediaLoading<G: Html>(cx: Scope) -> View<G> {
+    view! { cx,
+        p {
+            "Loading..."
+        }
+    }
+}
+
+#[component]
+async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
+    // Setup global preview context
+    let media_preview_signal: RcSignal<Option<MediaPreviewData>> = create_rc_signal(None);
+    provide_context(cx, media_preview_signal);
+
     // Setup media list signal, and fetch the first data
-    let media_list: RcSignal<Vec<Media>> = create_rc_signal(
-        api::fetch_media_list(spis_model::MediaListParams {
+    let media_list: RcSignal<Vec<(usize, Media)>> = create_rc_signal(
+        api::media_list(spis_model::MediaListParams {
             page_size: API_MEDIA_PER_REQ,
             archived: None,
             taken_after: None,
             taken_before: None,
         })
         .await
-        .unwrap(),
+        .unwrap()
+        .into_iter()
+        .enumerate()
+        .collect(),
     );
     provide_context(cx, media_list.clone());
-    let media_ref = create_ref(cx, media_list.clone());
 
     let media_load_more = create_rc_signal(true);
 
@@ -113,11 +221,11 @@ async fn MediaList<G: Html>(cx: Scope<'_>) -> View<G> {
                     Vec::with_capacity(old_media.len() + API_MEDIA_PER_REQ);
 
                 for media in old_media.iter() {
-                    new_media.push(media.clone());
+                    new_media.push(media.1.clone());
                 }
 
                 let taken_before = new_media.last().map(|i| i.taken_at);
-                let mut fetched_media = api::fetch_media_list(MediaListParams {
+                let mut fetched_media = api::media_list(MediaListParams {
                     page_size: API_MEDIA_PER_REQ,
                     archived: None,
                     taken_after: None,
@@ -129,6 +237,7 @@ async fn MediaList<G: Html>(cx: Scope<'_>) -> View<G> {
                 let at_the_end = fetched_media.len() != API_MEDIA_PER_REQ;
 
                 new_media.append(&mut fetched_media);
+                let new_media = new_media.into_iter().enumerate().collect();
                 media_list.set(new_media);
 
                 if !at_the_end {
@@ -150,31 +259,6 @@ async fn MediaList<G: Html>(cx: Scope<'_>) -> View<G> {
         )
         .expect("Failed to set listener");
     callback.forget();
-
-    view! { cx,
-        ul(class="media-list") {
-            Indexed(
-                iterable=media_ref,
-                view=|cx, media| render_thumbnail(cx, media),
-            )
-        }
-    }
-}
-
-#[component]
-fn MediaLoading<G: Html>(cx: Scope) -> View<G> {
-    view! { cx,
-        p {
-            "Loading..."
-        }
-    }
-}
-
-#[component]
-fn App<G: Html>(cx: Scope) -> View<G> {
-    // Setup global preview context
-    let media_preview_signal: RcSignal<Option<MediaPreviewData>> = create_rc_signal(None);
-    provide_context(cx, media_preview_signal);
 
     view! { cx,
         Suspense(fallback=view! { cx, MediaLoading {} }) {
