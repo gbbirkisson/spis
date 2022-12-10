@@ -1,4 +1,4 @@
-use spis_model::{Media, MediaSearchParams, MediaType};
+use spis_model::{Media, MediaListParams, MediaType};
 use sycamore::prelude::*;
 use sycamore::suspense::Suspense;
 use wasm_bindgen::prelude::Closure;
@@ -80,8 +80,9 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
 async fn MediaList<G: Html>(cx: Scope<'_>) -> View<G> {
     // Setup media list signal, and fetch the first data
     let media_list: RcSignal<Vec<Media>> = create_rc_signal(
-        api::fetch_media_list(spis_model::MediaSearchParams {
+        api::fetch_media_list(spis_model::MediaListParams {
             page_size: API_MEDIA_PER_REQ,
+            archived: None,
             taken_after: None,
             taken_before: None,
         })
@@ -116,8 +117,9 @@ async fn MediaList<G: Html>(cx: Scope<'_>) -> View<G> {
                 }
 
                 let taken_before = new_media.last().map(|i| i.taken_at);
-                let mut fetched_media = api::fetch_media_list(MediaSearchParams {
+                let mut fetched_media = api::fetch_media_list(MediaListParams {
                     page_size: API_MEDIA_PER_REQ,
+                    archived: None,
                     taken_after: None,
                     taken_before,
                 })
