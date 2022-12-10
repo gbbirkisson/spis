@@ -1,17 +1,15 @@
 use data::*;
-use spis_model::{Media, MediaListParams, MediaType};
+use spis_model::MediaType;
 use sycamore::prelude::*;
 use sycamore::suspense::Suspense;
-use wasm_bindgen::prelude::Closure;
-use wasm_bindgen::JsCast;
-use wasm_bindgen_futures::spawn_local;
+
+use crate::api::API_MEDIA_PER_REQ;
 
 mod api;
 mod data;
+mod keyboard;
 mod preview;
 mod scroll;
-
-const API_MEDIA_PER_REQ: usize = 100;
 
 fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
     let media_preview_signal = use_context::<RcSignal<Option<MediaDataEntry>>>(cx);
@@ -55,8 +53,8 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
         div {
             (if media_preview.get().is_some() {
                 let media_type = media_preview.get().as_ref().as_ref().unwrap().media.media_type.clone();
-                let media_index = media_preview.get().as_ref().as_ref().unwrap().index.clone();
-                let media_total = media_preview.get().as_ref().as_ref().unwrap().total.clone();
+                let media_index = media_preview.get().as_ref().as_ref().unwrap().index;
+                let media_total = media_preview.get().as_ref().as_ref().unwrap().total;
                 let media_prev = media_index > 0;
                 let media_next = media_index + 1 != media_total;
                 view! { cx,
@@ -185,96 +183,21 @@ async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
     );
     provide_context(cx, media_list.clone());
 
-    let icon_archive_color: RcSignal<IconColor> = create_rc_signal("white");
+    // Setup icon archive, color
+    let icon_archive_color: RcSignal<IconColor> = create_rc_signal("white".to_string());
     provide_context(cx, icon_archive_color.clone());
 
-    let media_load_more = create_rc_signal(true);
-
-    let scroll_closure_media_list = media_list.clone();
-
-    // Create scrolling callback
-    let scroll_closure: Closure<dyn FnMut()> = Closure::new(move || {
-        let media_list = scroll_closure_media_list.clone();
-        let media_load_more = media_load_more.clone();
-
-        spawn_local(async move {
-            if !media_load_more.get().as_ref() {
-                return;
-            }
-
-            // So we don't do multiple requests at a time
-            media_load_more.set(false);
-
-            if scroll::at_end_of_page() {
-                let old_media = media_list.get();
-                let mut new_media: Vec<Media> =
-                    Vec::with_capacity(old_media.len() + API_MEDIA_PER_REQ);
-
-                for entry in old_media.iter() {
-                    new_media.push(entry.media.clone());
-                }
-
-                let taken_before = new_media.last().map(|i| i.taken_at);
-                let mut fetched_media = api::media_list(MediaListParams {
-                    page_size: API_MEDIA_PER_REQ,
-                    archived: None,
-                    taken_after: None,
-                    taken_before,
-                })
-                .await
-                .unwrap(); // TODO
-
-                let at_the_end = fetched_media.len() != API_MEDIA_PER_REQ;
-
-                new_media.append(&mut fetched_media);
-                let new_media = new_media.to_media_data();
-                media_list.set(new_media);
-
-                if !at_the_end {
-                    media_load_more.set(true);
-                }
-            } else {
-                media_load_more.set(true)
-            }
-        });
-    });
-
-    // Setup callback
+    // Initialize window listeners
     let window = web_sys::window().expect("Failed to get window");
-    window
-        .add_event_listener_with_callback_and_bool(
-            "scroll",
-            scroll_closure.as_ref().unchecked_ref(),
-            false,
-        )
-        .expect("Failed to set listener");
-    scroll_closure.forget();
+    scroll::initialize(&window, media_list.clone());
+    keyboard::initialize(
+        &window,
+        media_list,
+        media_preview_signal,
+        icon_archive_color,
+    );
 
-    let keyboard_closure_media_list = media_list.clone();
-    let keyboard_closure_media_preview_signal = media_preview_signal.clone();
-    let keyboard_closure_icon_archive_color = icon_archive_color.clone();
-    let keyboard_callback: Closure<dyn FnMut(_)> =
-        Closure::new(move |e: web_sys::KeyboardEvent| {
-            let archive_color = keyboard_closure_icon_archive_color.clone();
-            let media_preview = keyboard_closure_media_preview_signal.clone();
-            let media_list = keyboard_closure_media_list.clone();
-            match e.key().as_str() {
-                "ArrowRight" => preview::set_next(&media_list, &media_preview, &archive_color),
-                "ArrowLeft" => preview::set_previous(&media_list, &media_preview, &archive_color),
-                "Escape" => preview::close(&media_preview, &archive_color),
-                "Delete" => preview::archive(&media_list, &media_preview, &archive_color),
-                _ => (),
-            }
-        });
-    window
-        .add_event_listener_with_callback_and_bool(
-            "keydown",
-            keyboard_callback.as_ref().unchecked_ref(),
-            false,
-        )
-        .expect("Failed to set listener");
-    keyboard_callback.forget();
-
+    // Return view
     view! { cx,
         Suspense(fallback=view! { cx, MediaLoading {} }) {
             MediaPreview {}

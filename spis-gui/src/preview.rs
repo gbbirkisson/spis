@@ -20,8 +20,8 @@ pub fn set_previous(
         return;
     }
 
-    archive_color.set("white");
-    let prev = media_list.get().get(index - 1).map(|e| e.clone());
+    archive_color.set("white".to_string());
+    let prev = media_list.get().get(index - 1).cloned();
     media_preview.set(prev);
 }
 
@@ -35,11 +35,11 @@ pub fn set_next(
     }
 
     let index = media_preview.get().as_ref().as_ref().unwrap().index + 1;
-    let prev = media_list.get().get(index).map(|e| e.clone());
+    let prev = media_list.get().get(index).cloned();
     if prev.is_none() {
         return;
     }
-    archive_color.set("white");
+    archive_color.set("white".to_string());
     media_preview.set(prev);
 }
 
@@ -47,7 +47,7 @@ pub fn close(
     media_preview: &RcSignal<Option<MediaDataEntry>>,
     archive_color: &RcSignal<IconColor>,
 ) {
-    archive_color.set("white");
+    archive_color.set("white".to_string());
     media_preview.set(None);
 }
 
@@ -75,14 +75,14 @@ pub fn archive<'a>(
 
     let confirm_color = "red";
     if !archive_color.get().as_ref().contains(confirm_color) {
-        archive_color.set("red");
+        archive_color.set("red".to_string());
     } else {
         let index = media_preview.get().as_ref().as_ref().unwrap().index;
         let old_media = media_list.get().as_ref().clone();
         let old_media = old_media.safe_remove(index);
-        let next = old_media.get(index).map(|e| e.clone());
+        let next = old_media.get(index).cloned();
         media_list.set(old_media);
-        archive_color.set("white");
+        archive_color.set("white".to_string());
         media_preview.set(next);
         spawn_local(async move {
             api::media_edit(
