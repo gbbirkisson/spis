@@ -18,12 +18,13 @@ pub fn initialize(
             "ArrowRight" => preview::set_next(&media_list, &media_preview, &icon_archive_color),
             "ArrowLeft" => preview::set_previous(&media_list, &media_preview, &icon_archive_color),
             "Escape" => preview::close(&media_preview, &icon_archive_color),
+            "Enter" => preview::favorite(&media_list, &media_preview, &icon_archive_color),
             "Delete" => preview::archive(&media_list, &media_preview, &icon_archive_color),
-            _ => (),
+            _ => {}
         });
     window
         .add_event_listener_with_callback_and_bool(
-            "keydown",
+            "keyup",
             keyboard_callback.as_ref().unchecked_ref(),
             false,
         )

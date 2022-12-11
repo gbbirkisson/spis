@@ -89,10 +89,53 @@ pub fn archive<'a>(
                 &uuid,
                 spis_model::MediaEditParams {
                     archive: Some(true),
+                    favorite: None,
                 },
             )
             .await
             .unwrap();
         });
     }
+}
+
+pub fn favorite<'a>(
+    media_list: &'a RcSignal<MediaData>,
+    media_preview: &'a RcSignal<Option<MediaDataEntry>>,
+    archive_color: &'a RcSignal<IconColor>,
+) {
+    if media_preview.get().is_none() {
+        return;
+    }
+
+    let uuid = media_preview
+        .get()
+        .as_ref()
+        .as_ref()
+        .unwrap()
+        .media
+        .uuid
+        .clone();
+
+    archive_color.set("white".to_string());
+
+    let mut new_val = media_preview.get().as_ref().as_ref().unwrap().clone();
+    new_val.media.favorite = !new_val.media.favorite;
+
+    let mut old_media = media_list.get().as_ref().clone();
+
+    media_preview.set(Some(new_val.clone()));
+    old_media.get_mut(new_val.index).unwrap().media.favorite = new_val.media.favorite;
+    media_list.set(old_media);
+
+    spawn_local(async move {
+        api::media_edit(
+            &uuid,
+            spis_model::MediaEditParams {
+                archive: None,
+                favorite: Some(new_val.media.favorite),
+            },
+        )
+        .await
+        .unwrap();
+    });
 }

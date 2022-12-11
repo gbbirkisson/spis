@@ -10,6 +10,7 @@ pub struct Media {
     #[serde(rename = "type")]
     pub media_type: MediaType,
     pub archived: bool,
+    pub favorite: bool,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -31,4 +32,5 @@ pub struct MediaListParams {
 #[derive(Serialize, Deserialize)]
 pub struct MediaEditParams {
     pub archive: Option<bool>,
+    pub favorite: Option<bool>,
 }

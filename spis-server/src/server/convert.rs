@@ -34,6 +34,7 @@ impl MediaConverter {
             ),
             media_type: media.media_type.convert(),
             archived: media.archived,
+            favorite: media.favorite,
         }
     }
 }

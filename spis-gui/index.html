@@ -38,6 +38,8 @@
         }
 
         .media-preview {
+            z-index: 1;
+
             position: fixed;
             padding: 0;
             margin: 0;
@@ -58,6 +60,7 @@
         }
 
         li {
+            position: relative;
             width: 25%;
         }
 
@@ -82,6 +85,13 @@
             width: 100%;
         }
 
+        .media-thumbnail-fav {
+            position: absolute;
+            top: 95%;
+            left: 95%;
+            transform: translate(-95%, -95%);
+        }
+
         .media-preview-content {
             height: 90%;
             width: 100%;
@@ -96,7 +106,6 @@
             text-align: center;
             justify-content: space-around;
         }
-
 
         .img-preview {
             max-width: 100%;

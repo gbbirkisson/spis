@@ -63,7 +63,10 @@ async fn media_edit(
 
     let uuid = path.as_ref();
     if let Some(archive) = params.archive {
-        change = db::media_archive(&pool, uuid, archive).await.unwrap();
+        change = change || db::media_archive(&pool, uuid, archive).await.unwrap();
+    }
+    if let Some(favorite) = params.favorite {
+        change = change || db::media_favorite(&pool, uuid, favorite).await.unwrap();
     }
 
     Ok(web::Json(change))

@@ -119,6 +119,19 @@ pub async fn media_archive(pool: &SqlitePool, uuid: &uuid::Uuid, archive: bool) 
     Ok(res.rows_affected() > 0)
 }
 
+pub async fn media_favorite(pool: &SqlitePool, uuid: &uuid::Uuid, archive: bool) -> Result<bool> {
+    let res = sqlx::query!(
+        r#"
+        UPDATE media SET favorite = ?2 WHERE id = ?1
+        "#,
+        uuid,
+        archive,
+    )
+    .execute(pool)
+    .await?;
+    Ok(res.rows_affected() > 0)
+}
+
 #[derive(sqlx::FromRow)]
 pub struct MediaRow {
     pub id: uuid::Uuid,
@@ -126,6 +139,7 @@ pub struct MediaRow {
     pub taken_at: DateTime<Utc>,
     pub media_type: i32,
     pub archived: bool,
+    pub favorite: bool,
 }
 
 pub async fn media_get(
@@ -138,7 +152,7 @@ pub async fn media_get(
     match (taken_after, taken_before) {
         (None, None) => sqlx::query_as::<Sqlite, MediaRow>(
             r#"
-            SELECT id, path, taken_at, type as media_type, archived FROM media
+            SELECT id, path, taken_at, type as media_type, archived, favorite FROM media
             WHERE archived = ?
             ORDER BY taken_at DESC
             LIMIT ?
@@ -148,7 +162,7 @@ pub async fn media_get(
         .bind(limit),
         (None, Some(taken_before)) => sqlx::query_as::<Sqlite, MediaRow>(
             r#"
-            SELECT id, path, taken_at, type as media_type, archived FROM media
+            SELECT id, path, taken_at, type as media_type, archived, favorite FROM media
             WHERE archived = ?
             AND taken_at < ?
             ORDER BY taken_at DESC
@@ -160,7 +174,7 @@ pub async fn media_get(
         .bind(limit),
         (Some(taken_after), None) => sqlx::query_as::<Sqlite, MediaRow>(
             r#"
-            SELECT id, path, taken_at, type as media_type, archived FROM media
+            SELECT id, path, taken_at, type as media_type, archived, favorite FROM media
             WHERE archived = ?
             AND taken_at > ?
             ORDER BY taken_at DESC
@@ -172,7 +186,7 @@ pub async fn media_get(
         .bind(limit),
         (Some(taken_after), Some(taken_before)) => sqlx::query_as::<Sqlite, MediaRow>(
             r#"
-            SELECT id, path, taken_at, type as media_type, archived FROM media
+            SELECT id, path, taken_at, type as media_type, archived, favorite FROM media
             WHERE archived = ?
             AMD taken_at > ? AND taken_at < ?
             ORDER BY taken_at DESC
