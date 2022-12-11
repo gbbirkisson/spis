@@ -146,6 +146,7 @@ pub async fn media_get(
     pool: &SqlitePool,
     limit: i32,
     archived: bool,
+    favorite: Option<bool>,
     taken_after: Option<DateTime<Utc>>,
     taken_before: Option<DateTime<Utc>>,
 ) -> Result<Vec<MediaRow>> {

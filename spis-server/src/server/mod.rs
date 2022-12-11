@@ -42,6 +42,7 @@ async fn media_list(
         &pool,
         params.page_size as i32,
         params.archived.unwrap_or(false),
+        params.favorite,
         params.taken_after,
         params.taken_before,
     )

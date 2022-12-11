@@ -219,6 +219,7 @@ async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
         api::media_list(spis_model::MediaListParams {
             page_size: API_MEDIA_PER_REQ,
             archived: None,
+            favorite: None,
             taken_after: None,
             taken_before: None,
         })

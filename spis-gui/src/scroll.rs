@@ -55,6 +55,7 @@ pub fn initialize(window: &web_sys::Window, media_list: RcSignal<MediaData>) {
                 let mut fetched_media = api::media_list(MediaListParams {
                     page_size: API_MEDIA_PER_REQ,
                     archived: None,
+                    favorite: None,
                     taken_after: None,
                     taken_before,
                 })

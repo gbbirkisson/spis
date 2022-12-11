@@ -25,6 +25,7 @@ pub enum MediaType {
 pub struct MediaListParams {
     pub page_size: usize,
     pub archived: Option<bool>,
+    pub favorite: Option<bool>,
     pub taken_after: Option<DateTime<Utc>>,
     pub taken_before: Option<DateTime<Utc>>,
 }
