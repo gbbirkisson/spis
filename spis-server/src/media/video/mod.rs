@@ -2,29 +2,18 @@ use super::images::crop;
 use chrono::{DateTime, Utc};
 use color_eyre::{eyre::eyre, Result};
 use image::io::Reader;
-use image::{DynamicImage, Rgba};
-use imageproc::drawing::draw_text_mut;
-use rusttype::{Font, Scale};
+use image::DynamicImage;
 use std::io::{Cursor, Read};
-use std::sync::Arc;
 use subprocess::{Exec, Redirection};
 
-const FONT_BYTES: &[u8; 781460] = include_bytes!("Kelvinch-1GY8j.ttf");
-const WHITE: Rgba<u8> = Rgba([200u8, 200u8, 200u8, 50u8]);
-
 #[derive(Clone)]
-pub struct VideoProcessor<'a> {
-    font: Arc<Font<'a>>,
-}
+pub struct VideoProcessor {}
 
-impl<'a> VideoProcessor<'a> {
+impl VideoProcessor {
     pub fn new() -> Result<Self> {
         which::which("ffprobe").map_err(|_| eyre!("ffprobe not installed"))?;
         which::which("ffmpeg").map_err(|_| eyre!("ffmpeg not installed"))?;
-        let font = Font::try_from_bytes(FONT_BYTES).ok_or(eyre!("Unable to load font"))?;
-        Ok(Self {
-            font: Arc::new(font),
-        })
+        Ok(Self {})
     }
 
     pub fn get_timestamp(&self, file: &str) -> Result<DateTime<Utc>> {
@@ -74,21 +63,6 @@ impl<'a> VideoProcessor<'a> {
         img = crop(img);
         img = img.thumbnail(size, size);
 
-        let height = 150.0;
-        let scale = Scale {
-            x: height,
-            y: height,
-        };
-
-        draw_text_mut(
-            &mut img,
-            WHITE,
-            (size as f32 / 2.0 - (height / 4.0)) as i32,
-            (size as f32 / 2.0 - (height / 2.0)) as i32,
-            scale,
-            &self.font,
-            "⏵",
-        );
         Ok(img)
     }
 }

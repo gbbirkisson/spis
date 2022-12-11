@@ -22,9 +22,24 @@ fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
     view!( cx,
         li {
             img(src=media.media.thumbnail, class="media-thumbnail", loading="lazy", on:click=preview_display) {}
+            ({ if media.media.media_type == MediaType::Video {
+                view!( cx,
+                    div(class="media-thumbnail-vid", on:click=preview_display) {
+                        svg(xmlns="http://www.w3.org/2000/svg", height="48", width="48") {
+                            path(
+                                fill="gainsboro",
+                                d="M18.95 32.85 32.9 24l-13.95-8.9ZM24 45.05q-4.35 0-8.2-1.625-3.85-1.625-6.725-4.5Q6.2 36.05 4.575 32.2 2.95 28.35 2.95 24t1.625-8.2q1.625-3.85 4.5-6.725Q11.95 6.2 15.8 4.55q3.85-1.65 8.15-1.65 4.4 0 8.275 1.65t6.725 4.525q2.85 2.875 4.5 6.725 1.65 3.85 1.65 8.25 0 4.3-1.65 8.15-1.65 3.85-4.525 6.725-2.875 2.875-6.725 4.5-3.85 1.625-8.2 1.625Zm0-4.55q6.85 0 11.675-4.825Q40.5 30.85 40.5 24q0-6.85-4.825-11.675Q30.85 7.5 24 7.5q-6.85 0-11.675 4.825Q7.5 17.15 7.5 24q0 6.85 4.825 11.675Q17.15 40.5 24 40.5ZM24 24Z"
+                            )
+                        }
+                    }
+                )
+                } else {
+                    view!( cx, )
+                }
+            })
             ({ if media.media.favorite {
                 view!( cx,
-                    div(class="media-thumbnail-fav") {
+                    div(class="media-thumbnail-fav", on:click=preview_display) {
                         svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
                             path(
                                 fill="pink",
