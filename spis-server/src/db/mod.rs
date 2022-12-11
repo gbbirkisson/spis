@@ -106,40 +106,88 @@ pub async fn media_count(pool: &SqlitePool) -> Result<i32> {
     Ok(res.count)
 }
 
+pub async fn media_archive(pool: &SqlitePool, uuid: &uuid::Uuid, archive: bool) -> Result<bool> {
+    let res = sqlx::query!(
+        r#"
+        UPDATE media SET archived = ?2 WHERE id = ?1
+        "#,
+        uuid,
+        archive,
+    )
+    .execute(pool)
+    .await?;
+    Ok(res.rows_affected() > 0)
+}
+
+pub async fn media_favorite(pool: &SqlitePool, uuid: &uuid::Uuid, archive: bool) -> Result<bool> {
+    let res = sqlx::query!(
+        r#"
+        UPDATE media SET favorite = ?2 WHERE id = ?1
+        "#,
+        uuid,
+        archive,
+    )
+    .execute(pool)
+    .await?;
+    Ok(res.rows_affected() > 0)
+}
+
 #[derive(sqlx::FromRow)]
 pub struct MediaRow {
     pub id: uuid::Uuid,
     pub path: String,
     pub taken_at: DateTime<Utc>,
     pub media_type: i32,
+    pub archived: bool,
+    pub favorite: bool,
 }
 
 pub async fn media_get(
     pool: &SqlitePool,
     limit: i32,
+    archived: bool,
+    favorite: Option<bool>,
     taken_after: Option<DateTime<Utc>>,
+    taken_before: Option<DateTime<Utc>>,
 ) -> Result<Vec<MediaRow>> {
-    match taken_after {
-        None => sqlx::query_as::<Sqlite, MediaRow>(
-            r#"
-            SELECT id, path, taken_at, type as media_type FROM media
-            ORDER BY taken_at DESC
-            LIMIT ?
-            "#,
-        )
-        .bind(limit),
-        Some(taken_after) => sqlx::query_as::<Sqlite, MediaRow>(
-            r#"
-            SELECT id, path, taken_at, type as media_type FROM media
-            WHERE taken_at < ?
-            ORDER BY taken_at DESC
-            LIMIT ?
-            "#,
-        )
-        .bind(taken_after)
-        .bind(limit),
+    let mut query = String::new();
+
+    query.push_str("SELECT id, path, taken_at, type as media_type, archived, favorite FROM media");
+    query.push_str(" WHERE archived = ?");
+
+    if favorite.is_some() {
+        query.push_str(" AND favorite = ?");
     }
-    .fetch_all(pool)
-    .await
-    .map_err(|e| eyre!("Failed to fetch rows: {e}"))
+
+    if taken_after.is_some() {
+        query.push_str(" AND taken_at > ?");
+    }
+
+    if taken_before.is_some() {
+        query.push_str(" AND taken_at < ?");
+    }
+
+    query.push_str(" ORDER BY taken_at DESC");
+    query.push_str(" LIMIT ?");
+
+    let mut query = sqlx::query_as::<Sqlite, MediaRow>(&query).bind(archived);
+
+    if let Some(favorite) = favorite {
+        query = query.bind(favorite);
+    }
+
+    if let Some(taken_after) = taken_after {
+        query = query.bind(taken_after);
+    }
+
+    if let Some(taken_before) = taken_before {
+        query = query.bind(taken_before);
+    }
+
+    query = query.bind(limit);
+
+    query
+        .fetch_all(pool)
+        .await
+        .map_err(|e| eyre!("Failed to fetch rows: {e}"))
 }

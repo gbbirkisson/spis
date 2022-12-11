@@ -1,6 +1,6 @@
 [package]
 name = "spis-server"
-version = "0.2.1"
+version = "0.3.0"
 edition = "2021"
 
 [lib]
@@ -45,8 +45,6 @@ kamadak-exif = "0.5"
 
 # Video processing
 which = "4.3"
-rusttype = "0.9.3"
-imageproc = "0.23"
 subprocess = "0.2"
 md-5 = "0.10"
 

@@ -33,19 +33,44 @@ fn create_gui_route(
         .body(file.contents())
 }
 
-async fn get_media(
+async fn media_list(
     pool: web::Data<Pool<Sqlite>>,
     converter: web::Data<MediaConverter>,
-    params: web::Query<spis_model::MediaSearchParams>,
+    params: web::Query<spis_model::MediaListParams>,
 ) -> actix_web::Result<impl Responder> {
-    let media: Vec<Media> = db::media_get(&pool, params.page_size as i32, params.taken_after)
-        .await
-        .unwrap()
-        .into_iter()
-        .map(|m| converter.convert(m))
-        .collect();
+    let media: Vec<Media> = db::media_get(
+        &pool,
+        params.page_size as i32,
+        params.archived.unwrap_or(false),
+        params.favorite,
+        params.taken_after,
+        params.taken_before,
+    )
+    .await
+    .unwrap()
+    .into_iter()
+    .map(|m| converter.convert(m))
+    .collect();
 
     Ok(web::Json(media))
+}
+
+async fn media_edit(
+    pool: web::Data<Pool<Sqlite>>,
+    path: web::Path<uuid::Uuid>,
+    params: web::Query<spis_model::MediaEditParams>,
+) -> actix_web::Result<impl Responder> {
+    let mut change = false;
+
+    let uuid = path.as_ref();
+    if let Some(archive) = params.archive {
+        change = change || db::media_archive(&pool, uuid, archive).await.unwrap();
+    }
+    if let Some(favorite) = params.favorite {
+        change = change || db::media_favorite(&pool, uuid, favorite).await.unwrap();
+    }
+
+    Ok(web::Json(change))
 }
 
 pub enum Listener {
@@ -98,7 +123,8 @@ pub fn run(listener: Listener, pool: Pool<Sqlite>, converter: MediaConverter) ->
                     .to(move || async move { create_gui_route("application/json", manifest_file) }),
             );
         };
-        app.route("/api", web::get().to(get_media))
+        app.route("/api", web::get().to(media_list))
+            .route("/api/{uuid}", web::post().to(media_edit))
             .app_data(pool.clone())
             .app_data(converter.clone())
     });

@@ -33,6 +33,8 @@ impl MediaConverter {
                 self.thumbnail_path, media.id, self.thumbnail_ext
             ),
             media_type: media.media_type.convert(),
+            archived: media.archived,
+            favorite: media.favorite,
         }
     }
 }

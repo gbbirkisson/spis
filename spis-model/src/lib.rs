@@ -9,6 +9,8 @@ pub struct Media {
     pub taken_at: DateTime<Utc>,
     #[serde(rename = "type")]
     pub media_type: MediaType,
+    pub archived: bool,
+    pub favorite: bool,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -19,8 +21,17 @@ pub enum MediaType {
     Video,
 }
 
-#[derive(Deserialize)]
-pub struct MediaSearchParams {
+#[derive(Serialize, Deserialize)]
+pub struct MediaListParams {
     pub page_size: usize,
+    pub archived: Option<bool>,
+    pub favorite: Option<bool>,
     pub taken_after: Option<DateTime<Utc>>,
+    pub taken_before: Option<DateTime<Utc>>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct MediaEditParams {
+    pub archive: Option<bool>,
+    pub favorite: Option<bool>,
 }
