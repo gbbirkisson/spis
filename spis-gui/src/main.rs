@@ -7,10 +7,8 @@ use crate::api::API_MEDIA_PER_REQ;
 
 mod api;
 mod data;
-mod keyboard;
+mod motions;
 mod preview;
-mod scroll;
-mod swipe;
 
 fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
     let media_preview_signal = use_context::<RcSignal<Option<MediaDataEntry>>>(cx);
@@ -251,14 +249,14 @@ async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
 
     // Initialize window listeners
     let window = web_sys::window().expect("Failed to get window");
-    scroll::initialize(&window, media_list.clone());
-    swipe::initialize(
+    motions::scroll::initialize(&window, media_list.clone());
+    motions::swipe::initialize(
         &window,
         media_list.clone(),
         media_preview_signal.clone(),
         icon_archive_color.clone(),
     );
-    keyboard::initialize(
+    motions::keyboard::initialize(
         &window,
         media_list,
         media_preview_signal,
