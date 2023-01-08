@@ -18,5 +18,5 @@ console_log = "0.2.0"
 sycamore = { version = "0.8", features = ["suspense"] }
 reqwasm = "0.5"
 wasm-bindgen-futures = "0.4"
-web-sys = { version = "0.3", features = ["KeyboardEvent"] }
+web-sys = { version = "0.3", features = ["KeyboardEvent", "Touch", "TouchEvent", "TouchList"] }
 wasm-bindgen = "0.2"
