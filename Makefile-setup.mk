@@ -18,4 +18,4 @@ setup: ${DEV_MEDIA_DIR} ${DEV_DB_FILE} ## Setup project dependencies and dirs
 	rustup target add wasm32-unknown-unknown
 
 	# Install apt packages
-	sudo apt install -y nginx
+	sudo apt install -y nginx ffmpeg
