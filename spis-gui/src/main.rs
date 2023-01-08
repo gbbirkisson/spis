@@ -7,24 +7,23 @@ use crate::api::API_MEDIA_PER_REQ;
 
 mod api;
 mod data;
-mod keyboard;
+mod motions;
 mod preview;
-mod scroll;
 
 fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
     let media_preview_signal = use_context::<RcSignal<Option<MediaDataEntry>>>(cx);
 
     let media_data = create_signal(cx, media.clone());
-    let preview_display = |_| {
-        media_preview_signal.set(Some(media_data.get().as_ref().clone()));
+    let preview_open = |_| {
+        preview::open(media_preview_signal, media_data.get().as_ref().clone());
     };
 
     view!( cx,
         li {
-            img(src=media.media.thumbnail, class="media-thumbnail", loading="lazy", on:click=preview_display) {}
+            img(src=media.media.thumbnail, class="media-thumbnail", loading="lazy", on:click=preview_open) {}
             ({ if media.media.media_type == MediaType::Video {
                 view!( cx,
-                    div(class="media-thumbnail-vid", on:click=preview_display) {
+                    div(class="media-thumbnail-vid", on:click=preview_open) {
                         svg(xmlns="http://www.w3.org/2000/svg", height="48", width="48") {
                             path(
                                 fill="gainsboro",
@@ -39,7 +38,7 @@ fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
             })
             ({ if media.media.favorite {
                 view!( cx,
-                    div(class="media-thumbnail-fav", on:click=preview_display) {
+                    div(class="media-thumbnail-fav", on:click=preview_open) {
                         svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
                             path(
                                 fill="pink",
@@ -250,8 +249,14 @@ async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
 
     // Initialize window listeners
     let window = web_sys::window().expect("Failed to get window");
-    scroll::initialize(&window, media_list.clone());
-    keyboard::initialize(
+    motions::scroll::initialize(&window, media_list.clone());
+    motions::swipe::initialize(
+        &window,
+        media_list.clone(),
+        media_preview_signal.clone(),
+        icon_archive_color.clone(),
+    );
+    motions::keyboard::initialize(
         &window,
         media_list,
         media_preview_signal,

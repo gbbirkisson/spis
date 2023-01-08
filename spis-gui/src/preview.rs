@@ -43,6 +43,10 @@ pub fn set_next(
     media_preview.set(prev);
 }
 
+pub fn open(media_preview: &RcSignal<Option<MediaDataEntry>>, media: MediaDataEntry) {
+    media_preview.set(Some(media));
+}
+
 pub fn close(
     media_preview: &RcSignal<Option<MediaDataEntry>>,
     archive_color: &RcSignal<IconColor>,
