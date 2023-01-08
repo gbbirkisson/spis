@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::media::{ProcessedMedia, ProcessedMediaType};
 use chrono::{DateTime, Utc};
 use color_eyre::{eyre::eyre, Result};
@@ -71,6 +73,24 @@ pub async fn media_insert(pool: &SqlitePool, processed_media: ProcessedMedia) ->
     .execute(pool)
     .await?;
     Ok(())
+}
+
+#[derive(sqlx::FromRow)]
+pub struct MediaHashRow {
+    pub id: uuid::Uuid,
+    pub path: String,
+}
+
+pub async fn media_hashmap(pool: &SqlitePool) -> Result<HashMap<String, uuid::Uuid>> {
+    tracing::debug!("Collect all DB entries UUIDs");
+    let res = sqlx::query_as::<Sqlite, MediaHashRow>(
+        r#"
+        SELECT id, path FROM media
+        "#,
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(res.into_iter().map(|e| (e.path, e.id)).collect())
 }
 
 pub async fn media_mark_unwalked(pool: &SqlitePool) -> Result<()> {

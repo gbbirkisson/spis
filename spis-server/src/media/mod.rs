@@ -33,7 +33,12 @@ pub struct ProcessedMediaData {
     pub taken_at: DateTime<Utc>,
 }
 
-pub async fn process(pool: Pool<Sqlite>, media_dir: PathBuf, thumb_dir: PathBuf) {
+pub async fn process(
+    pool: Pool<Sqlite>,
+    media_dir: PathBuf,
+    thumb_dir: PathBuf,
+    force_uuid_calculation: bool,
+) {
     let start_time = Utc::now().time();
     tracing::info!("Media processing started");
 
@@ -43,9 +48,18 @@ pub async fn process(pool: Pool<Sqlite>, media_dir: PathBuf, thumb_dir: PathBuf)
         tracing::error!("Failed marking media as unwalked: {:?}", &mark);
     }
 
+    let old_entries = match force_uuid_calculation {
+        true => None,
+        false => Some(
+            db::media_hashmap(&pool)
+                .await
+                .expect("Failed to fetch all entries"),
+        ),
+    };
+
     tracing::debug!("Setup processing channels and pool");
     let (tx, mut rx) = channel(1);
-    let mut done_recv = processing::media_processor(media_dir, thumb_dir, tx);
+    let mut done_recv = processing::media_processor(media_dir, thumb_dir, old_entries, tx);
     let processor_pool = pool.clone();
 
     let mut count = 0;
@@ -54,7 +68,7 @@ pub async fn process(pool: Pool<Sqlite>, media_dir: PathBuf, thumb_dir: PathBuf)
             done = done_recv.recv() => {
                 match done {
                     Some(count) => {
-                        tracing::info!("Processed {} files in total!", count);
+                        tracing::info!("Processed {} files in total", count);
                         break;
                     },
                     None => {

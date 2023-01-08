@@ -8,10 +8,12 @@ use color_eyre::{eyre::eyre, Result};
 use image::DynamicImage;
 use md5::{Digest, Md5};
 use rayon::prelude::*;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 use std::path::PathBuf;
+use std::sync::{Arc, RwLock};
 use std::time::Duration;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use uuid::Builder;
@@ -62,11 +64,12 @@ fn is_hidden(entry: &walkdir::DirEntry) -> bool {
 pub(crate) fn media_processor(
     media_dir: PathBuf,
     thumb_dir: PathBuf,
+    old_entries: Option<HashMap<String, uuid::Uuid>>,
     media_sender: Sender<ProcessedMedia>,
 ) -> Receiver<usize> {
     let (done_send, done_recv) = channel(1);
     tokio::task::spawn_blocking(move || {
-        do_walk(media_dir, thumb_dir, media_sender, done_send);
+        do_walk(media_dir, thumb_dir, old_entries, media_sender, done_send);
     });
     done_recv
 }
@@ -74,6 +77,7 @@ pub(crate) fn media_processor(
 fn do_walk(
     media_dir: PathBuf,
     thumb_dir: PathBuf,
+    old_entries: Option<HashMap<String, uuid::Uuid>>,
     tx: Sender<ProcessedMedia>,
     done_send: Sender<usize>,
 ) {
@@ -88,6 +92,8 @@ fn do_walk(
         }
     };
 
+    let old_entries = Arc::new(old_entries.map(RwLock::new));
+
     let walk: Vec<_> = WalkDir::new(media_dir)
         .into_iter()
         .filter_entry(|e| !is_hidden(e))
@@ -99,6 +105,7 @@ fn do_walk(
             if let Err(err) = do_process(
                 video_processor.clone(),
                 thumb_dir.clone(),
+                old_entries.clone(),
                 tx.clone(),
                 &entry,
                 media_type,
@@ -110,6 +117,7 @@ fn do_walk(
         .collect();
 
     // This sleep here is to make sure that the last media gets inserted before we kill processing
+    tracing::info!("Processing done, waiting for grace period");
     std::thread::sleep(Duration::from_secs(5));
 
     if let Err(e) = done_send
@@ -121,6 +129,8 @@ fn do_walk(
 }
 
 fn get_uuid(path: &Path) -> Result<uuid::Uuid> {
+    tracing::debug!("Calculating uuid for: {:?}", path);
+
     const BUFFER_SIZE: usize = 1024 * 1024; // 1mb
 
     let mut file = File::open(path)?;
@@ -142,12 +152,27 @@ fn get_uuid(path: &Path) -> Result<uuid::Uuid> {
 fn do_process(
     video_processor: Option<VideoProcessor>,
     thumb_dir: PathBuf,
+    old_entries: Arc<Option<RwLock<HashMap<String, uuid::Uuid>>>>,
     tx: Sender<ProcessedMedia>,
     media_entry: &walkdir::DirEntry,
     media_type: ProcessedMediaType,
 ) -> Result<()> {
-    let media_uuid = get_uuid(media_entry.path())?;
     let media_path = media_entry.path().display().to_string();
+
+    let media_uuid = match old_entries.as_ref() {
+        Some(hash_map) => {
+            let hash_map = hash_map
+                .read()
+                .map_err(|e| eyre!("RwLock poisoned: {}", e))?;
+            hash_map.get(&media_path).copied()
+        }
+        None => None,
+    };
+
+    let media_uuid = match media_uuid {
+        Some(id) => id,
+        None => get_uuid(media_entry.path())?,
+    };
 
     tracing::debug!("Processing {}: {}", media_uuid, media_path);
 

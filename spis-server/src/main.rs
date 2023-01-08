@@ -74,7 +74,7 @@ async fn setup_processing(pool: Pool<Sqlite>, config: SpisCfg) -> Result<()> {
     tokio::spawn(async move {
         if config.processing_run_on_start() {
             tracing::info!("Running on-start processing");
-            media::process(pool.clone(), media_dir.clone(), thumb_dir.clone()).await;
+            media::process(pool.clone(), media_dir.clone(), thumb_dir.clone(), false).await;
             tracing::info!("Done with on-start processing");
         }
 
@@ -89,7 +89,7 @@ async fn setup_processing(pool: Pool<Sqlite>, config: SpisCfg) -> Result<()> {
 
             tokio::spawn(async move {
                 tracing::info!("Processing schedule triggered: {}", schedule);
-                media::process(pool, media_dir, thumb_dir).await;
+                media::process(pool, media_dir, thumb_dir, false).await;
                 tracing::info!("Processing schedule finished: {}", schedule);
             });
         });
