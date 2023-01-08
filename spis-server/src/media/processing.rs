@@ -51,6 +51,14 @@ impl GetMediaType for walkdir::DirEntry {
     }
 }
 
+fn is_hidden(entry: &walkdir::DirEntry) -> bool {
+    entry
+        .file_name()
+        .to_str()
+        .map(|s| s.starts_with('.'))
+        .unwrap_or(false)
+}
+
 pub(crate) fn media_processor(
     media_dir: PathBuf,
     thumb_dir: PathBuf,
@@ -82,6 +90,7 @@ fn do_walk(
 
     let walk: Vec<_> = WalkDir::new(media_dir)
         .into_iter()
+        .filter_entry(|e| !is_hidden(e))
         .filter_map(|r| r.ok())
         .filter_map(|e| e.media_type().map(|t| (e, t)))
         .par_bridge()
