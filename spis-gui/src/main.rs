@@ -1,12 +1,14 @@
 use data::*;
-use spis_model::MediaType;
+use spis_model::{MediaListParams, MediaType};
 use sycamore::prelude::*;
 use sycamore::suspense::Suspense;
 
 use crate::api::API_MEDIA_PER_REQ;
+use crate::dataz::{media_list_set_filter, MediaDataState};
 
 mod api;
 mod data;
+mod dataz;
 mod motions;
 mod preview;
 
@@ -228,20 +230,24 @@ async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
     let media_preview_signal: RcSignal<Option<MediaDataEntry>> = create_rc_signal(None);
     provide_context(cx, media_preview_signal.clone());
 
-    // Setup media list signal, and fetch the first data
-    let media_list: RcSignal<MediaData> = create_rc_signal(
-        api::media_list(spis_model::MediaListParams {
+    // Setup media list signals, and fetch the first data
+    let media_list: RcSignal<MediaData> = create_rc_signal(Vec::with_capacity(0));
+    provide_context(cx, media_list.clone());
+    let media_state = create_rc_signal(MediaDataState::new());
+    provide_context(cx, media_state.clone());
+
+    media_list_set_filter(
+        &media_list,
+        &media_state,
+        MediaListParams {
             page_size: API_MEDIA_PER_REQ,
             archived: None,
             favorite: None,
             taken_after: None,
             taken_before: None,
-        })
-        .await
-        .unwrap()
-        .to_media_data(),
-    );
-    provide_context(cx, media_list.clone());
+        },
+    )
+    .await;
 
     // Setup icon archive, color
     let icon_archive_color: RcSignal<IconColor> = create_rc_signal("white".to_string());
@@ -249,7 +255,7 @@ async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
 
     // Initialize window listeners
     let window = web_sys::window().expect("Failed to get window");
-    motions::scroll::initialize(&window, media_list.clone());
+    motions::scroll::initialize(&window, media_list.clone(), media_state.clone());
     motions::swipe::initialize(
         &window,
         media_list.clone(),

@@ -1,3 +1,4 @@
+use log::info;
 use sycamore::reactive::RcSignal;
 use wasm_bindgen_futures::spawn_local;
 
@@ -39,11 +40,15 @@ pub fn set_next(
     if prev.is_none() {
         return;
     }
+
     archive_color.set("white".to_string());
-    media_preview.set(prev);
+    open(media_preview, prev.unwrap());
 }
 
 pub fn open(media_preview: &RcSignal<Option<MediaDataEntry>>, media: MediaDataEntry) {
+    if media.total - media.index < 3 {
+        info!("asdasd");
+    }
     media_preview.set(Some(media));
 }
 
@@ -91,7 +96,7 @@ pub fn archive<'a>(
         spawn_local(async move {
             api::media_edit(
                 &uuid,
-                spis_model::MediaEditParams {
+                &spis_model::MediaEditParams {
                     archive: Some(true),
                     favorite: None,
                 },
@@ -134,7 +139,7 @@ pub fn favorite<'a>(
     spawn_local(async move {
         api::media_edit(
             &uuid,
-            spis_model::MediaEditParams {
+            &spis_model::MediaEditParams {
                 archive: None,
                 favorite: Some(new_val.media.favorite),
             },

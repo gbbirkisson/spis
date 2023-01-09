@@ -21,7 +21,7 @@ pub enum MediaType {
     Video,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct MediaListParams {
     pub page_size: usize,
     pub archived: Option<bool>,
