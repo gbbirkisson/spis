@@ -1,12 +1,9 @@
 use spis_model::{Media, MediaListParams};
 use sycamore::reactive::RcSignal;
 
-use crate::{
-    api::{self},
-    constants::API_MEDIA_PER_REQ,
-    data::ToMediaData,
-    signals::AppSignals,
-};
+use crate::{constants::API_MEDIA_PER_REQ, data::ToMediaData, signals::AppSignals};
+
+use super::api;
 
 #[derive(Clone)]
 pub struct MediaDataState {

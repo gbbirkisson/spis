@@ -1,5 +1,8 @@
 use spis_model::Media;
 
+pub mod api;
+pub mod loader;
+
 pub type IconColor = String;
 
 #[derive(Clone, Eq, PartialEq)]

@@ -2,10 +2,9 @@ use sycamore::reactive::RcSignal;
 use wasm_bindgen_futures::spawn_local;
 
 use crate::{
-    api,
     constants::PREVIEW_LOAD_MORE_WHEN_REMAINING,
-    data::{MediaDataEntry, SafeRemove},
-    dataz::media_list_fetch_more,
+    data::loader::media_list_fetch_more,
+    data::{api, MediaDataEntry, SafeRemove},
     signals::AppSignals,
 };
 

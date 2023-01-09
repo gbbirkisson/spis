@@ -3,9 +3,9 @@ use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::spawn_local;
 
-use crate::{dataz::media_list_fetch_more, signals::AppSignals};
-
-const PAGE_PX_LEFT_TO_FETCH_MORE: f64 = 500.0;
+use crate::{
+    constants::PAGE_PX_LEFT_TO_FETCH_MORE, data::loader::media_list_fetch_more, signals::AppSignals,
+};
 
 pub(crate) fn at_end_of_page() -> bool {
     let window = web_sys::window().expect("Failed to get window");

@@ -4,12 +4,10 @@ use sycamore::prelude::*;
 use sycamore::suspense::Suspense;
 
 use crate::constants::API_MEDIA_PER_REQ;
-use crate::dataz::media_list_set_filter;
+use crate::data::loader::media_list_set_filter;
 
-mod api;
 mod constants;
 mod data;
-mod dataz;
 mod motions;
 mod preview;
 mod signals;

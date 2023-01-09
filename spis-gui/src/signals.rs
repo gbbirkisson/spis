@@ -1,8 +1,8 @@
 use sycamore::reactive::{create_rc_signal, provide_context, use_context, RcSignal, Scope};
 
 use crate::{
+    data::loader::MediaDataState,
     data::{IconColor, MediaData, MediaDataEntry},
-    dataz::MediaDataState,
 };
 
 #[derive(Clone)]
