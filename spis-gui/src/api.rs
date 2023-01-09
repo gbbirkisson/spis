@@ -1,8 +1,6 @@
 use reqwasm::http::Request;
 use spis_model::Media;
 
-pub const API_MEDIA_PER_REQ: usize = 5;
-
 pub(crate) async fn media_list(
     params: &spis_model::MediaListParams,
 ) -> Result<Vec<Media>, reqwasm::Error> {

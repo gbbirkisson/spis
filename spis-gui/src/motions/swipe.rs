@@ -3,10 +3,11 @@ use sycamore::reactive::{create_rc_signal, RcSignal};
 use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
 
-use crate::{preview, signals::AppSignals};
-
-pub const SWIPE_LENGTH_PIXELS_TRESHOLD: i32 = 150;
-pub const SWIPE_TIME_MS_MAX: i64 = 300;
+use crate::{
+    constants::{SWIPE_LENGTH_PIXELS_TRESHOLD, SWIPE_TIME_MS_MAX},
+    preview,
+    signals::AppSignals,
+};
 
 #[derive(Debug)]
 enum Swipe {

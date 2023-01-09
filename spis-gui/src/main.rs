@@ -3,10 +3,11 @@ use spis_model::{MediaListParams, MediaType};
 use sycamore::prelude::*;
 use sycamore::suspense::Suspense;
 
-use crate::api::API_MEDIA_PER_REQ;
+use crate::constants::API_MEDIA_PER_REQ;
 use crate::dataz::media_list_set_filter;
 
 mod api;
+mod constants;
 mod data;
 mod dataz;
 mod motions;

@@ -1,17 +1,17 @@
-use log::info;
 use sycamore::reactive::RcSignal;
 use wasm_bindgen_futures::spawn_local;
 
 use crate::{
     api,
+    constants::PREVIEW_LOAD_MORE_WHEN_REMAINING,
     data::{MediaDataEntry, SafeRemove},
+    dataz::media_list_fetch_more,
     signals::AppSignals,
 };
 
 pub fn set_previous(signals: &RcSignal<AppSignals>) {
     let media_list = signals.get().media_list.clone();
     let media_preview = signals.get().media_preview.clone();
-    let icon_archive_color = signals.get().icon_archive_color.clone();
 
     if media_preview.get().is_none() {
         return;
@@ -29,15 +29,13 @@ pub fn set_previous(signals: &RcSignal<AppSignals>) {
         return;
     }
 
-    icon_archive_color.set("white".to_string());
     let prev = media_list.get().get(index - 1).cloned();
-    media_preview.set(prev);
+    open(signals, prev.unwrap());
 }
 
 pub fn set_next(signals: &RcSignal<AppSignals>) {
     let media_list = signals.get().media_list.clone();
     let media_preview = signals.get().media_preview.clone();
-    let icon_archive_color = signals.get().icon_archive_color.clone();
 
     if media_preview.get().is_none() {
         return;
@@ -53,19 +51,22 @@ pub fn set_next(signals: &RcSignal<AppSignals>) {
         .index
         + 1;
 
-    let prev = media_list.get().get(index).cloned();
-    if prev.is_none() {
+    let next = media_list.get().get(index).cloned();
+    if next.is_none() {
         return;
     }
 
-    icon_archive_color.set("white".to_string());
-    open(signals, prev.unwrap());
+    open(signals, next.unwrap());
 }
 
 pub fn open(signals: &RcSignal<AppSignals>, media: MediaDataEntry) {
-    if media.total - media.index < 3 {
-        info!("asdasd");
+    if media.total - media.index < PREVIEW_LOAD_MORE_WHEN_REMAINING {
+        let closure_signals = signals.clone();
+        spawn_local(async move {
+            media_list_fetch_more(&closure_signals).await;
+        });
     }
+    signals.get().icon_archive_color.set("white".to_string());
     signals.get().media_preview.set(Some(media));
 }
 

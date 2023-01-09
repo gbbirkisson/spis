@@ -1,0 +1,5 @@
+pub const API_MEDIA_PER_REQ: usize = 100;
+pub const PREVIEW_LOAD_MORE_WHEN_REMAINING: usize = 10;
+
+pub const SWIPE_LENGTH_PIXELS_TRESHOLD: i32 = 150;
+pub const SWIPE_TIME_MS_MAX: i64 = 300;

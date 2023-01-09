@@ -2,7 +2,8 @@ use spis_model::{Media, MediaListParams};
 use sycamore::reactive::RcSignal;
 
 use crate::{
-    api::{self, API_MEDIA_PER_REQ},
+    api::{self},
+    constants::API_MEDIA_PER_REQ,
     data::ToMediaData,
     signals::AppSignals,
 };
