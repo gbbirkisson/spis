@@ -3,7 +3,8 @@ use sycamore::reactive::RcSignal;
 
 use crate::{
     api::{self, API_MEDIA_PER_REQ},
-    data::{MediaData, ToMediaData},
+    data::ToMediaData,
+    signals::AppSignals,
 };
 
 #[derive(Clone)]
@@ -29,23 +30,20 @@ impl MediaDataState {
     }
 }
 
-pub(crate) async fn media_list_set_filter(
-    media: &RcSignal<MediaData>,
-    state: &RcSignal<MediaDataState>,
-    params: MediaListParams,
-) {
+pub(crate) async fn media_list_set_filter(signals: &RcSignal<AppSignals>, params: MediaListParams) {
+    let state = signals.get().media_data_state.clone();
     state.set(MediaDataState {
         params,
         at_end: false,
         currently_fetching: false,
     });
-    media_list_fetch_more(media, state).await;
+    media_list_fetch_more(signals).await;
 }
 
-pub(crate) async fn media_list_fetch_more(
-    media: &RcSignal<MediaData>,
-    state: &RcSignal<MediaDataState>,
-) {
+pub(crate) async fn media_list_fetch_more(signals: &RcSignal<AppSignals>) {
+    let media = signals.get().media_list.clone();
+    let state = signals.get().media_data_state.clone();
+
     if state.get().at_end {
         return;
     }

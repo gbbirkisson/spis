@@ -3,10 +3,7 @@ use sycamore::reactive::{create_rc_signal, RcSignal};
 use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
 
-use crate::{
-    data::{IconColor, MediaData, MediaDataEntry},
-    preview,
-};
+use crate::{preview, signals::AppSignals};
 
 pub const SWIPE_LENGTH_PIXELS_TRESHOLD: i32 = 150;
 pub const SWIPE_TIME_MS_MAX: i64 = 300;
@@ -48,12 +45,7 @@ impl SwipeState {
     }
 }
 
-pub fn initialize(
-    window: &web_sys::Window,
-    media_list: RcSignal<MediaData>,
-    media_preview: RcSignal<Option<MediaDataEntry>>,
-    icon_archive_color: RcSignal<IconColor>,
-) {
+pub fn initialize(window: &web_sys::Window, signals: RcSignal<AppSignals>) {
     let swipe_state_1: RcSignal<Option<SwipeState>> = create_rc_signal(None);
     let swipe_state_2 = swipe_state_1.clone();
 
@@ -89,10 +81,8 @@ pub fn initialize(
 
         if let Some(swipe) = swipe {
             match swipe {
-                Swipe::Right => {
-                    preview::set_previous(&media_list, &media_preview, &icon_archive_color)
-                }
-                Swipe::Left => preview::set_next(&media_list, &media_preview, &icon_archive_color),
+                Swipe::Right => preview::set_previous(&signals),
+                Swipe::Left => preview::set_next(&signals),
             }
         }
 

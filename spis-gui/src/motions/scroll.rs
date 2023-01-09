@@ -3,10 +3,7 @@ use wasm_bindgen::prelude::Closure;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::spawn_local;
 
-use crate::{
-    data::MediaData,
-    dataz::{media_list_fetch_more, MediaDataState},
-};
+use crate::{dataz::media_list_fetch_more, signals::AppSignals};
 
 const PAGE_PX_LEFT_TO_FETCH_MORE: f64 = 500.0;
 
@@ -28,17 +25,12 @@ pub(crate) fn at_end_of_page() -> bool {
     win_inner_height + win_page_y_offset >= body_offset_height - PAGE_PX_LEFT_TO_FETCH_MORE
 }
 
-pub fn initialize(
-    window: &web_sys::Window,
-    media_list: RcSignal<MediaData>,
-    media_state: RcSignal<MediaDataState>,
-) {
+pub fn initialize(window: &web_sys::Window, signals: RcSignal<AppSignals>) {
     let scroll_closure: Closure<dyn FnMut()> = Closure::new(move || {
-        let media_list = media_list.clone();
-        let media_state = media_state.clone();
+        let signals = signals.clone();
         spawn_local(async move {
             if at_end_of_page() {
-                media_list_fetch_more(&media_list, &media_state).await;
+                media_list_fetch_more(&signals).await;
             }
         });
     });

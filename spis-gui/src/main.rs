@@ -4,20 +4,21 @@ use sycamore::prelude::*;
 use sycamore::suspense::Suspense;
 
 use crate::api::API_MEDIA_PER_REQ;
-use crate::dataz::{media_list_set_filter, MediaDataState};
+use crate::dataz::media_list_set_filter;
 
 mod api;
 mod data;
 mod dataz;
 mod motions;
 mod preview;
+mod signals;
 
 fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
-    let media_preview_signal = use_context::<RcSignal<Option<MediaDataEntry>>>(cx);
+    let signals = signals::get_signals(cx);
 
     let media_data = create_signal(cx, media.clone());
     let preview_open = |_| {
-        preview::open(media_preview_signal, media_data.get().as_ref().clone());
+        preview::open(signals, media_data.get().as_ref().clone());
     };
 
     view!( cx,
@@ -59,30 +60,30 @@ fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
 
 #[component]
 async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
-    // Setup signals
-    let media_list = use_context::<RcSignal<MediaData>>(cx);
-    let media_preview = use_context::<RcSignal<Option<MediaDataEntry>>>(cx);
-    let archive_color = use_context::<RcSignal<IconColor>>(cx);
+    let signals = signals::get_signals(cx);
 
     let preview_close = |_| {
-        preview::close(media_preview, archive_color);
+        preview::close(signals);
     };
 
     let preview_previous = |_| {
-        preview::set_previous(media_list, media_preview, archive_color);
+        preview::set_previous(signals);
     };
 
     let preview_next = |_| {
-        preview::set_next(media_list, media_preview, archive_color);
+        preview::set_next(signals);
     };
 
     let preview_archive = move |_| {
-        preview::archive(media_list, media_preview, archive_color);
+        preview::archive(signals);
     };
 
     let preview_favorite = move |_| {
-        preview::favorite(media_list, media_preview, archive_color);
+        preview::favorite(signals);
     };
+
+    let media_preview = use_context::<RcSignal<Option<MediaDataEntry>>>(cx);
+    let archive_color = use_context::<RcSignal<IconColor>>(cx);
 
     view! { cx,
         div {
@@ -226,19 +227,10 @@ fn MediaLoading<G: Html>(cx: Scope) -> View<G> {
 
 #[component]
 async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
-    // Setup global preview context
-    let media_preview_signal: RcSignal<Option<MediaDataEntry>> = create_rc_signal(None);
-    provide_context(cx, media_preview_signal.clone());
-
-    // Setup media list signals, and fetch the first data
-    let media_list: RcSignal<MediaData> = create_rc_signal(Vec::with_capacity(0));
-    provide_context(cx, media_list.clone());
-    let media_state = create_rc_signal(MediaDataState::new());
-    provide_context(cx, media_state.clone());
+    let signals = signals::initialize(cx);
 
     media_list_set_filter(
-        &media_list,
-        &media_state,
+        &signals,
         MediaListParams {
             page_size: API_MEDIA_PER_REQ,
             archived: None,
@@ -249,27 +241,11 @@ async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
     )
     .await;
 
-    // Setup icon archive, color
-    let icon_archive_color: RcSignal<IconColor> = create_rc_signal("white".to_string());
-    provide_context(cx, icon_archive_color.clone());
-
-    // Initialize window listeners
     let window = web_sys::window().expect("Failed to get window");
-    motions::scroll::initialize(&window, media_list.clone(), media_state.clone());
-    motions::swipe::initialize(
-        &window,
-        media_list.clone(),
-        media_preview_signal.clone(),
-        icon_archive_color.clone(),
-    );
-    motions::keyboard::initialize(
-        &window,
-        media_list,
-        media_preview_signal,
-        icon_archive_color,
-    );
+    motions::scroll::initialize(&window, signals.clone());
+    motions::swipe::initialize(&window, signals.clone());
+    motions::keyboard::initialize(&window, signals.clone());
 
-    // Return view
     view! { cx,
         Suspense(fallback=view! { cx, MediaLoading {} }) {
             MediaPreview {}
