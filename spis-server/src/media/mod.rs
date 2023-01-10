@@ -84,7 +84,7 @@ pub async fn process(
                             tracing::error!("Failed inserting media into DB: {e}");
                         } else {
                             count += 1;
-                            if count % 100 == 0 {
+                            if count % 500 == 0 {
                                 tracing::info!("Processed {} files so far ...", count);
                             }
                         }
