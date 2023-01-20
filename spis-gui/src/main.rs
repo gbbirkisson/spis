@@ -1,9 +1,13 @@
+use std::fmt::Display;
+
+use chrono::{DateTime, Utc};
 use data::*;
+use log::info;
 use spis_model::{MediaListParams, MediaType};
 use sycamore::prelude::*;
 use sycamore::suspense::Suspense;
+use wasm_bindgen_futures::spawn_local;
 
-use crate::constants::API_MEDIA_PER_REQ;
 use crate::data::loader::media_list_set_filter;
 
 mod constants;
@@ -224,21 +228,190 @@ fn MediaLoading<G: Html>(cx: Scope) -> View<G> {
     }
 }
 
+#[derive(Clone, PartialEq)]
+pub enum GuiFilter {
+    Favorite,
+    Time(GuiFilterTime),
+}
+
+#[derive(Clone, PartialEq)]
+pub struct GuiFilterTime {
+    year: u16,
+    month: Option<u16>,
+}
+
+impl GuiFilterTime {
+    fn get_datetime(&self) -> (DateTime<Utc>, DateTime<Utc>) {
+        let before = format!("{}-01-01T00:00:00-00:00", self.year + 1);
+        let before = DateTime::parse_from_rfc3339(&before)
+            .expect("malformed timestamp")
+            .with_timezone(&Utc);
+
+        let after = format!("{}-01-01T00:00:00-00:00", self.year);
+        let after = DateTime::parse_from_rfc3339(&after)
+            .expect("malformed timestamp")
+            .with_timezone(&Utc);
+
+        info!("before: {}", before);
+        info!("after: {}", after);
+
+        (before, after)
+    }
+}
+
+impl Display for GuiFilter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            GuiFilter::Favorite => f.write_str("fav"),
+            GuiFilter::Time(t) => f.write_fmt(format_args!("{}", t.year)),
+        }
+    }
+}
+
+impl From<&GuiFilter> for MediaListParams {
+    fn from(value: &GuiFilter) -> Self {
+        match value {
+            GuiFilter::Favorite => Self {
+                favorite: Some(true),
+                ..Default::default()
+            },
+            GuiFilter::Time(time) => {
+                let (taken_before, taken_after) = time.get_datetime();
+                Self {
+                    taken_after: Some(taken_after),
+                    taken_before: Some(taken_before),
+                    ..Default::default()
+                }
+            }
+        }
+    }
+}
+
+fn render_filter<G: Html>(cx: Scope<'_>, filter_element: GuiFilter) -> View<G> {
+    let signals = signals::get_signals(cx);
+    let filter = signals.get().filter.clone();
+    let filter_element_signal = create_signal(cx, filter_element.clone());
+
+    let set_filter = |_| {
+        let signals = signals.clone();
+
+        let filter = if signals
+            .get()
+            .filter
+            .get()
+            .as_ref()
+            .eq(&Some(filter_element_signal.get().as_ref().clone()))
+        {
+            signals.get().filter.set(None);
+            MediaListParams::default()
+        } else {
+            signals
+                .get()
+                .filter
+                .set(Some(filter_element_signal.get().as_ref().clone()));
+            filter_element_signal.get().as_ref().into()
+        };
+
+        spawn_local(async move {
+            media_list_set_filter(&signals, filter).await;
+        });
+    };
+
+    view! { cx,
+        li(class="bar-filter-item") {
+            ({
+                match filter.get().is_some() && filter.get().as_ref().eq(&Some(filter_element.clone())) {
+                    true => view! { cx,
+                        a(href="#", on:click=set_filter) {
+                            svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
+                                path(
+                                    fill="white",
+                                    d="M6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5l5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6Z"
+                                )
+                            }
+                        }
+                    },
+                    false => match filter_element == GuiFilter::Favorite {
+                        true => view! { cx,
+                            a(href="#", on:click=set_filter) {
+                                svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
+                                    path(
+                                        fill="pink",
+                                        d="m12 21-1.45-1.3q-2.525-2.275-4.175-3.925T3.75 12.812Q2.775 11.5 2.388 10.4 2 9.3 2 8.15 2 5.8 3.575 4.225 5.15 2.65 7.5 2.65q1.3 0 2.475.55T12 4.75q.85-1 2.025-1.55 1.175-.55 2.475-.55 2.35 0 3.925 1.575Q22 5.8 22 8.15q0 1.15-.387 2.25-.388 1.1-1.363 2.412-.975 1.313-2.625 2.963-1.65 1.65-4.175 3.925Z"
+                                    )
+                                }
+                            }
+                        },
+                        false => view! { cx,
+                            a(href="#", on:click=set_filter) {
+                                (filter_element)
+                            }
+                        }
+                    },
+                }
+            })
+        }
+    }
+}
+
+#[component]
+async fn Bar<G: Html>(cx: Scope<'_>) -> View<G> {
+    let main_filter = create_signal(
+        cx,
+        vec![
+            GuiFilter::Favorite,
+            GuiFilter::Time(GuiFilterTime {
+                year: 2023,
+                month: None,
+            }),
+            GuiFilter::Time(GuiFilterTime {
+                year: 2022,
+                month: None,
+            }),
+            GuiFilter::Time(GuiFilterTime {
+                year: 2021,
+                month: None,
+            }),
+            GuiFilter::Time(GuiFilterTime {
+                year: 2020,
+                month: None,
+            }),
+            GuiFilter::Time(GuiFilterTime {
+                year: 2019,
+                month: None,
+            }),
+            GuiFilter::Time(GuiFilterTime {
+                year: 2018,
+                month: None,
+            }),
+            GuiFilter::Time(GuiFilterTime {
+                year: 2017,
+                month: None,
+            }),
+            GuiFilter::Time(GuiFilterTime {
+                year: 2016,
+                month: None,
+            }),
+        ],
+    );
+
+    view! { cx,
+        div(class="bar") {
+            ul(class="bar-filter-list-main") {
+                Indexed(
+                    iterable=main_filter,
+                    view=|cx, filter| render_filter(cx, filter),
+                )
+            }
+        }
+    }
+}
+
 #[component]
 async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
     let signals = signals::initialize(cx);
 
-    media_list_set_filter(
-        &signals,
-        MediaListParams {
-            page_size: API_MEDIA_PER_REQ,
-            archived: None,
-            favorite: None,
-            taken_after: None,
-            taken_before: None,
-        },
-    )
-    .await;
+    media_list_set_filter(&signals, MediaListParams::default()).await;
 
     let window = web_sys::window().expect("Failed to get window");
     motions::scroll::initialize(&window, signals.clone());
@@ -246,12 +419,15 @@ async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
     motions::keyboard::initialize(&window, signals.clone());
 
     view! { cx,
-        Suspense(fallback=view! { cx, MediaLoading {} }) {
-            MediaPreview {}
-        }
-        div(class="media-galley") {
+        div(class="main") {
             Suspense(fallback=view! { cx, MediaLoading {} }) {
-                MediaList {}
+                MediaPreview {}
+            }
+            Bar {}
+            div(class="media-galley") {
+                Suspense(fallback=view! { cx, MediaLoading {} }) {
+                    MediaList {}
+                }
             }
         }
     }

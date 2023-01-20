@@ -1,7 +1,7 @@
 use spis_model::{Media, MediaListParams};
 use sycamore::reactive::RcSignal;
 
-use crate::{constants::API_MEDIA_PER_REQ, data::ToMediaData, signals::AppSignals};
+use crate::{data::ToMediaData, signals::AppSignals};
 
 use super::api;
 
@@ -10,20 +10,16 @@ pub struct MediaDataState {
     params: MediaListParams,
     at_end: bool,
     currently_fetching: bool,
+    first_fetch: bool,
 }
 
 impl MediaDataState {
     pub(crate) fn new() -> Self {
         Self {
-            params: MediaListParams {
-                page_size: API_MEDIA_PER_REQ,
-                archived: None,
-                favorite: None,
-                taken_after: None,
-                taken_before: None,
-            },
+            params: MediaListParams::default(),
             at_end: false,
             currently_fetching: false,
+            first_fetch: true,
         }
     }
 }
@@ -34,6 +30,7 @@ pub(crate) async fn media_list_set_filter(signals: &RcSignal<AppSignals>, params
         params,
         at_end: false,
         currently_fetching: false,
+        first_fetch: true,
     });
     media_list_fetch_more(signals).await;
 }
@@ -57,7 +54,7 @@ pub(crate) async fn media_list_fetch_more(signals: &RcSignal<AppSignals>) {
 
     let old_media = media.get();
 
-    if old_media.len() > 0 {
+    if old_media.len() > 0 && !new_state.first_fetch {
         new_state.params.taken_before = Some(
             old_media
                 .last()
@@ -69,8 +66,11 @@ pub(crate) async fn media_list_fetch_more(signals: &RcSignal<AppSignals>) {
 
     let mut new_media: Vec<Media> =
         Vec::with_capacity(old_media.len() + new_state.params.page_size);
-    for entry in old_media.iter() {
-        new_media.push(entry.media.clone());
+
+    if !new_state.first_fetch {
+        for entry in old_media.iter() {
+            new_media.push(entry.media.clone());
+        }
     }
 
     let mut fetched_media = api::media_list(&new_state.params)
@@ -83,6 +83,7 @@ pub(crate) async fn media_list_fetch_more(signals: &RcSignal<AppSignals>) {
 
     new_media.append(&mut fetched_media);
     new_state.currently_fetching = false;
+    new_state.first_fetch = false;
 
     media.set(new_media.to_media_data());
     state.set(new_state)
