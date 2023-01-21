@@ -97,22 +97,29 @@ pub async fn process(
         }
     }
 
-    tracing::debug!("Delete all media that was not walked");
+    tracing::debug!("Update missing field in DB");
     if mark.is_ok() {
-        match db::media_delete_unwalked(&pool).await {
-            Ok(count) => {
-                tracing::info!("Cleaned up {count} media entries");
-            }
-            Err(e) => {
-                tracing::error!("Failed deleting unwalked media: {:?}", e);
-            }
-        }
+        db::media_mark_missing(&pool)
+            .await
+            .expect("Failed to mark missing");
     }
 
     // TODO: Cleanup thumbnails?
 
-    if let Ok(count) = db::media_count(&pool).await {
-        tracing::info!("DB now has {count} media entries");
+    if let Ok(counts) = db::media_count(&pool).await {
+        tracing::info!("DB counts total:    {}", counts.count);
+        if let Some(c) = counts.walked {
+            tracing::info!("DB counts walked:   {}", c);
+        }
+        if let Some(c) = counts.favorite {
+            tracing::info!("DB counts favorite: {}", c);
+        }
+        if let Some(c) = counts.archived {
+            tracing::info!("DB counts archived: {}", c);
+        }
+        if let Some(c) = counts.missing {
+            tracing::info!("DB counts missing:  {}", c);
+        }
     }
 
     let end_time = Utc::now().time();
