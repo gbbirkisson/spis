@@ -196,13 +196,14 @@ fn build_filter_list(active_filter: Rc<ActiveFilter>) -> Vec<FilterElement> {
     filters.push(FilterElement::Favorite);
 
     if let Some(year) = active_filter.year() {
+        // TODO, bara sýna mánuði sem hafa liðið
         filters.push(FilterElement::Year(year));
-        for i in 1..=12 {
+        for i in (1..=12).rev() {
             filters.push(FilterElement::Month(year, i));
         }
     } else {
         let this_year = chrono::Utc::now().year() as u16;
-        for i in (2016..=this_year).rev() {
+        for i in (this_year - 12..=this_year).rev() {
             filters.push(FilterElement::Year(i));
         }
     }
@@ -215,9 +216,9 @@ fn render_filter<G: Html>(cx: Scope<'_>, filter_element: FilterElement) -> View<
     let filter_element_signal = create_signal(cx, filter_element.clone());
 
     let filter_element_class = if signals.get().active_filter.get().is_active(&filter_element) {
-        "bar-filter-item bar-filter-item-selected"
+        "bar-filter-link-selected"
     } else {
-        "bar-filter-item"
+        "bar-filter-link"
     };
 
     let toggle_filter = |_| {
@@ -232,16 +233,16 @@ fn render_filter<G: Html>(cx: Scope<'_>, filter_element: FilterElement) -> View<
 
     if filter_element == FilterElement::Favorite {
         view! { cx,
-            li(class=filter_element_class) {
-                a(href="#", on:click=toggle_filter) {
+            li(class="bar-filter-item") {
+                a(class=filter_element_class, href="#", on:click=toggle_filter) {
                     (svg_FAV_WITH_FILL!(cx, "white"))
                 }
             }
         }
     } else {
         view! { cx,
-            li(class=filter_element_class) {
-                a(href="#", on:click=toggle_filter) {
+            li(class="bar-filter-item") {
+                a(class=filter_element_class, href="#", on:click=toggle_filter) {
                     (filter_element)
                 }
             }
@@ -266,7 +267,7 @@ async fn Bar<G: Html>(cx: Scope<'_>) -> View<G> {
     };
 
     view! { cx,
-        div(class="bar") {
+        div(class="bar-inner") {
             ul(class="bar-filter-list-main") {
                 (if !*no_filters_enabled.get().as_ref() {
                     view! {cx,
@@ -317,7 +318,9 @@ async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
             Suspense(fallback=view! { cx, MediaLoading {} }) {
                 MediaPreview {}
             }
-            Bar {}
+            div(class="bar") {
+                Bar {}
+            }
             div(class="media-galley") {
                 Suspense(fallback=view! { cx, MediaLoading {} }) {
                     MediaList {}
