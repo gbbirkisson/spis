@@ -20,7 +20,7 @@ use uuid::Builder;
 use walkdir::WalkDir;
 
 static EXT_IMAGE: &[&str] = &["jpg", "jpeg"];
-static EXT_VIDEO: &[&str] = &["mp4"];
+static EXT_VIDEO: &[&str] = &["mp4", "mov"];
 static THUMBNAIL_SIZE: u32 = 400;
 
 pub(crate) trait GetMediaType {
