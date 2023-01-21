@@ -195,15 +195,31 @@ fn build_filter_list(active_filter: Rc<ActiveFilter>) -> Vec<FilterElement> {
     let mut filters = vec![];
     filters.push(FilterElement::Favorite);
 
+    let now = chrono::Utc::now();
+    let this_year = now.year() as u16;
+    let this_month = now.month() as u16;
+
     if let Some(year) = active_filter.year() {
-        // TODO, bara sýna mánuði sem hafa liðið
-        filters.push(FilterElement::Year(year));
-        for i in (1..=12).rev() {
-            filters.push(FilterElement::Month(year, i));
-        }
+        if year != this_year {
+            filters.push(FilterElement::Year(year + 1));
+            filters.push(FilterElement::Year(year));
+            for i in (1..=12).rev() {
+                filters.push(FilterElement::Month(year, i));
+            }
+        } else {
+            filters.push(FilterElement::NoOp);
+            for i in (1..=12).rev() {
+                if year == this_year && i > this_month {
+                    filters.push(FilterElement::NoOp);
+                } else {
+                    filters.push(FilterElement::Month(year, i));
+                }
+            }
+        };
+
+        filters.push(FilterElement::Year(year - 1));
     } else {
-        let this_year = chrono::Utc::now().year() as u16;
-        for i in (this_year - 12..=this_year).rev() {
+        for i in (this_year - 13..=this_year).rev() {
             filters.push(FilterElement::Year(i));
         }
     }
@@ -223,7 +239,11 @@ fn render_filter<G: Html>(cx: Scope<'_>, filter_element: FilterElement) -> View<
 
     let toggle_filter = |_| {
         let filter_element = filter_element_signal.get().as_ref().clone();
-        let active_filter = signals.get().active_filter.get().as_ref().clone();
+        let mut active_filter = signals.get().active_filter.get().as_ref().clone();
+
+        if let FilterElement::Year(_) = filter_element {
+            active_filter = active_filter.remove_month();
+        }
 
         signals
             .get()
@@ -231,19 +251,29 @@ fn render_filter<G: Html>(cx: Scope<'_>, filter_element: FilterElement) -> View<
             .set(active_filter.toggle(&filter_element));
     };
 
-    if filter_element == FilterElement::Favorite {
-        view! { cx,
-            li(class="bar-filter-item") {
-                a(class=filter_element_class, href="#", on:click=toggle_filter) {
-                    (svg_FAV_WITH_FILL!(cx, "white"))
+    match filter_element {
+        FilterElement::NoOp => {
+            view! { cx,
+                li(class="bar-filter-item") {
+                    (svg_EMPTY!(cx))
                 }
             }
         }
-    } else {
-        view! { cx,
-            li(class="bar-filter-item") {
-                a(class=filter_element_class, href="#", on:click=toggle_filter) {
-                    (filter_element)
+        FilterElement::Favorite => {
+            view! { cx,
+                li(class="bar-filter-item") {
+                    a(class=filter_element_class, href="#", on:click=toggle_filter) {
+                        (svg_FAV_WITH_FILL!(cx, "white"))
+                    }
+                }
+            }
+        }
+        _ => {
+            view! { cx,
+                li(class="bar-filter-item") {
+                    a(class=filter_element_class, href="#", on:click=toggle_filter) {
+                        (filter_element)
+                    }
                 }
             }
         }
@@ -287,6 +317,9 @@ async fn Bar<G: Html>(cx: Scope<'_>) -> View<G> {
                             iterable=filters,
                             view=|cx, filter| render_filter(cx, filter),
                         )
+                        li(class="bar-filter-item") {
+                            (svg_EMPTY!(cx))
+                        }
                     }
                 })
             }

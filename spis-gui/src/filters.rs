@@ -27,11 +27,15 @@ impl ActiveFilter {
     pub fn add(&self, element: &FilterElement) -> Self {
         let mut res = self.clone();
         match element {
+            FilterElement::NoOp => (),
             FilterElement::Favorite => res.favorite = Some(true),
             FilterElement::Year(year) => {
                 res.timespan = Some(ActiveFilterTimespan {
                     year: *year,
-                    month: None,
+                    month: match &self.timespan {
+                        Some(t) => t.month,
+                        None => None,
+                    },
                 })
             }
             FilterElement::Month(year, month) => {
@@ -47,6 +51,7 @@ impl ActiveFilter {
     pub fn remove(&self, element: &FilterElement) -> Self {
         let mut res = self.clone();
         match element {
+            FilterElement::NoOp => (),
             FilterElement::Favorite => res.favorite = None,
             FilterElement::Year(_) => res.timespan = None,
             FilterElement::Month(year, _) => {
@@ -56,6 +61,16 @@ impl ActiveFilter {
                 })
             }
         }
+        res
+    }
+
+    pub fn remove_month(&self) -> Self {
+        let mut res = self.clone();
+        let mut new_timespan = res.timespan;
+        if let Some(ref mut t) = new_timespan {
+            t.month = None;
+        }
+        res.timespan = new_timespan;
         res
     }
 
@@ -114,6 +129,7 @@ impl From<&ActiveFilter> for MediaListParams {
 
 #[derive(Clone, PartialEq)]
 pub enum FilterElement {
+    NoOp,
     Favorite,
     Year(u16),
     Month(u16, u16),
@@ -122,6 +138,7 @@ pub enum FilterElement {
 impl Display for FilterElement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            FilterElement::NoOp => f.write_str("noop"),
             FilterElement::Favorite => f.write_str("fav"),
             FilterElement::Year(year) => f.write_fmt(format_args!("{}", year)),
             FilterElement::Month(_, month) => match month {
