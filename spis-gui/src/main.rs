@@ -242,12 +242,25 @@ pub struct GuiFilterTime {
 
 impl GuiFilterTime {
     fn get_datetime(&self) -> (DateTime<Utc>, DateTime<Utc>) {
-        let before = format!("{}-01-01T00:00:00-00:00", self.year + 1);
+        let (before, after) = match self.month {
+            Some(month) => (
+                if month == 12 {
+                    format!("{}-01-01T00:00:00-00:00", self.year + 1)
+                } else {
+                    format!("{}-{:02}-01T00:00:00-00:00", self.year, month + 1)
+                },
+                format!("{}-{:02}-01T00:00:00-00:00", self.year, month),
+            ),
+            None => (
+                format!("{}-01-01T00:00:00-00:00", self.year + 1),
+                format!("{}-01-01T00:00:00-00:00", self.year),
+            ),
+        };
+
         let before = DateTime::parse_from_rfc3339(&before)
             .expect("malformed timestamp")
             .with_timezone(&Utc);
 
-        let after = format!("{}-01-01T00:00:00-00:00", self.year);
         let after = DateTime::parse_from_rfc3339(&after)
             .expect("malformed timestamp")
             .with_timezone(&Utc);
@@ -257,13 +270,44 @@ impl GuiFilterTime {
 
         (before, after)
     }
+
+    fn get_subfilters(&self) -> Vec<GuiFilter> {
+        let mut res = vec![];
+        if self.month.is_some() {
+            panic!("this filter has no subfilters");
+        }
+        for m in 1..=12 {
+            res.push(GuiFilter::Time(GuiFilterTime {
+                year: self.year,
+                month: Some(m),
+            }))
+        }
+        res
+    }
 }
 
 impl Display for GuiFilter {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             GuiFilter::Favorite => f.write_str("fav"),
-            GuiFilter::Time(t) => f.write_fmt(format_args!("{}", t.year)),
+            GuiFilter::Time(time) => match time.month {
+                None => f.write_fmt(format_args!("{}", time.year)),
+                Some(month) => match month {
+                    1 => f.write_fmt(format_args!("Jan")),
+                    2 => f.write_fmt(format_args!("Feb")),
+                    3 => f.write_fmt(format_args!("Mar")),
+                    4 => f.write_fmt(format_args!("Apr")),
+                    5 => f.write_fmt(format_args!("May")),
+                    6 => f.write_fmt(format_args!("Jun")),
+                    7 => f.write_fmt(format_args!("Jul")),
+                    8 => f.write_fmt(format_args!("Aug")),
+                    9 => f.write_fmt(format_args!("Sep")),
+                    10 => f.write_fmt(format_args!("Oct")),
+                    11 => f.write_fmt(format_args!("Nov")),
+                    12 => f.write_fmt(format_args!("Dec")),
+                    _ => unreachable!(),
+                },
+            },
         }
     }
 }
@@ -289,13 +333,14 @@ impl From<&GuiFilter> for MediaListParams {
 
 fn render_filter<G: Html>(cx: Scope<'_>, filter_element: GuiFilter) -> View<G> {
     let signals = signals::get_signals(cx);
+
     let filter = signals.get().filter.clone();
     let filter_element_signal = create_signal(cx, filter_element.clone());
 
     let set_filter = |_| {
         let signals = signals.clone();
 
-        let filter = if signals
+        if signals
             .get()
             .filter
             .get()
@@ -303,18 +348,12 @@ fn render_filter<G: Html>(cx: Scope<'_>, filter_element: GuiFilter) -> View<G> {
             .eq(&Some(filter_element_signal.get().as_ref().clone()))
         {
             signals.get().filter.set(None);
-            MediaListParams::default()
         } else {
             signals
                 .get()
                 .filter
                 .set(Some(filter_element_signal.get().as_ref().clone()));
-            filter_element_signal.get().as_ref().into()
         };
-
-        spawn_local(async move {
-            media_list_set_filter(&signals, filter).await;
-        });
     };
 
     view! { cx,
@@ -356,52 +395,68 @@ fn render_filter<G: Html>(cx: Scope<'_>, filter_element: GuiFilter) -> View<G> {
 
 #[component]
 async fn Bar<G: Html>(cx: Scope<'_>) -> View<G> {
-    let main_filter = create_signal(
-        cx,
-        vec![
-            GuiFilter::Favorite,
-            GuiFilter::Time(GuiFilterTime {
-                year: 2023,
-                month: None,
-            }),
-            GuiFilter::Time(GuiFilterTime {
-                year: 2022,
-                month: None,
-            }),
-            GuiFilter::Time(GuiFilterTime {
-                year: 2021,
-                month: None,
-            }),
-            GuiFilter::Time(GuiFilterTime {
-                year: 2020,
-                month: None,
-            }),
-            GuiFilter::Time(GuiFilterTime {
-                year: 2019,
-                month: None,
-            }),
-            GuiFilter::Time(GuiFilterTime {
-                year: 2018,
-                month: None,
-            }),
-            GuiFilter::Time(GuiFilterTime {
-                year: 2017,
-                month: None,
-            }),
-            GuiFilter::Time(GuiFilterTime {
-                year: 2016,
-                month: None,
-            }),
-        ],
-    );
+    let signals = signals::get_signals(cx);
+
+    // Build main filters
+    let mut main_filters = vec![];
+    main_filters.push(GuiFilter::Favorite);
+    for i in (2015..=2023).rev() {
+        main_filters.push(GuiFilter::Time(GuiFilterTime {
+            year: i,
+            month: None,
+        }));
+    }
+    let main_filters = create_signal(cx, main_filters);
+    let sub_filters: &Signal<Vec<GuiFilter>> = create_signal(cx, vec![]);
+
+    let filter = signals::get_signals(cx).get().filter.clone();
+    let parent_filter = create_rc_signal(GuiFilter::Favorite);
+    let parent_filter_clone = parent_filter.clone();
+    create_effect(cx, move || {
+        let filter = filter.get();
+        let parent_filter = parent_filter_clone.clone();
+        match filter.as_ref() {
+            Some(filter) => match filter {
+                GuiFilter::Favorite => sub_filters.set(vec![]),
+                GuiFilter::Time(time) => {
+                    if time.month.is_none() {
+                        parent_filter.set(filter.clone());
+                        sub_filters.set(time.get_subfilters())
+                    }
+                }
+            },
+            None => sub_filters.set(vec![]),
+        }
+    });
+
+    let clear_all_filters = |_| {
+        signals.get().filter.set(None);
+        sub_filters.set(vec![]);
+    };
 
     view! { cx,
         div(class="bar") {
             ul(class="bar-filter-list-main") {
-                Indexed(
-                    iterable=main_filter,
-                    view=|cx, filter| render_filter(cx, filter),
-                )
+                (if sub_filters.get().as_ref().is_empty() {
+                    view! { cx,
+                        Indexed(
+                            iterable=main_filters,
+                            view=|cx, filter| render_filter(cx, filter),
+                        )
+                    }
+                } else {
+                    view! { cx,
+                        li(class="bar-filter-item") {
+                            a(href="#", on:click=clear_all_filters) {
+                                (parent_filter)
+                            }
+                        }
+                        Indexed(
+                            iterable=sub_filters,
+                            view=|cx, filter| render_filter(cx, filter),
+                        )
+                    }
+                })
             }
         }
     }
@@ -411,12 +466,27 @@ async fn Bar<G: Html>(cx: Scope<'_>) -> View<G> {
 async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
     let signals = signals::initialize(cx);
 
-    media_list_set_filter(&signals, MediaListParams::default()).await;
+    // media_list_set_filter(&signals, MediaListParams::default()).await;
 
     let window = web_sys::window().expect("Failed to get window");
     motions::scroll::initialize(&window, signals.clone());
     motions::swipe::initialize(&window, signals.clone());
     motions::keyboard::initialize(&window, signals.clone());
+
+    // Whenever the gui filter is updated, set media list params
+    // TODO: Move into another module
+    let filter = signals.get().filter.clone();
+    create_effect(cx, move || {
+        let signals = signals.clone();
+        let filter = filter.get();
+        let filter = match filter.as_ref() {
+            Some(filter) => filter.into(),
+            None => MediaListParams::default(),
+        };
+        spawn_local(async move {
+            media_list_set_filter(&signals, filter).await;
+        });
+    });
 
     view! { cx,
         div(class="main") {
