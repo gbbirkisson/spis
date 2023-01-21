@@ -38,7 +38,7 @@ async fn main() -> Result<()> {
         return Ok(());
     }
 
-    tracing::info!("Starting spis");
+    tracing::info!("Starting spis version {}", env!("CARGO_PKG_VERSION"));
 
     let config = SpisCfg::new()?;
     let pool = db::setup_db(&config.db_file()).await.unwrap();
