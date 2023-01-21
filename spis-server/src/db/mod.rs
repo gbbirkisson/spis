@@ -104,10 +104,11 @@ pub async fn media_mark_unwalked(pool: &SqlitePool) -> Result<()> {
     Ok(())
 }
 
-pub async fn media_delete_unwalked(pool: &SqlitePool) -> Result<u64> {
+pub async fn media_mark_missing(pool: &SqlitePool) -> Result<u64> {
     let res = sqlx::query!(
         r#"
-        DELETE FROM media where walked = 0
+        UPDATE media SET missing = 1 WHERE walked = 0;
+        UPDATE media SET missing = 0 WHERE walked = 1;
         "#
     )
     .execute(pool)
@@ -115,15 +116,30 @@ pub async fn media_delete_unwalked(pool: &SqlitePool) -> Result<u64> {
     Ok(res.rows_affected())
 }
 
-pub async fn media_count(pool: &SqlitePool) -> Result<i32> {
-    let res = sqlx::query!(
+#[derive(sqlx::FromRow, Debug)]
+pub struct MediaCount {
+    pub count: i32,
+    pub walked: Option<i32>,
+    pub favorite: Option<i32>,
+    pub archived: Option<i32>,
+    pub missing: Option<i32>,
+}
+
+pub async fn media_count(pool: &SqlitePool) -> Result<MediaCount> {
+    let res = sqlx::query_as::<Sqlite, MediaCount>(
         r#"
-        SELECT count(*) as count FROM media
-        "#
+        SELECT
+        COUNT(*) as count,
+        SUM(walked) as walked,
+        SUM(favorite) as favorite,
+        SUM(archived) as archived,
+        SUM(missing) as missing
+        FROM media
+        "#,
     )
     .fetch_one(pool)
     .await?;
-    Ok(res.count)
+    Ok(res)
 }
 
 pub async fn media_archive(pool: &SqlitePool, uuid: &uuid::Uuid, archive: bool) -> Result<bool> {
@@ -173,7 +189,7 @@ pub async fn media_get(
     let mut query = String::new();
 
     query.push_str("SELECT id, path, taken_at, type as media_type, archived, favorite FROM media");
-    query.push_str(" WHERE archived = ?");
+    query.push_str(" WHERE NOT missing AND archived = ?");
 
     if favorite.is_some() {
         query.push_str(" AND favorite = ?");
