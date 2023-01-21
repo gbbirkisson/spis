@@ -21,13 +21,25 @@ pub enum MediaType {
     Video,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct MediaListParams {
     pub page_size: usize,
     pub archived: Option<bool>,
     pub favorite: Option<bool>,
     pub taken_after: Option<DateTime<Utc>>,
     pub taken_before: Option<DateTime<Utc>>,
+}
+
+impl Default for MediaListParams {
+    fn default() -> Self {
+        Self {
+            page_size: 100,
+            archived: None,
+            favorite: None,
+            taken_after: None,
+            taken_before: None,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize)]

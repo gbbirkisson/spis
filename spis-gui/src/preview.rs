@@ -2,64 +2,83 @@ use sycamore::reactive::RcSignal;
 use wasm_bindgen_futures::spawn_local;
 
 use crate::{
-    api,
-    data::{IconColor, MediaData, MediaDataEntry, SafeRemove},
+    constants::PREVIEW_LOAD_MORE_WHEN_REMAINING,
+    data::loader::media_list_fetch_more,
+    data::{api, MediaDataEntry, SafeRemove},
+    signals::AppSignals,
 };
 
-pub fn set_previous(
-    media_list: &RcSignal<MediaData>,
-    media_preview: &RcSignal<Option<MediaDataEntry>>,
-    archive_color: &RcSignal<IconColor>,
-) {
+pub fn set_previous(signals: &RcSignal<AppSignals>) {
+    let media_list = signals.get().media_list.clone();
+    let media_preview = signals.get().media_preview.clone();
+
     if media_preview.get().is_none() {
         return;
     }
 
-    let index = media_preview.get().as_ref().as_ref().unwrap().index;
+    let index = signals
+        .get()
+        .media_preview
+        .get()
+        .as_ref()
+        .as_ref()
+        .unwrap()
+        .index;
     if index == 0 {
         return;
     }
 
-    archive_color.set("white".to_string());
     let prev = media_list.get().get(index - 1).cloned();
-    media_preview.set(prev);
+    open(signals, prev.unwrap());
 }
 
-pub fn set_next(
-    media_list: &RcSignal<MediaData>,
-    media_preview: &RcSignal<Option<MediaDataEntry>>,
-    archive_color: &RcSignal<IconColor>,
-) {
+pub fn set_next(signals: &RcSignal<AppSignals>) {
+    let media_list = signals.get().media_list.clone();
+    let media_preview = signals.get().media_preview.clone();
+
     if media_preview.get().is_none() {
         return;
     }
 
-    let index = media_preview.get().as_ref().as_ref().unwrap().index + 1;
-    let prev = media_list.get().get(index).cloned();
-    if prev.is_none() {
+    let index = signals
+        .get()
+        .media_preview
+        .get()
+        .as_ref()
+        .as_ref()
+        .unwrap()
+        .index
+        + 1;
+
+    let next = media_list.get().get(index).cloned();
+    if next.is_none() {
         return;
     }
-    archive_color.set("white".to_string());
-    media_preview.set(prev);
+
+    open(signals, next.unwrap());
 }
 
-pub fn open(media_preview: &RcSignal<Option<MediaDataEntry>>, media: MediaDataEntry) {
-    media_preview.set(Some(media));
+pub fn open(signals: &RcSignal<AppSignals>, media: MediaDataEntry) {
+    if media.total - media.index < PREVIEW_LOAD_MORE_WHEN_REMAINING {
+        let closure_signals = signals.clone();
+        spawn_local(async move {
+            media_list_fetch_more(&closure_signals).await;
+        });
+    }
+    signals.get().icon_archive_color.set("white".to_string());
+    signals.get().media_preview.set(Some(media));
 }
 
-pub fn close(
-    media_preview: &RcSignal<Option<MediaDataEntry>>,
-    archive_color: &RcSignal<IconColor>,
-) {
-    archive_color.set("white".to_string());
-    media_preview.set(None);
+pub fn close(signals: &RcSignal<AppSignals>) {
+    signals.get().icon_archive_color.set("white".to_string());
+    signals.get().media_preview.set(None);
 }
 
-pub fn archive<'a>(
-    media_list: &'a RcSignal<MediaData>,
-    media_preview: &'a RcSignal<Option<MediaDataEntry>>,
-    archive_color: &'a RcSignal<IconColor>,
-) {
+pub fn archive(signals: &RcSignal<AppSignals>) {
+    let media_list = signals.get().media_list.clone();
+    let media_preview = signals.get().media_preview.clone();
+    let archive_color = signals.get().icon_archive_color.clone();
+
     if media_preview.get().is_none() {
         return;
     }
@@ -72,10 +91,6 @@ pub fn archive<'a>(
         .media
         .uuid
         .clone();
-
-    let media_list = media_list.clone();
-    let media_preview = media_preview.clone();
-    let archive_color = archive_color.clone();
 
     let confirm_color = "red";
     if !archive_color.get().as_ref().contains(confirm_color) {
@@ -91,7 +106,7 @@ pub fn archive<'a>(
         spawn_local(async move {
             api::media_edit(
                 &uuid,
-                spis_model::MediaEditParams {
+                &spis_model::MediaEditParams {
                     archive: Some(true),
                     favorite: None,
                 },
@@ -102,11 +117,11 @@ pub fn archive<'a>(
     }
 }
 
-pub fn favorite<'a>(
-    media_list: &'a RcSignal<MediaData>,
-    media_preview: &'a RcSignal<Option<MediaDataEntry>>,
-    archive_color: &'a RcSignal<IconColor>,
-) {
+pub fn favorite(signals: &RcSignal<AppSignals>) {
+    let media_list = signals.get().media_list.clone();
+    let media_preview = signals.get().media_preview.clone();
+    let icon_archive_color = signals.get().icon_archive_color.clone();
+
     if media_preview.get().is_none() {
         return;
     }
@@ -120,9 +135,16 @@ pub fn favorite<'a>(
         .uuid
         .clone();
 
-    archive_color.set("white".to_string());
+    icon_archive_color.set("white".to_string());
 
-    let mut new_val = media_preview.get().as_ref().as_ref().unwrap().clone();
+    let mut new_val = signals
+        .get()
+        .media_preview
+        .get()
+        .as_ref()
+        .as_ref()
+        .unwrap()
+        .clone();
     new_val.media.favorite = !new_val.media.favorite;
 
     let mut old_media = media_list.get().as_ref().clone();
@@ -134,7 +156,7 @@ pub fn favorite<'a>(
     spawn_local(async move {
         api::media_edit(
             &uuid,
-            spis_model::MediaEditParams {
+            &spis_model::MediaEditParams {
                 archive: None,
                 favorite: Some(new_val.media.favorite),
             },

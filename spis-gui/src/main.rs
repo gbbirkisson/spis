@@ -1,21 +1,30 @@
+use std::rc::Rc;
+
+use chrono::Datelike;
 use data::*;
+use filters::ActiveFilter;
 use spis_model::MediaType;
 use sycamore::prelude::*;
 use sycamore::suspense::Suspense;
+use wasm_bindgen_futures::spawn_local;
 
-use crate::api::API_MEDIA_PER_REQ;
+use crate::data::loader::media_list_set_filter;
+use crate::filters::FilterElement;
 
-mod api;
+mod constants;
 mod data;
+mod filters;
 mod motions;
 mod preview;
+mod signals;
+mod svg;
 
 fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
-    let media_preview_signal = use_context::<RcSignal<Option<MediaDataEntry>>>(cx);
+    let signals = signals::get_signals(cx);
 
     let media_data = create_signal(cx, media.clone());
     let preview_open = |_| {
-        preview::open(media_preview_signal, media_data.get().as_ref().clone());
+        preview::open(signals, media_data.get().as_ref().clone());
     };
 
     view!( cx,
@@ -24,12 +33,7 @@ fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
             ({ if media.media.media_type == MediaType::Video {
                 view!( cx,
                     div(class="media-thumbnail-vid", on:click=preview_open) {
-                        svg(xmlns="http://www.w3.org/2000/svg", height="48", width="48") {
-                            path(
-                                fill="gainsboro",
-                                d="M18.95 32.85 32.9 24l-13.95-8.9ZM24 45.05q-4.35 0-8.2-1.625-3.85-1.625-6.725-4.5Q6.2 36.05 4.575 32.2 2.95 28.35 2.95 24t1.625-8.2q1.625-3.85 4.5-6.725Q11.95 6.2 15.8 4.55q3.85-1.65 8.15-1.65 4.4 0 8.275 1.65t6.725 4.525q2.85 2.875 4.5 6.725 1.65 3.85 1.65 8.25 0 4.3-1.65 8.15-1.65 3.85-4.525 6.725-2.875 2.875-6.725 4.5-3.85 1.625-8.2 1.625Zm0-4.55q6.85 0 11.675-4.825Q40.5 30.85 40.5 24q0-6.85-4.825-11.675Q30.85 7.5 24 7.5q-6.85 0-11.675 4.825Q7.5 17.15 7.5 24q0 6.85 4.825 11.675Q17.15 40.5 24 40.5ZM24 24Z"
-                            )
-                        }
+                        (svg_PLAY!(cx, "gainsboro"))
                     }
                 )
                 } else {
@@ -39,12 +43,7 @@ fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
             ({ if media.media.favorite {
                 view!( cx,
                     div(class="media-thumbnail-fav", on:click=preview_open) {
-                        svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
-                            path(
-                                fill="pink",
-                                d="m12 21-1.45-1.3q-2.525-2.275-4.175-3.925T3.75 12.812Q2.775 11.5 2.388 10.4 2 9.3 2 8.15 2 5.8 3.575 4.225 5.15 2.65 7.5 2.65q1.3 0 2.475.55T12 4.75q.85-1 2.025-1.55 1.175-.55 2.475-.55 2.35 0 3.925 1.575Q22 5.8 22 8.15q0 1.15-.387 2.25-.388 1.1-1.363 2.412-.975 1.313-2.625 2.963-1.65 1.65-4.175 3.925Z"
-                            )
-                        }
+                        (svg_FAV_WITH_FILL!(cx, "pink"))
                     }
                 )
                 } else {
@@ -57,30 +56,30 @@ fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
 
 #[component]
 async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
-    // Setup signals
-    let media_list = use_context::<RcSignal<MediaData>>(cx);
-    let media_preview = use_context::<RcSignal<Option<MediaDataEntry>>>(cx);
-    let archive_color = use_context::<RcSignal<IconColor>>(cx);
+    let signals = signals::get_signals(cx);
 
     let preview_close = |_| {
-        preview::close(media_preview, archive_color);
+        preview::close(signals);
     };
 
     let preview_previous = |_| {
-        preview::set_previous(media_list, media_preview, archive_color);
+        preview::set_previous(signals);
     };
 
     let preview_next = |_| {
-        preview::set_next(media_list, media_preview, archive_color);
+        preview::set_next(signals);
     };
 
     let preview_archive = move |_| {
-        preview::archive(media_list, media_preview, archive_color);
+        preview::archive(signals);
     };
 
     let preview_favorite = move |_| {
-        preview::favorite(media_list, media_preview, archive_color);
+        preview::favorite(signals);
     };
+
+    let media_preview = use_context::<RcSignal<Option<MediaDataEntry>>>(cx);
+    let archive_color = use_context::<RcSignal<IconColor>>(cx);
 
     view! { cx,
         div {
@@ -113,59 +112,34 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
                                 if media_prev {
                                     view! {cx,
                                         div(class="media-action-button", on:click=preview_previous) {
-                                            svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
-                                                path(
-                                                    fill="white",
-                                                    d="M10 22 0 12 10 2l1.775 1.775L3.55 12l8.225 8.225Z"
-                                                )
-                                            }
+                                            (svg_LEFT!(cx, "white"))
                                         }
                                     }
                                 } else {
                                     view! {cx,
                                         div(class="media-action-button") {
-                                            svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {}
+                                            (svg_EMPTY!(cx))
                                         }
                                     }
                                 }
                             })
                             div(class="media-action-button", on:click=preview_archive) {
-                                svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
-                                    path(
-                                        fill=archive_color,
-                                        d="M7 21q-.825 0-1.412-.587Q5 19.825 5 19V6H4V4h5V3h6v1h5v2h-1v13q0 .825-.587 1.413Q17.825 21 17 21ZM17 6H7v13h10ZM9 17h2V8H9Zm4 0h2V8h-2ZM7 6v13Z"
-                                    )
-                                }
+                                (svg_TRASHCAN!(cx, archive_color))
                             }
                             div(class="media-action-button", on:click=preview_close) {
-                                svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
-                                    path(
-                                        fill="white",
-                                        d="M6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5l5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6Z"
-                                    )
-                                }
+                                (svg_X!(cx, "white"))
                             }
                             ({
                                 if media_favorite {
                                     view! {cx,
                                         div(class="media-action-button", on:click=preview_favorite) {
-                                            svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
-                                                path(
-                                                    fill="pink",
-                                                    d="m12 21-1.45-1.3q-2.525-2.275-4.175-3.925T3.75 12.812Q2.775 11.5 2.388 10.4 2 9.3 2 8.15 2 5.8 3.575 4.225 5.15 2.65 7.5 2.65q1.3 0 2.475.55T12 4.75q.85-1 2.025-1.55 1.175-.55 2.475-.55 2.35 0 3.925 1.575Q22 5.8 22 8.15q0 1.15-.387 2.25-.388 1.1-1.363 2.412-.975 1.313-2.625 2.963-1.65 1.65-4.175 3.925Z"
-                                                )
-                                            }
+                                            (svg_FAV_WITH_FILL!(cx, "pink"))
                                         }
                                     }
                                 } else {
                                     view! {cx,
                                         div(class="media-action-button", on:click=preview_favorite) {
-                                            svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
-                                                path(
-                                                    fill="white",
-                                                    d="m12 21-1.45-1.3q-2.525-2.275-4.175-3.925T3.75 12.812Q2.775 11.5 2.388 10.4 2 9.3 2 8.15 2 5.8 3.575 4.225 5.15 2.65 7.5 2.65q1.3 0 2.475.55T12 4.75q.85-1 2.025-1.55 1.175-.55 2.475-.55 2.35 0 3.925 1.575Q22 5.8 22 8.15q0 1.15-.387 2.25-.388 1.1-1.363 2.412-.975 1.313-2.625 2.963-1.65 1.65-4.175 3.925Zm0-2.7q2.4-2.15 3.95-3.688 1.55-1.537 2.45-2.674.9-1.138 1.25-2.026.35-.887.35-1.762 0-1.5-1-2.5t-2.5-1q-1.175 0-2.175.662-1 .663-1.375 1.688h-1.9q-.375-1.025-1.375-1.688-1-.662-2.175-.662-1.5 0-2.5 1t-1 2.5q0 .875.35 1.762.35.888 1.25 2.026.9 1.137 2.45 2.674Q9.6 16.15 12 18.3Zm0-6.825Z"
-                                                )
-                                            }
+                                            (svg_FAV_NO_FILL!(cx, "white"))
                                         }
                                     }
                                 }
@@ -174,18 +148,13 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
                                 if media_next {
                                     view! {cx,
                                         div(class="media-action-button", on:click=preview_next) {
-                                            svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
-                                                path(
-                                                    fill="white",
-                                                    d="M8.025 22 6.25 20.225 14.475 12 6.25 3.775 8.025 2l10 10Z"
-                                                )
-                                            }
+                                            (svg_RIGHT!(cx, "white"))
                                         }
                                     }
                                 } else {
                                     view! {cx,
                                         div(class="media-action-button") {
-                                            svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {}
+                                            (svg_EMPTY!(cx))
                                         }
                                     }
                                 }
@@ -222,55 +191,173 @@ fn MediaLoading<G: Html>(cx: Scope) -> View<G> {
     }
 }
 
+fn build_filter_list(active_filter: Rc<ActiveFilter>) -> Vec<FilterElement> {
+    let mut filters = vec![];
+    filters.push(FilterElement::Favorite);
+
+    let now = chrono::Utc::now();
+    let this_year = now.year() as u16;
+    let this_month = now.month() as u16;
+
+    if let Some(year) = active_filter.year() {
+        if year != this_year {
+            filters.push(FilterElement::Year(year + 1));
+            filters.push(FilterElement::Year(year));
+            for i in (1..=12).rev() {
+                filters.push(FilterElement::Month(year, i));
+            }
+        } else {
+            filters.push(FilterElement::NoOp);
+            for i in (1..=12).rev() {
+                if year == this_year && i > this_month {
+                    filters.push(FilterElement::NoOp);
+                } else {
+                    filters.push(FilterElement::Month(year, i));
+                }
+            }
+        };
+
+        filters.push(FilterElement::Year(year - 1));
+    } else {
+        for i in (this_year - 13..=this_year).rev() {
+            filters.push(FilterElement::Year(i));
+        }
+    }
+
+    filters
+}
+
+fn render_filter<G: Html>(cx: Scope<'_>, filter_element: FilterElement) -> View<G> {
+    let signals = signals::get_signals(cx);
+    let filter_element_signal = create_signal(cx, filter_element.clone());
+
+    let filter_element_class = if signals.get().active_filter.get().is_active(&filter_element) {
+        "bar-filter-link-selected"
+    } else {
+        "bar-filter-link"
+    };
+
+    let toggle_filter = |_| {
+        let filter_element = filter_element_signal.get().as_ref().clone();
+        let mut active_filter = signals.get().active_filter.get().as_ref().clone();
+
+        if let FilterElement::Year(_) = filter_element {
+            active_filter = active_filter.remove_month();
+        }
+
+        signals
+            .get()
+            .active_filter
+            .set(active_filter.toggle(&filter_element));
+    };
+
+    match filter_element {
+        FilterElement::NoOp => {
+            view! { cx,
+                li(class="bar-filter-item") {
+                    (svg_EMPTY!(cx))
+                }
+            }
+        }
+        FilterElement::Favorite => {
+            view! { cx,
+                li(class="bar-filter-item") {
+                    a(class=filter_element_class, href="#", on:click=toggle_filter) {
+                        (svg_FAV_WITH_FILL!(cx, "white"))
+                    }
+                }
+            }
+        }
+        _ => {
+            view! { cx,
+                li(class="bar-filter-item") {
+                    a(class=filter_element_class, href="#", on:click=toggle_filter) {
+                        (filter_element)
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[component]
+async fn Bar<G: Html>(cx: Scope<'_>) -> View<G> {
+    let signals = signals::get_signals(cx);
+    let filters: &Signal<Vec<FilterElement>> = create_signal(cx, vec![]);
+    let no_filters_enabled = create_signal(cx, false);
+
+    create_effect(cx, move || {
+        let active_filter = signals.get().active_filter.get();
+        no_filters_enabled.set(active_filter.nothing_set());
+        filters.set(build_filter_list(active_filter));
+    });
+
+    let clear_all_filters = |_| {
+        signals.get().active_filter.set(ActiveFilter::default());
+    };
+
+    view! { cx,
+        div(class="bar-inner") {
+            ul(class="bar-filter-list-main") {
+                (if !*no_filters_enabled.get().as_ref() {
+                    view! {cx,
+                        Indexed(
+                            iterable=filters,
+                            view=|cx, filter| render_filter(cx, filter),
+                        )
+                        li(class="bar-filter-item") {
+                            a(href="#", on:click=clear_all_filters) {
+                                (svg_X!(cx, "white"))
+                            }
+                        }
+                    }
+                } else {
+                    view! {cx,
+                        Indexed(
+                            iterable=filters,
+                            view=|cx, filter| render_filter(cx, filter),
+                        )
+                        li(class="bar-filter-item") {
+                            (svg_EMPTY!(cx))
+                        }
+                    }
+                })
+            }
+        }
+    }
+}
+
 #[component]
 async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
-    // Setup global preview context
-    let media_preview_signal: RcSignal<Option<MediaDataEntry>> = create_rc_signal(None);
-    provide_context(cx, media_preview_signal.clone());
+    let signals = signals::initialize(cx);
 
-    // Setup media list signal, and fetch the first data
-    let media_list: RcSignal<MediaData> = create_rc_signal(
-        api::media_list(spis_model::MediaListParams {
-            page_size: API_MEDIA_PER_REQ,
-            archived: None,
-            favorite: None,
-            taken_after: None,
-            taken_before: None,
-        })
-        .await
-        .unwrap()
-        .to_media_data(),
-    );
-    provide_context(cx, media_list.clone());
-
-    // Setup icon archive, color
-    let icon_archive_color: RcSignal<IconColor> = create_rc_signal("white".to_string());
-    provide_context(cx, icon_archive_color.clone());
-
-    // Initialize window listeners
     let window = web_sys::window().expect("Failed to get window");
-    motions::scroll::initialize(&window, media_list.clone());
-    motions::swipe::initialize(
-        &window,
-        media_list.clone(),
-        media_preview_signal.clone(),
-        icon_archive_color.clone(),
-    );
-    motions::keyboard::initialize(
-        &window,
-        media_list,
-        media_preview_signal,
-        icon_archive_color,
-    );
+    motions::scroll::initialize(&window, signals.clone());
+    motions::swipe::initialize(&window, signals.clone());
+    motions::keyboard::initialize(&window, signals.clone());
 
-    // Return view
+    // Setup automatic fetch from api when active filter is updated
+    let active_filter = signals.get().active_filter.clone();
+    create_effect(cx, move || {
+        let signals = signals.clone();
+        let active_filter = active_filter.get();
+        spawn_local(async move {
+            media_list_set_filter(&signals, active_filter.as_ref().into()).await;
+        });
+    });
+
     view! { cx,
-        Suspense(fallback=view! { cx, MediaLoading {} }) {
-            MediaPreview {}
-        }
-        div(class="media-galley") {
+        div(class="main") {
             Suspense(fallback=view! { cx, MediaLoading {} }) {
-                MediaList {}
+                MediaPreview {}
+            }
+            div(class="bar") {
+                Bar {}
+            }
+            div(class="media-galley") {
+                Suspense(fallback=view! { cx, MediaLoading {} }) {
+                    MediaList {}
+                }
             }
         }
     }
