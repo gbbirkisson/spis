@@ -3,7 +3,7 @@ use sycamore::reactive::{create_rc_signal, provide_context, use_context, RcSigna
 use crate::{
     data::loader::MediaDataState,
     data::{IconColor, MediaData, MediaDataEntry},
-    GuiFilter,
+    filters::GuiFilter,
 };
 
 #[derive(Clone)]
