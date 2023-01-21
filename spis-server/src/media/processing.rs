@@ -32,12 +32,12 @@ impl GetMediaType for Path {
         if let Some(ext) = self.extension() {
             if let Some(ext) = ext.to_str() {
                 for e in EXT_IMAGE {
-                    if e.eq(&ext) {
+                    if e.eq(&ext.to_lowercase()) {
                         return Some(ProcessedMediaType::Image);
                     }
                 }
                 for e in EXT_VIDEO {
-                    if e.eq(&ext) {
+                    if e.eq(&ext.to_lowercase()) {
                         return Some(ProcessedMediaType::Video);
                     }
                 }
