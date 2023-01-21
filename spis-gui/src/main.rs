@@ -1,12 +1,15 @@
+use std::rc::Rc;
+
+use chrono::Datelike;
 use data::*;
-use filters::GuiFilter;
-use spis_model::{MediaListParams, MediaType};
+use filters::ActiveFilter;
+use spis_model::MediaType;
 use sycamore::prelude::*;
 use sycamore::suspense::Suspense;
 use wasm_bindgen_futures::spawn_local;
 
 use crate::data::loader::media_list_set_filter;
-use crate::filters::GuiFilterTime;
+use crate::filters::FilterElement;
 
 mod constants;
 mod data;
@@ -14,6 +17,7 @@ mod filters;
 mod motions;
 mod preview;
 mod signals;
+mod svg;
 
 fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
     let signals = signals::get_signals(cx);
@@ -29,12 +33,7 @@ fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
             ({ if media.media.media_type == MediaType::Video {
                 view!( cx,
                     div(class="media-thumbnail-vid", on:click=preview_open) {
-                        svg(xmlns="http://www.w3.org/2000/svg", height="48", width="48") {
-                            path(
-                                fill="gainsboro",
-                                d="M18.95 32.85 32.9 24l-13.95-8.9ZM24 45.05q-4.35 0-8.2-1.625-3.85-1.625-6.725-4.5Q6.2 36.05 4.575 32.2 2.95 28.35 2.95 24t1.625-8.2q1.625-3.85 4.5-6.725Q11.95 6.2 15.8 4.55q3.85-1.65 8.15-1.65 4.4 0 8.275 1.65t6.725 4.525q2.85 2.875 4.5 6.725 1.65 3.85 1.65 8.25 0 4.3-1.65 8.15-1.65 3.85-4.525 6.725-2.875 2.875-6.725 4.5-3.85 1.625-8.2 1.625Zm0-4.55q6.85 0 11.675-4.825Q40.5 30.85 40.5 24q0-6.85-4.825-11.675Q30.85 7.5 24 7.5q-6.85 0-11.675 4.825Q7.5 17.15 7.5 24q0 6.85 4.825 11.675Q17.15 40.5 24 40.5ZM24 24Z"
-                            )
-                        }
+                        (svg_PLAY!(cx, "gainsboro"))
                     }
                 )
                 } else {
@@ -44,12 +43,7 @@ fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
             ({ if media.media.favorite {
                 view!( cx,
                     div(class="media-thumbnail-fav", on:click=preview_open) {
-                        svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
-                            path(
-                                fill="pink",
-                                d="m12 21-1.45-1.3q-2.525-2.275-4.175-3.925T3.75 12.812Q2.775 11.5 2.388 10.4 2 9.3 2 8.15 2 5.8 3.575 4.225 5.15 2.65 7.5 2.65q1.3 0 2.475.55T12 4.75q.85-1 2.025-1.55 1.175-.55 2.475-.55 2.35 0 3.925 1.575Q22 5.8 22 8.15q0 1.15-.387 2.25-.388 1.1-1.363 2.412-.975 1.313-2.625 2.963-1.65 1.65-4.175 3.925Z"
-                            )
-                        }
+                        (svg_FAV_WITH_FILL!(cx, "pink"))
                     }
                 )
                 } else {
@@ -118,59 +112,34 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
                                 if media_prev {
                                     view! {cx,
                                         div(class="media-action-button", on:click=preview_previous) {
-                                            svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
-                                                path(
-                                                    fill="white",
-                                                    d="M10 22 0 12 10 2l1.775 1.775L3.55 12l8.225 8.225Z"
-                                                )
-                                            }
+                                            (svg_LEFT!(cx, "white"))
                                         }
                                     }
                                 } else {
                                     view! {cx,
                                         div(class="media-action-button") {
-                                            svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {}
+                                            (svg_EMPTY!(cx))
                                         }
                                     }
                                 }
                             })
                             div(class="media-action-button", on:click=preview_archive) {
-                                svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
-                                    path(
-                                        fill=archive_color,
-                                        d="M7 21q-.825 0-1.412-.587Q5 19.825 5 19V6H4V4h5V3h6v1h5v2h-1v13q0 .825-.587 1.413Q17.825 21 17 21ZM17 6H7v13h10ZM9 17h2V8H9Zm4 0h2V8h-2ZM7 6v13Z"
-                                    )
-                                }
+                                (svg_TRASHCAN!(cx, archive_color))
                             }
                             div(class="media-action-button", on:click=preview_close) {
-                                svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
-                                    path(
-                                        fill="white",
-                                        d="M6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5l5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6Z"
-                                    )
-                                }
+                                (svg_X!(cx, "white"))
                             }
                             ({
                                 if media_favorite {
                                     view! {cx,
                                         div(class="media-action-button", on:click=preview_favorite) {
-                                            svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
-                                                path(
-                                                    fill="pink",
-                                                    d="m12 21-1.45-1.3q-2.525-2.275-4.175-3.925T3.75 12.812Q2.775 11.5 2.388 10.4 2 9.3 2 8.15 2 5.8 3.575 4.225 5.15 2.65 7.5 2.65q1.3 0 2.475.55T12 4.75q.85-1 2.025-1.55 1.175-.55 2.475-.55 2.35 0 3.925 1.575Q22 5.8 22 8.15q0 1.15-.387 2.25-.388 1.1-1.363 2.412-.975 1.313-2.625 2.963-1.65 1.65-4.175 3.925Z"
-                                                )
-                                            }
+                                            (svg_FAV_WITH_FILL!(cx, "pink"))
                                         }
                                     }
                                 } else {
                                     view! {cx,
                                         div(class="media-action-button", on:click=preview_favorite) {
-                                            svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
-                                                path(
-                                                    fill="white",
-                                                    d="m12 21-1.45-1.3q-2.525-2.275-4.175-3.925T3.75 12.812Q2.775 11.5 2.388 10.4 2 9.3 2 8.15 2 5.8 3.575 4.225 5.15 2.65 7.5 2.65q1.3 0 2.475.55T12 4.75q.85-1 2.025-1.55 1.175-.55 2.475-.55 2.35 0 3.925 1.575Q22 5.8 22 8.15q0 1.15-.387 2.25-.388 1.1-1.363 2.412-.975 1.313-2.625 2.963-1.65 1.65-4.175 3.925Zm0-2.7q2.4-2.15 3.95-3.688 1.55-1.537 2.45-2.674.9-1.138 1.25-2.026.35-.887.35-1.762 0-1.5-1-2.5t-2.5-1q-1.175 0-2.175.662-1 .663-1.375 1.688h-1.9q-.375-1.025-1.375-1.688-1-.662-2.175-.662-1.5 0-2.5 1t-1 2.5q0 .875.35 1.762.35.888 1.25 2.026.9 1.137 2.45 2.674Q9.6 16.15 12 18.3Zm0-6.825Z"
-                                                )
-                                            }
+                                            (svg_FAV_NO_FILL!(cx, "white"))
                                         }
                                     }
                                 }
@@ -179,18 +148,13 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
                                 if media_next {
                                     view! {cx,
                                         div(class="media-action-button", on:click=preview_next) {
-                                            svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
-                                                path(
-                                                    fill="white",
-                                                    d="M8.025 22 6.25 20.225 14.475 12 6.25 3.775 8.025 2l10 10Z"
-                                                )
-                                            }
+                                            (svg_RIGHT!(cx, "white"))
                                         }
                                     }
                                 } else {
                                     view! {cx,
                                         div(class="media-action-button") {
-                                            svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {}
+                                            (svg_EMPTY!(cx))
                                         }
                                     }
                                 }
@@ -227,64 +191,60 @@ fn MediaLoading<G: Html>(cx: Scope) -> View<G> {
     }
 }
 
-fn render_filter<G: Html>(cx: Scope<'_>, filter_element: GuiFilter) -> View<G> {
-    let signals = signals::get_signals(cx);
+fn build_filter_list(active_filter: Rc<ActiveFilter>) -> Vec<FilterElement> {
+    let mut filters = vec![];
+    filters.push(FilterElement::Favorite);
 
-    let filter = signals.get().filter.clone();
+    if let Some(year) = active_filter.year() {
+        filters.push(FilterElement::Year(year));
+        for i in 1..=12 {
+            filters.push(FilterElement::Month(year, i));
+        }
+    } else {
+        let this_year = chrono::Utc::now().year() as u16;
+        for i in (2016..=this_year).rev() {
+            filters.push(FilterElement::Year(i));
+        }
+    }
+
+    filters
+}
+
+fn render_filter<G: Html>(cx: Scope<'_>, filter_element: FilterElement) -> View<G> {
+    let signals = signals::get_signals(cx);
     let filter_element_signal = create_signal(cx, filter_element.clone());
 
-    let set_filter = |_| {
-        let signals = signals.clone();
-
-        if signals
-            .get()
-            .filter
-            .get()
-            .as_ref()
-            .eq(&Some(filter_element_signal.get().as_ref().clone()))
-        {
-            signals.get().filter.set(None);
-        } else {
-            signals
-                .get()
-                .filter
-                .set(Some(filter_element_signal.get().as_ref().clone()));
-        };
+    let filter_element_class = if signals.get().active_filter.get().is_active(&filter_element) {
+        "bar-filter-item bar-filter-item-selected"
+    } else {
+        "bar-filter-item"
     };
 
-    view! { cx,
-        li(class="bar-filter-item") {
-            ({
-                match filter.get().is_some() && filter.get().as_ref().eq(&Some(filter_element.clone())) {
-                    true => view! { cx,
-                        a(href="#", on:click=set_filter) {
-                            svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
-                                path(
-                                    fill="white",
-                                    d="M6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5l5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6Z"
-                                )
-                            }
-                        }
-                    },
-                    false => match filter_element == GuiFilter::Favorite {
-                        true => view! { cx,
-                            a(href="#", on:click=set_filter) {
-                                svg(xmlns="http://www.w3.org/2000/svg", height="24", width="24") {
-                                    path(
-                                        fill="pink",
-                                        d="m12 21-1.45-1.3q-2.525-2.275-4.175-3.925T3.75 12.812Q2.775 11.5 2.388 10.4 2 9.3 2 8.15 2 5.8 3.575 4.225 5.15 2.65 7.5 2.65q1.3 0 2.475.55T12 4.75q.85-1 2.025-1.55 1.175-.55 2.475-.55 2.35 0 3.925 1.575Q22 5.8 22 8.15q0 1.15-.387 2.25-.388 1.1-1.363 2.412-.975 1.313-2.625 2.963-1.65 1.65-4.175 3.925Z"
-                                    )
-                                }
-                            }
-                        },
-                        false => view! { cx,
-                            a(href="#", on:click=set_filter) {
-                                (filter_element)
-                            }
-                        }
-                    },
+    let toggle_filter = |_| {
+        let filter_element = filter_element_signal.get().as_ref().clone();
+        let active_filter = signals.get().active_filter.get().as_ref().clone();
+
+        signals
+            .get()
+            .active_filter
+            .set(active_filter.toggle(&filter_element));
+    };
+
+    if filter_element == FilterElement::Favorite {
+        view! { cx,
+            li(class=filter_element_class) {
+                a(href="#", on:click=toggle_filter) {
+                    (svg_FAV_WITH_FILL!(cx, "white"))
                 }
-            })
+            }
+        }
+    } else {
+        view! { cx,
+            li(class=filter_element_class) {
+                a(href="#", on:click=toggle_filter) {
+                    (filter_element)
+                }
+            }
         }
     }
 }
@@ -292,63 +252,38 @@ fn render_filter<G: Html>(cx: Scope<'_>, filter_element: GuiFilter) -> View<G> {
 #[component]
 async fn Bar<G: Html>(cx: Scope<'_>) -> View<G> {
     let signals = signals::get_signals(cx);
+    let filters: &Signal<Vec<FilterElement>> = create_signal(cx, vec![]);
+    let no_filters_enabled = create_signal(cx, false);
 
-    // Build main filters
-    let mut main_filters = vec![];
-    main_filters.push(GuiFilter::Favorite);
-    for i in (2015..=2023).rev() {
-        main_filters.push(GuiFilter::Time(GuiFilterTime {
-            year: i,
-            month: None,
-        }));
-    }
-    let main_filters = create_signal(cx, main_filters);
-    let sub_filters: &Signal<Vec<GuiFilter>> = create_signal(cx, vec![]);
-
-    let filter = signals::get_signals(cx).get().filter.clone();
-    let parent_filter = create_rc_signal(GuiFilter::Favorite);
-    let parent_filter_clone = parent_filter.clone();
     create_effect(cx, move || {
-        let filter = filter.get();
-        let parent_filter = parent_filter_clone.clone();
-        match filter.as_ref() {
-            Some(filter) => match filter {
-                GuiFilter::Favorite => sub_filters.set(vec![]),
-                GuiFilter::Time(time) => {
-                    if time.month.is_none() {
-                        parent_filter.set(filter.clone());
-                        sub_filters.set(time.get_subfilters())
-                    }
-                }
-            },
-            None => sub_filters.set(vec![]),
-        }
+        let active_filter = signals.get().active_filter.get();
+        no_filters_enabled.set(active_filter.nothing_set());
+        filters.set(build_filter_list(active_filter));
     });
 
     let clear_all_filters = |_| {
-        signals.get().filter.set(None);
-        sub_filters.set(vec![]);
+        signals.get().active_filter.set(ActiveFilter::default());
     };
 
     view! { cx,
         div(class="bar") {
             ul(class="bar-filter-list-main") {
-                (if sub_filters.get().as_ref().is_empty() {
-                    view! { cx,
+                (if !*no_filters_enabled.get().as_ref() {
+                    view! {cx,
                         Indexed(
-                            iterable=main_filters,
+                            iterable=filters,
                             view=|cx, filter| render_filter(cx, filter),
                         )
-                    }
-                } else {
-                    view! { cx,
                         li(class="bar-filter-item") {
                             a(href="#", on:click=clear_all_filters) {
-                                (parent_filter)
+                                (svg_X!(cx, "white"))
                             }
                         }
+                    }
+                } else {
+                    view! {cx,
                         Indexed(
-                            iterable=sub_filters,
+                            iterable=filters,
                             view=|cx, filter| render_filter(cx, filter),
                         )
                     }
@@ -362,25 +297,18 @@ async fn Bar<G: Html>(cx: Scope<'_>) -> View<G> {
 async fn App<G: Html>(cx: Scope<'_>) -> View<G> {
     let signals = signals::initialize(cx);
 
-    // media_list_set_filter(&signals, MediaListParams::default()).await;
-
     let window = web_sys::window().expect("Failed to get window");
     motions::scroll::initialize(&window, signals.clone());
     motions::swipe::initialize(&window, signals.clone());
     motions::keyboard::initialize(&window, signals.clone());
 
-    // Whenever the gui filter is updated, set media list params
-    // TODO: Move into another module
-    let filter = signals.get().filter.clone();
+    // Setup automatic fetch from api when active filter is updated
+    let active_filter = signals.get().active_filter.clone();
     create_effect(cx, move || {
         let signals = signals.clone();
-        let filter = filter.get();
-        let filter = match filter.as_ref() {
-            Some(filter) => filter.into(),
-            None => MediaListParams::default(),
-        };
+        let active_filter = active_filter.get();
         spawn_local(async move {
-            media_list_set_filter(&signals, filter).await;
+            media_list_set_filter(&signals, active_filter.as_ref().into()).await;
         });
     });
 
