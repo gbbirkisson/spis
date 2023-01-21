@@ -140,7 +140,7 @@ impl Display for FilterElement {
         match self {
             FilterElement::NoOp => f.write_str("noop"),
             FilterElement::Favorite => f.write_str("fav"),
-            FilterElement::Year(year) => f.write_str(&format!("{}", year)[2..]),
+            FilterElement::Year(year) => f.write_str(&format!("{}", year)[..]),
             FilterElement::Month(_, month) => match month {
                 1 => f.write_str("Jan"),
                 2 => f.write_str("Feb"),
