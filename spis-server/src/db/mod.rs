@@ -126,8 +126,7 @@ pub struct MediaCount {
 }
 
 pub async fn media_count(pool: &SqlitePool) -> Result<MediaCount> {
-    let res = sqlx::query_as!(
-        MediaCount,
+    let res = sqlx::query_as::<Sqlite, MediaCount>(
         r#"
         SELECT
         COUNT(*) as count,
@@ -136,7 +135,7 @@ pub async fn media_count(pool: &SqlitePool) -> Result<MediaCount> {
         SUM(archived) as archived,
         SUM(missing) as missing
         FROM media
-        "#
+        "#,
     )
     .fetch_one(pool)
     .await?;

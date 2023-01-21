@@ -43,7 +43,7 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-
 
       - name: Run ${{ matrix.check }}
-        run: make clean-state ${{ matrix.check }}
+        run: make ${{ matrix.check }}
 
   test:
     name: Run test
@@ -72,7 +72,7 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-
       
       - name: Run test
-        run: make clean-state test
+        run: make test
 
       - name: Upload test coverage
         uses: codecov/codecov-action@v3
