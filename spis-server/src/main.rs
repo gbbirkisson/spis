@@ -17,7 +17,7 @@ use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 struct Args {
     /// File to test process, and then exit
     #[arg(short, long)]
-    test_media: Option<PathBuf>,
+    test_media: Vec<PathBuf>,
 }
 
 #[tokio::main]
@@ -32,9 +32,12 @@ async fn main() -> Result<()> {
 
     // Parse args
     let args = Args::parse();
-    if let Some(file) = args.test_media {
-        let data = media::process_single(file)?;
-        println!("{:?}", data.1);
+    if args.test_media.len() > 0 {
+        for file in args.test_media {
+            let path = file.display().to_string();
+            let data = media::process_single(file)?;
+            println!("{:?} {:?}", path, data.1);
+        }
         return Ok(());
     }
 

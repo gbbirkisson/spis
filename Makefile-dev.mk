@@ -31,6 +31,12 @@ dev-nginx: ## Run nginx
 dev-server: ${DEV_MEDIA_DIR} ${DEV_DB_FILE} ## Run the server
 	watchexec -r -e rs,toml -w spis-model -w spis-server -- cargo run -p spis-server
 
+.PHONY: dev-processing
+dev-processing: ${DEV_MEDIA_DIR} ${DEV_DB_FILE} ## Run processing of file
+	watchexec -r -e rs,toml -w spis-server -- cargo run -p spis-server -- \
+		-t "some_image.jpg" 
+
+
 .PHONY: dev-gui
 dev-gui: ## Run the gui
 	cd spis-gui && trunk serve --port 9000
