@@ -21,8 +21,11 @@ impl ImageProcessor {
 
     pub fn get_timestamp(&self) -> Result<DateTime<Utc>> {
         let timestamp_tz = exif_get_str(&self.exif, Tag::OffsetTimeOriginal);
-        let timestamp = exif_get_str(&self.exif, Tag::DateTimeOriginal)?;
-        let timestamp = timestamp.to_owned() + " " + timestamp_tz.unwrap_or("+02:00"); // TODO: Make configurable
+        let mut timestamp = exif_get_str(&self.exif, Tag::DateTimeOriginal)?
+            .to_string()
+            .replace('-', ":");
+        timestamp.push(' ');
+        timestamp.push_str(timestamp_tz.unwrap_or("+02:00")); // TODO: Make configurable
         Ok(DateTime::parse_from_str(&timestamp, "%Y:%m:%d %H:%M:%S %z")?.with_timezone(&Utc))
     }
 
