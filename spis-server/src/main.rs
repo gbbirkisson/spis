@@ -32,7 +32,7 @@ async fn main() -> Result<()> {
 
     // Parse args
     let args = Args::parse();
-    if args.test_media.len() > 0 {
+    if !args.test_media.is_empty() {
         for file in args.test_media {
             let path = file.display().to_string();
             let data = media::process_single(file)?;

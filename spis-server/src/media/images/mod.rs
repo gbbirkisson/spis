@@ -23,8 +23,8 @@ impl ImageProcessor {
         let timestamp_tz = exif_get_str(&self.exif, Tag::OffsetTimeOriginal);
         let mut timestamp = exif_get_str(&self.exif, Tag::DateTimeOriginal)?
             .to_string()
-            .replace("-", ":");
-        timestamp.push_str(" ");
+            .replace('-', ":");
+        timestamp.push(' ');
         timestamp.push_str(timestamp_tz.unwrap_or("+02:00")); // TODO: Make configurable
         Ok(DateTime::parse_from_str(&timestamp, "%Y:%m:%d %H:%M:%S %z")?.with_timezone(&Utc))
     }
