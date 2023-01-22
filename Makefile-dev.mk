@@ -34,7 +34,7 @@ dev-server: ${DEV_MEDIA_DIR} ${DEV_DB_FILE} ## Run the server
 .PHONY: dev-processing
 dev-processing: ${DEV_MEDIA_DIR} ${DEV_DB_FILE} ## Run processing of file
 	watchexec -r -e rs,toml -w spis-server -- cargo run -p spis-server -- \
-		-t "some_image.jpg" 
+		-t "dev/api/media/somefile.mp4" 
 
 
 .PHONY: dev-gui

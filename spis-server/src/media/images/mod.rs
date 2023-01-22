@@ -1,5 +1,8 @@
 use chrono::{DateTime, Utc};
-use color_eyre::{eyre::eyre, Result};
+use color_eyre::{
+    eyre::{eyre, Context},
+    Result,
+};
 use exif::{Exif, In, Tag, Value};
 use image::DynamicImage;
 use std::{fs, path::Path};
@@ -14,8 +17,10 @@ impl ImageProcessor {
         let media_bytes = fs::read(path)?;
         let mut exif_buf_reader = std::io::Cursor::new(media_bytes);
         let exif_reader = exif::Reader::new();
-        let exif = exif_reader.read_from_container(&mut exif_buf_reader)?;
-        let image = image::open(path)?;
+        let exif = exif_reader
+            .read_from_container(&mut exif_buf_reader)
+            .wrap_err("failed to read exif")?;
+        let image = image::open(path).wrap_err("failed to open image")?;
         Ok(Self { exif, image })
     }
 
