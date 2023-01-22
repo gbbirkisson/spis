@@ -4,6 +4,7 @@ use crate::media::images::ImageProcessor;
 use crate::media::util::Thumbnail;
 use crate::media::{ProcessedMediaData, ProcessedMediaType};
 use chrono::{DateTime, Utc};
+use color_eyre::eyre::Context;
 use color_eyre::{eyre::eyre, Result};
 use image::DynamicImage;
 use md5::{Digest, Md5};
@@ -218,15 +219,23 @@ pub(crate) fn single_media_process(
     let res = match (video_processor, &media_type) {
         (Some(video_processor), ProcessedMediaType::Video) => {
             tracing::debug!("Processing video: {}", media_path_str);
-            let thumb = video_processor.get_thumbnail(&media_path_str, THUMBNAIL_SIZE)?;
-            let taken_at = video_processor.get_timestamp(&media_path_str)?;
+            let thumb = video_processor
+                .get_thumbnail(&media_path_str, THUMBNAIL_SIZE)
+                .wrap_err("thumb creation failed")?;
+            let taken_at = video_processor
+                .get_timestamp(&media_path_str)
+                .wrap_err("timestamp parsing failed")?;
             Some((thumb, taken_at))
         }
         (_, ProcessedMediaType::Image) => {
             tracing::debug!("Processing image: {}", media_path_str);
             let image_processor = ImageProcessor::new(media_path)?;
-            let thumb = image_processor.get_thumbnail(THUMBNAIL_SIZE)?;
-            let taken_at = image_processor.get_timestamp()?;
+            let thumb = image_processor
+                .get_thumbnail(THUMBNAIL_SIZE)
+                .wrap_err("thumb creation failed")?;
+            let taken_at = image_processor
+                .get_timestamp()
+                .wrap_err("timestamp parsing failed")?;
             Some((thumb, taken_at))
         }
         (_, _) => None,

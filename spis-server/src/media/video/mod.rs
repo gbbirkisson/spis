@@ -1,6 +1,9 @@
 use super::images::crop;
 use chrono::{DateTime, Utc};
-use color_eyre::{eyre::eyre, Result};
+use color_eyre::{
+    eyre::{eyre, Context},
+    Result,
+};
 use image::io::Reader;
 use image::DynamicImage;
 use std::io::{Cursor, Read};
@@ -32,7 +35,9 @@ impl VideoProcessor {
             .stdout_str()
             .trim()
             .replace('z', "Z");
-        Ok(DateTime::parse_from_rfc3339(&timestamp)?.with_timezone(&Utc))
+        Ok(DateTime::parse_from_rfc3339(&timestamp)
+            .wrap_err("failed to parse video timestamp")?
+            .with_timezone(&Utc))
     }
 
     pub fn get_thumbnail(&self, file: &str, size: u32) -> Result<DynamicImage> {
