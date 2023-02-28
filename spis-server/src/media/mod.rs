@@ -1,5 +1,5 @@
 use crate::db;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Duration, Utc};
 use color_eyre::{eyre::eyre, Result};
 use image::DynamicImage;
 use sqlx::{Pool, Sqlite};
@@ -39,7 +39,7 @@ pub async fn process(
     thumb_dir: PathBuf,
     force_uuid_calculation: bool,
 ) {
-    let start_time = Utc::now().time();
+    let start_time = Utc::now();
     tracing::info!("Media processing started");
 
     tracing::debug!("Mark entire database as unwalked");
@@ -122,12 +122,30 @@ pub async fn process(
         }
     }
 
-    let end_time = Utc::now().time();
+    let end_time = Utc::now();
     let diff = end_time - start_time;
-    tracing::info!(
-        "Media processing ended after {} minutes",
-        diff.num_minutes()
-    )
+    if diff > Duration::hours(1) {
+        let hours = diff.num_hours();
+        let minutes = (diff - Duration::hours(hours)).num_minutes();
+        tracing::info!(
+            "Media processing ended after {} hours and {} minutes",
+            hours,
+            minutes,
+        );
+    } else if diff > Duration::minutes(1) {
+        let minutes = diff.num_minutes();
+        let seconds = (diff - Duration::minutes(minutes)).num_seconds();
+        tracing::info!(
+            "Media processing ended after {} minutes and {} seconds",
+            minutes,
+            seconds,
+        )
+    } else {
+        tracing::info!(
+            "Media processing ended after {} seconds",
+            diff.num_seconds()
+        )
+    }
 }
 
 pub fn process_single(path: PathBuf) -> Result<(DynamicImage, DateTime<Utc>)> {
