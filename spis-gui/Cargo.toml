@@ -7,7 +7,7 @@ edition = "2021"
 # Model
 spis-model = { path = "../spis-model" }
 chrono = { version = "0.4" }
-serde_qs = "0.10"
+serde_qs = "0.11"
 
 # Logging
 log = "0.4.14"
