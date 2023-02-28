@@ -25,6 +25,17 @@ release-gui: ${RELEASE_GUI} ## Create release build of GUI
 .PHONY: release ## Build release assets
 release: ${RELEASE_X86_60_GNU} ${RELEASE_ARMV7_GNUEABIHF}
 
+.PHONY: validate
+validate:
+	# Validate gui version
+	test "${GITHUB_REF_NAME}" = "$(shell awk -F ' = ' '$$1 ~ /version/ { gsub(/[\"]/, "", $$2); printf("v%s",$$2) }' spis-gui/Cargo.toml)"
+
+	# Validate model version
+	test "${GITHUB_REF_NAME}" = "$(shell awk -F ' = ' '$$1 ~ /version/ { gsub(/[\"]/, "", $$2); printf("v%s",$$2) }' spis-model/Cargo.toml)"
+
+	# Validate server version
+	test "${GITHUB_REF_NAME}" = "$(shell awk -F ' = ' '$$1 ~ /version/ { gsub(/[\"]/, "", $$2); printf("v%s",$$2) }' spis-server/Cargo.toml)"
+
 .PHONY: docker-local
 docker-local: ${RELEASE_X86_60_GNU} ## Run docker image
 	docker build -t spis-local -f docker/Dockerfile .
