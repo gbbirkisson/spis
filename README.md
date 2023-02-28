@@ -1,4 +1,4 @@
-<img align="right" width="128" height="128" src="logo.png">
+❤️<img align="right" width="128" height="128" src="logo.png">
 
 <h1>SPIS</h1>
 
@@ -8,7 +8,7 @@
 [![codecov](https://codecov.io/github/gbbirkisson/spis/branch/main/graph/badge.svg?token=5VQHEBQ7JV)](https://codecov.io/github/gbbirkisson/spis)
 [![GitHub](https://img.shields.io/github/license/gbbirkisson/spis)](https://github.com/gbbirkisson/spis/blob/main/LICENSE)
 
-This project is called "Simple Private Image Server" or `SPIS` for short. It's purpose is to be a lightweight and fast server to display media hosted on a private server. This project came about when I was searching for a solution like this and found nothing. Everything seemed way to feature heavy and slow, requiring you to setup heavy databases and other unnecessary components.
+This project is called "Simple Private Image Server" or `SPIS` for short. It's purpose is to be a lightweight and fast server to display media hosted on a private server. This project came about when I was searching for a solution like this and found nothing. Everything seemed way to feature heavy and slow, requiring you to setup databases and other unnecessary components.
 
 The goals for this project are:
 * Simple to setup 🏝️
@@ -16,9 +16,15 @@ The goals for this project are:
 * Minimalistic GUI 🤩
 * Easy to use on mobile 📱
 
+Some features worth mentioning:
+* Endless scrolling 📜
+* Mark favorites 💜
+* Filtering by year, month, favorites 🎚️
+* Is a progressive web app 📱
+
 <h2>Table of contents</h2>
 
-- [Screenshot](#screenshot)
+- [Screenshots](#screenshots)
 - [Setup](#setup)
   - [Configuration](#configuration)
   - [Docker](#docker)
@@ -26,13 +32,15 @@ The goals for this project are:
 - [Progressive Web App](#progressive-web-app)
 - [Development](#development)
   - [Setup dependencies](#setup-dependencies)
+  - [Get some test media](#get-some-test-media)
   - [Running](#running)
 
-## Screenshot
+## Screenshots
 
 This is how the GUI looks!
 
-<img width="100%" src="screenshot.jpg">
+<img src="screen1.jpg">
+<img src="screen2.jpg">
 
 ## Setup
 
@@ -72,15 +80,19 @@ Just [download a binary](https://github.com/gbbirkisson/spis/releases) for your 
 
 ## Progressive Web App
 
-If you have an Android phone, you can add SPIS as a PWA. Open up the server home page in the chrome browser, open top-right menu, and select `Add to Home screen`.
+If you have an Android phone, you can add `SPIS` as a `PWA` to your phone. Open up the server home page in the chrome browser, open top-right menu, and select `Add to Home screen`.
 
 ## Development
 
 ### Setup dependencies
 
 ```console
-$ make setup dl-img
+$ make setup
 ```
+
+### Get some test media
+
+I leave it up do you to put some images/videos in the `./dev/api/media` folder.
 
 ### Running
 
