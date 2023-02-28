@@ -1,5 +1,6 @@
 [advisories]
 ignore = [
-    "RUSTSEC-2020-0071",
-    "RUSTSEC-2021-0141",
+    "RUSTSEC-2021-0141", # dotenv is unmaintained
+    "RUSTSEC-2022-0090", # sqlx 0.6.2 has to be updated
+    "RUSTSEC-2020-0071", # chrono 0.4.23 has do be updated
 ]
