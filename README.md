@@ -1,4 +1,4 @@
-❤️<img align="right" width="128" height="128" src="logo.png">
+<img align="right" width="128" height="128" src="logo.png">
 
 <h1>SPIS</h1>
 
@@ -8,19 +8,22 @@
 [![codecov](https://codecov.io/github/gbbirkisson/spis/branch/main/graph/badge.svg?token=5VQHEBQ7JV)](https://codecov.io/github/gbbirkisson/spis)
 [![GitHub](https://img.shields.io/github/license/gbbirkisson/spis)](https://github.com/gbbirkisson/spis/blob/main/LICENSE)
 
-This project is called "Simple Private Image Server" or `SPIS` for short. It's purpose is to be a lightweight and fast server to display media hosted on a private server. This project came about when I was searching for a solution like this and found nothing. Everything seemed way to feature heavy and slow, requiring you to setup databases and other unnecessary components.
+This project is called "Simple Private Image Server" or `SPIS` for short. It's purpose is to be a lightweight and fast server to display media hosted on a private server. This project came about when I was searching for a solution like this and found nothing. Everything seemed way too feature heavy and slow, requiring you to setup databases and other unnecessary components.
 
 The goals for this project are:
 * Simple to setup 🏝️
+* Flexible to operate ➰
 * Lightweight, multi-threaded and fast 🚀
 * Minimalistic GUI 🤩
 * Easy to use on mobile 📱
 
 Some features worth mentioning:
 * Endless scrolling 📜
-* Mark favorites 💜
-* Filtering by year, month, favorites 🎚️
-* Is a progressive web app 📱
+* Mark favorites ❤️
+* Filter by year, month, favorites 🎚️
+* Is a progressive web app 📲
+
+I personally use this project to host around `40.000` images on a [Raspberry Pi CM4](https://www.raspberrypi.com/products/compute-module-4/) 🤯
 
 <h2>Table of contents</h2>
 
@@ -37,10 +40,13 @@ Some features worth mentioning:
 
 ## Screenshots
 
-This is how the GUI looks!
+This is how the GUI looks on mobile!
 
+<p float="left">
 <img src="screen1.jpg">
 <img src="screen2.jpg">
+</p>
+
 
 ## Setup
 
@@ -52,10 +58,10 @@ Variable Name | Required | Default | Description
 --- | --- | --- | ---
 `SPIS_MEDIA_DIR` | `Yes` | | Where should the server look for media
 `SPIS_DATA_DIR` | `Yes` | | Where should the server store its data
-`SPIS_PROCESSING_SCHEDULE` | `No` | `0 0 2 * * *` | When should the server look for media (default is every night at 2)
-`SPIS_PROCESSING_RUN_ON_START` | `No` | `false` | Should the server look for media on start
-`SPIS_API_MEDIA_PATH` | `No` | `/assets/media` | Where will the media be served by webserver
-`SPIS_API_THUMBNAIL_PATH` | `No` | `/assets/thumbnails` | Where will the thumbnails be served by webserver
+`SPIS_PROCESSING_SCHEDULE` | `No` | `0 0 2 * * *` | When should the server scan for new media (default is every night at 2)
+`SPIS_PROCESSING_RUN_ON_START` | `No` | `false` | Should the server scan for media on startup
+`SPIS_API_MEDIA_PATH` | `No` | `/assets/media` | Where will the media be served by the webserver
+`SPIS_API_THUMBNAIL_PATH` | `No` | `/assets/thumbnails` | Where will the thumbnails be served by the webserver
 `SPIS_SERVER_SOCKET` | `No` | `/var/run/spis.sock` | Path of the socket the server will listen to
 `SPIS_SERVER_ADDRESS` | `No` | | Address to listen to rather than socket, i.e. `0.0.0.0:8000` 
 `RUST_LOG` | `No` | | Loglevels of the application, i.e. `error,spis_server=info`
@@ -76,11 +82,11 @@ $ docker run -it \
 
 Just [download a binary](https://github.com/gbbirkisson/spis/releases) for your architecture and run it. Note that the `spis-server` binary does not serve images. For that you can use something like nginx. See [nginx config](./docker/nginx.conf) for an example.
 
-> **Note**: To get video support both `ffmpeg` and `ffprobe` must be present in path!
+> **Note**: To get video support, both `ffmpeg` and `ffprobe` must be present in path!
 
 ## Progressive Web App
 
-If you have an Android phone, you can add `SPIS` as a `PWA` to your phone. Open up the server home page in the chrome browser, open top-right menu, and select `Add to Home screen`.
+If you have an Android mobile device, you can add `SPIS` as a `PWA` to it. Open up the `SPIS` home page in the chrome browser on the device, open the top-right menu, and select `Add to Home screen`.
 
 ## Development
 
