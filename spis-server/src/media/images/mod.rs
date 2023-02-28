@@ -26,7 +26,9 @@ impl ImageProcessor {
 
     pub fn get_timestamp(&self) -> Result<DateTime<Utc>> {
         let timestamp_tz = exif_get_str(&self.exif, Tag::OffsetTimeOriginal);
-        let mut timestamp = exif_get_str(&self.exif, Tag::DateTimeOriginal)?
+        let mut timestamp = exif_get_str(&self.exif, Tag::DateTimeOriginal)
+            .or_else(|_| exif_get_str(&self.exif, Tag::DateTime))
+            .wrap_err("failed to get timestamp in exif data")?
             .to_string()
             .replace('-', ":");
         timestamp.push(' ');
