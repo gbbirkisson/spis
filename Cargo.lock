@@ -1074,7 +1074,7 @@ dependencies = [
 
 [[package]]
 name = "gui"
-version = "0.4.6"
+version = "0.4.7"
 dependencies = [
  "chrono",
  "console_error_panic_hook",
@@ -2442,7 +2442,7 @@ dependencies = [
 
 [[package]]
 name = "spis-model"
-version = "0.4.6"
+version = "0.4.7"
 dependencies = [
  "chrono",
  "serde",
@@ -2450,7 +2450,7 @@ dependencies = [
 
 [[package]]
 name = "spis-server"
-version = "0.4.6"
+version = "0.4.7"
 dependencies = [
  "actix-web",
  "async-cron-scheduler",
