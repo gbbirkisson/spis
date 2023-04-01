@@ -40,7 +40,7 @@ uuid = { version = "1", features = ["serde", "v4"] }
 chrono = "0.4"
 
 # Image processing
-image = { version = "0.24.4", features = ["jpeg", "webp-encoder"]}
+image = { version = "0.24.6", features = ["jpeg", "webp-encoder"]}
 kamadak-exif = "0.5"
 
 # Video processing
