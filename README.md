@@ -25,6 +25,10 @@ Some features worth mentioning:
 
 I personally use this project to host around `40.000` images on a [Raspberry Pi CM4](https://www.raspberrypi.com/products/compute-module-4/) 🤯
 
+If this project is just what you needed and/or has been helpful to you, please consider buying me a coffee ☕
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/gbbirkisson)
+
 <h2>Table of contents</h2>
 
 - [Screenshots](#screenshots)
