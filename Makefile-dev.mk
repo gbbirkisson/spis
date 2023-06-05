@@ -12,9 +12,7 @@ ${DEV_DB_FILE}:
 
 .PHONY: dev
 dev: ## Run all dev processes
-	x-terminal-emulator -t nginx -e make dev-nginx &
-	x-terminal-emulator -t server -e make dev-server &
-	x-terminal-emulator -t gui -e make dev-gui &
+	$(MAKE) --no-print-directory -j 3 dev-nginx dev-server dev-gui
 	sleep 3
 	xdg-open http://localhost:7000
 
