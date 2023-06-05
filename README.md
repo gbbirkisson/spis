@@ -1,4 +1,4 @@
-<img align="right" width="128" height="128" src="logo.png">
+<img align="right" width="128" height="128" src="assets/logo.png">
 
 <h1>SPIS</h1>
 
@@ -31,26 +31,29 @@ If this project is just what you needed and/or has been helpful to you, please c
 
 <h2>Table of contents</h2>
 
-- [Screenshots](#screenshots)
-- [Setup](#setup)
-  - [Configuration](#configuration)
-  - [Docker](#docker)
-  - [Binary](#binary)
-- [Progressive Web App](#progressive-web-app)
-- [Development](#development)
-  - [Setup dependencies](#setup-dependencies)
-  - [Get some test media](#get-some-test-media)
-  - [Running](#running)
+<!-- vim-markdown-toc GFM -->
+
+* [Screenshots](#screenshots)
+* [Setup](#setup)
+    * [Configuration](#configuration)
+    * [Docker](#docker)
+    * [Binary](#binary)
+* [Progressive Web App](#progressive-web-app)
+* [Development](#development)
+    * [Setup dependencies](#setup-dependencies)
+    * [Get some test media](#get-some-test-media)
+    * [Running](#running)
+
+<!-- vim-markdown-toc -->
 
 ## Screenshots
 
 This is how the GUI looks on mobile!
 
 <p float="left">
-<img src="screen1.jpg">
-<img src="screen2.jpg">
+<img src="assets/screen1.jpg">
+<img src="assets/screen2.jpg">
 </p>
-
 
 ## Setup
 
