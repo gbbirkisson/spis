@@ -7,7 +7,7 @@ ${RELEASE_GUI}:
 	$(Q) trunk --version > /dev/null || cargo install --locked trunk
 	$(Q) cd spis-gui && trunk build --release
 	$(Q) cp -f spis-gui/manifest.json spis-gui/dist/manifest.json
-	$(Q) cp -f logo.png spis-gui/dist/logo.png
+	$(Q) cp -f assets/logo.png spis-gui/dist/logo.png
 	$(Q) rm -r target/release
 
 ${RELEASE_X86_60_GNU}: ${RELEASE_GUI} ${DEV_DB_FILE}
