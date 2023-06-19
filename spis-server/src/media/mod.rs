@@ -1,21 +1,18 @@
-use crate::db;
-use chrono::{DateTime, Duration, Utc};
-use color_eyre::{eyre::eyre, Result};
-use image::DynamicImage;
-use sqlx::{Pool, Sqlite};
+use self::util::get_uuid;
+use self::video::VideoProcessor;
+use crate::media::images::ImageProcessor;
+use crate::media::util::Thumbnail;
+use chrono::{DateTime, Utc};
+use color_eyre::eyre::Context;
+use color_eyre::Result;
 use std::path::PathBuf;
-use tokio::sync::mpsc::channel;
 use uuid::Uuid;
 
-use self::{
-    processing::{single_media_process, GetMediaType},
-    video::VideoProcessor,
-};
+pub mod images;
+pub mod util;
+pub mod video;
 
-mod images;
-mod processing;
-pub(crate) mod util;
-mod video;
+static THUMBNAIL_SIZE: u32 = 400;
 
 pub struct ProcessedMedia {
     pub uuid: Uuid,
@@ -33,124 +30,91 @@ pub struct ProcessedMediaData {
     pub taken_at: DateTime<Utc>,
 }
 
-pub async fn process(
-    pool: Pool<Sqlite>,
-    media_dir: PathBuf,
-    thumb_dir: PathBuf,
-    force_uuid_calculation: bool,
-) {
-    let start_time = Utc::now();
-    tracing::info!("Media processing started");
-
-    tracing::debug!("Mark entire database as unwalked");
-    let mark = db::media_mark_unwalked(&pool).await;
-    if mark.is_err() {
-        tracing::error!("Failed marking media as unwalked: {:?}", &mark);
-    }
-
-    let old_entries = match force_uuid_calculation {
-        true => None,
-        false => Some(
-            db::media_hashmap(&pool)
-                .await
-                .expect("Failed to fetch all entries"),
-        ),
-    };
-
-    tracing::debug!("Setup processing channels and pool");
-    let (tx, mut rx) = channel(1);
-    let mut done_recv = processing::media_processor(media_dir, thumb_dir, old_entries, tx);
-    let processor_pool = pool.clone();
-
-    let mut count = 0;
-    loop {
-        tokio::select! {
-            done = done_recv.recv() => {
-                match done {
-                    Some(count) => {
-                        tracing::info!("Processed {} files in total", count);
-                        break;
-                    },
-                    None => {
-                        tracing::debug!("None from done channel");
-                    }
-                }
-            }
-            media = rx.recv() => {
-                match media {
-                    Some(media) => {
-                        tracing::debug!("Inserting media {}", media.uuid);
-                        if let Err(e) = db::media_insert(&processor_pool, media).await {
-                            tracing::error!("Failed inserting media into DB: {e}");
-                        } else {
-                            count += 1;
-                            if count % 500 == 0 {
-                                tracing::info!("Processed {} files so far ...", count);
-                            }
-                        }
-                    }
-                    None => {
-                        tracing::debug!("None from channel");
-                    }
-                }
-            }
-        }
-    }
-
-    tracing::debug!("Update missing field in DB");
-    if mark.is_ok() {
-        db::media_mark_missing(&pool)
-            .await
-            .expect("Failed to mark missing");
-    }
-
-    // TODO: Cleanup thumbnails?
-
-    if let Ok(counts) = db::media_count(&pool).await {
-        tracing::info!("DB counts total:    {}", counts.count);
-        if let Some(c) = counts.walked {
-            tracing::info!("DB counts walked:   {}", c);
-        }
-        if let Some(c) = counts.favorite {
-            tracing::info!("DB counts favorite: {}", c);
-        }
-        if let Some(c) = counts.archived {
-            tracing::info!("DB counts archived: {}", c);
-        }
-        if let Some(c) = counts.missing {
-            tracing::info!("DB counts missing:  {}", c);
-        }
-    }
-
-    let end_time = Utc::now();
-    let diff = end_time - start_time;
-    if diff > Duration::hours(1) {
-        let hours = diff.num_hours();
-        let minutes = (diff - Duration::hours(hours)).num_minutes();
-        tracing::info!(
-            "Media processing ended after {} hours and {} minutes",
-            hours,
-            minutes,
-        );
-    } else if diff > Duration::minutes(1) {
-        let minutes = diff.num_minutes();
-        let seconds = (diff - Duration::minutes(minutes)).num_seconds();
-        tracing::info!(
-            "Media processing ended after {} minutes and {} seconds",
-            minutes,
-            seconds,
-        )
-    } else {
-        tracing::info!(
-            "Media processing ended after {} seconds",
-            diff.num_seconds()
-        )
-    }
+pub(crate) struct MediaProcessor {
+    video_processor: Option<VideoProcessor>,
+    thumbnail_path: PathBuf,
 }
 
-pub fn process_single(path: PathBuf) -> Result<(DynamicImage, DateTime<Utc>)> {
-    let video_processor = VideoProcessor::new()?;
-    let media_type = path.media_type().ok_or(eyre!("Invalid file type"))?;
-    let res = single_media_process(&Some(video_processor), &media_type, path.as_path())?;
-    res.ok_or(eyre!("No data produced"))
+impl MediaProcessor {
+    pub fn new(thumbnail_path: PathBuf) -> Self {
+        let video_processor = match VideoProcessor::new() {
+            Ok(proc) => Some(proc),
+            Err(e) => {
+                tracing::warn!(
+                    "Failed initializing video processor. No videos will be processed: {}",
+                    e
+                );
+                None
+            }
+        };
+
+        Self {
+            video_processor,
+            thumbnail_path,
+        }
+    }
+
+    pub fn process(
+        &self,
+        media_uuid: Option<uuid::Uuid>,
+        media_path: PathBuf,
+        media_type: ProcessedMediaType,
+    ) -> Result<ProcessedMedia> {
+        let media_uuid = match media_uuid {
+            Some(media_uuid) => media_uuid,
+            None => get_uuid(&media_path)?,
+        };
+
+        let media_path_str = media_path.display().to_string();
+        let media_thumbnail_path = self.thumbnail_path.get_thumbnail(&media_uuid);
+
+        let processed = if media_thumbnail_path.exists() {
+            None
+        } else {
+            match (&self.video_processor, &media_type) {
+                (Some(video_processor), ProcessedMediaType::Video) => {
+                    tracing::debug!("Processing video: {}", media_path_str);
+                    let thumb = video_processor
+                        .get_thumbnail(&media_path_str, THUMBNAIL_SIZE)
+                        .wrap_err("thumb creation failed")?;
+                    let taken_at = video_processor
+                        .get_timestamp(&media_path_str)
+                        .wrap_err("timestamp parsing failed")?;
+                    Some((thumb, taken_at))
+                }
+                (_, ProcessedMediaType::Image) => {
+                    tracing::debug!("Processing image: {}", media_path_str);
+                    let image_processor = ImageProcessor::new(&media_path)?;
+                    let thumb = image_processor
+                        .get_thumbnail(THUMBNAIL_SIZE)
+                        .wrap_err("thumb creation failed")?;
+                    let taken_at = image_processor
+                        .get_timestamp()
+                        .wrap_err("timestamp parsing failed")?;
+                    Some((thumb, taken_at))
+                }
+                (_, _) => None,
+            }
+        };
+
+        let media = match processed {
+            Some((thumb, taken_at)) => {
+                thumb.save(media_thumbnail_path)?;
+                ProcessedMedia {
+                    uuid: media_uuid,
+                    path: media_path_str,
+                    data: Some(ProcessedMediaData { taken_at }),
+                    media_type,
+                }
+            }
+            None => ProcessedMedia {
+                uuid: media_uuid,
+                path: media_path_str,
+                data: None,
+                media_type,
+            },
+        };
+
+        Ok(media)
+    }
 }

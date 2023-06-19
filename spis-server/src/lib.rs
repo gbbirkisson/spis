@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 
 pub mod db;
 pub mod media;
+pub mod pipeline;
 pub mod server;
 
 pub enum SpisServerListener {
