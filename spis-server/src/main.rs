@@ -29,20 +29,44 @@ async fn main() -> Result<()> {
         .init();
     color_eyre::install()?;
 
+    let config = SpisCfg::new()?;
+
     // Parse args
     let args = Args::parse();
+    tracing::debug!("Got args: {:?}", args);
     if !args.test_media.is_empty() {
-        // for file in args.test_media {
-        //     let path = file.display().to_string();
-        //     let data = media::process_single(file)?;
-        //     println!("{:?} {:?}", path, data.1);
-        // }
+        let (file_sender, file_reciever) = channel(1);
+        let (media_sender, mut media_reciever) = channel(1);
+        let (tx, rx) = tokio::sync::oneshot::channel();
+
+        pipeline::setup_media_processing(
+            file_reciever,
+            media_sender,
+            config.thumbnail_dir(),
+            true,
+        )?;
+
+        tokio::spawn(async move {
+            while let Some(media) = media_reciever.recv().await {
+                println!("{:?} {:?}", media.path, media.data.unwrap().taken_at);
+            }
+            tx.send(()).unwrap();
+        });
+
+        tokio::spawn(async move {
+            for file in args.test_media {
+                file_sender.send((None, file)).await.unwrap()
+            }
+            drop(file_sender);
+        });
+
+        rx.await.unwrap();
+
         return Ok(());
     }
 
     tracing::info!("Starting spis version {}", env!("CARGO_PKG_VERSION"));
 
-    let config = SpisCfg::new()?;
     std::fs::create_dir_all(&config.thumbnail_dir())?;
 
     let pool = db::setup_db(&config.db_file()).await.unwrap();
@@ -71,7 +95,7 @@ async fn main() -> Result<()> {
     )?;
 
     tracing::info!("Setting up media processing");
-    pipeline::setup_media_processing(file_reciever, media_sender, config.thumbnail_dir())?;
+    pipeline::setup_media_processing(file_reciever, media_sender, config.thumbnail_dir(), false)?;
 
     pipeline::setup_db_store(pool.clone(), media_reciever)?;
 

@@ -33,10 +33,11 @@ pub struct ProcessedMediaData {
 pub(crate) struct MediaProcessor {
     video_processor: Option<VideoProcessor>,
     thumbnail_path: PathBuf,
+    force_processing: bool,
 }
 
 impl MediaProcessor {
-    pub fn new(thumbnail_path: PathBuf) -> Self {
+    pub fn new(thumbnail_path: PathBuf, force_processing: bool) -> Self {
         let video_processor = match VideoProcessor::new() {
             Ok(proc) => Some(proc),
             Err(e) => {
@@ -51,6 +52,7 @@ impl MediaProcessor {
         Self {
             video_processor,
             thumbnail_path,
+            force_processing,
         }
     }
 
@@ -68,7 +70,7 @@ impl MediaProcessor {
         let media_path_str = media_path.display().to_string();
         let media_thumbnail_path = self.thumbnail_path.get_thumbnail(&media_uuid);
 
-        let processed = if media_thumbnail_path.exists() {
+        let processed = if media_thumbnail_path.exists() && !self.force_processing {
             None
         } else {
             match (&self.video_processor, &media_type) {

@@ -149,7 +149,7 @@ pub fn setup_filewalker(
                 )
             }
         }
-        panic!("job_channel closed");
+        tracing::warn!("job_channel closed");
     });
 
     tracing::debug!("Setup file done");
@@ -172,6 +172,7 @@ pub fn setup_media_processing(
     file_reciever: Receiver<(Option<Uuid>, PathBuf)>,
     media_sender: Sender<ProcessedMedia>,
     thumb_dir: PathBuf,
+    force_processing: bool,
 ) -> Result<()> {
     tracing::debug!("Setup media processing");
 
@@ -180,7 +181,7 @@ pub fn setup_media_processing(
         reciever: file_reciever,
     };
 
-    let media_processor = MediaProcessor::new(thumb_dir);
+    let media_processor = MediaProcessor::new(thumb_dir, force_processing);
 
     // Spawn a new thread that processes files
     tokio::task::spawn_blocking(move || {
@@ -224,7 +225,7 @@ pub fn setup_media_processing(
                 ()
             })
             .collect();
-        panic!("file_channel was closed");
+        tracing::warn!("file_channel was closed");
     });
 
     tracing::debug!("Setup media processing done");
@@ -243,7 +244,7 @@ pub fn setup_db_store(pool: Pool<Sqlite>, media_reciever: Receiver<ProcessedMedi
                 tracing::error!("Failed inserting media to db: {}", error);
             }
         }
-        panic!("media_channel was closed");
+        tracing::warn!("media_channel was closed");
     });
 
     tracing::debug!("Setup db store done");
