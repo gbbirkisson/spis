@@ -40,7 +40,7 @@ async fn media_list(
 ) -> actix_web::Result<impl Responder> {
     let media: Vec<Media> = db::media_get(
         &pool,
-        params.page_size as i32,
+        i32::try_from(params.page_size).unwrap(),
         params.archived.unwrap_or(false),
         params.favorite,
         params.taken_after,
@@ -49,7 +49,7 @@ async fn media_list(
     .await
     .unwrap()
     .into_iter()
-    .map(|m| converter.convert(m))
+    .map(|m| converter.convert(&m))
     .collect();
 
     Ok(web::Json(media))
@@ -78,6 +78,7 @@ pub enum Listener {
     Socket(String),
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub fn run(listener: Listener, pool: Pool<Sqlite>, converter: MediaConverter) -> Result<Server> {
     let pool = web::Data::new(pool);
     let converter = web::Data::new(converter);

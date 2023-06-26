@@ -9,6 +9,7 @@ pub struct MediaConverter {
 }
 
 impl MediaConverter {
+    #[allow(clippy::must_use_candidate)]
     pub fn new(
         media_dir: &str,
         media_path: &str,
@@ -23,7 +24,7 @@ impl MediaConverter {
         }
     }
 
-    pub(crate) fn convert(&self, media: MediaRow) -> Media {
+    pub(crate) fn convert(&self, media: &MediaRow) -> Media {
         Media {
             uuid: media.id.to_string(),
             taken_at: media.taken_at,

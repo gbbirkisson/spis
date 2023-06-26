@@ -5,7 +5,7 @@ use crate::media::util::Thumbnail;
 use chrono::{DateTime, Utc};
 use color_eyre::eyre::Context;
 use color_eyre::Result;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use uuid::Uuid;
 
 pub mod images;
@@ -14,6 +14,8 @@ pub mod video;
 
 static THUMBNAIL_SIZE: u32 = 400;
 
+#[allow(clippy::module_name_repetitions)]
+#[derive(Debug)]
 pub struct ProcessedMedia {
     pub uuid: Uuid,
     pub path: String,
@@ -21,11 +23,13 @@ pub struct ProcessedMedia {
     pub data: Option<ProcessedMediaData>,
 }
 
+#[derive(Debug)]
 pub enum ProcessedMediaType {
     Image,
     Video,
 }
 
+#[derive(Debug)]
 pub struct ProcessedMediaData {
     pub taken_at: DateTime<Utc>,
 }
@@ -40,10 +44,10 @@ impl MediaProcessor {
     pub fn new(thumbnail_path: PathBuf, force_processing: bool) -> Self {
         let video_processor = match VideoProcessor::new() {
             Ok(proc) => Some(proc),
-            Err(e) => {
+            Err(error) => {
                 tracing::warn!(
-                    "Failed initializing video processor. No videos will be processed: {}",
-                    e
+                    "Failed initializing video processor. No videos will be processed: {:?}",
+                    error
                 );
                 None
             }
@@ -59,12 +63,12 @@ impl MediaProcessor {
     pub fn process(
         &self,
         media_uuid: Option<uuid::Uuid>,
-        media_path: PathBuf,
+        media_path: &Path,
         media_type: ProcessedMediaType,
     ) -> Result<ProcessedMedia> {
         let media_uuid = match media_uuid {
             Some(media_uuid) => media_uuid,
-            None => get_uuid(&media_path)?,
+            None => get_uuid(media_path)?,
         };
 
         let media_path_str = media_path.display().to_string();
@@ -78,21 +82,21 @@ impl MediaProcessor {
                     tracing::debug!("Processing video: {}", media_path_str);
                     let thumb = video_processor
                         .get_thumbnail(&media_path_str, THUMBNAIL_SIZE)
-                        .wrap_err("thumb creation failed")?;
+                        .wrap_err("Thumb creation failed")?;
                     let taken_at = video_processor
                         .get_timestamp(&media_path_str)
-                        .wrap_err("timestamp parsing failed")?;
+                        .wrap_err("Timestamp parsing failed")?;
                     Some((thumb, taken_at))
                 }
                 (_, ProcessedMediaType::Image) => {
                     tracing::debug!("Processing image: {}", media_path_str);
-                    let image_processor = ImageProcessor::new(&media_path)?;
+                    let image_processor = ImageProcessor::new(media_path)?;
                     let thumb = image_processor
                         .get_thumbnail(THUMBNAIL_SIZE)
-                        .wrap_err("thumb creation failed")?;
+                        .wrap_err("Thumb creation failed")?;
                     let taken_at = image_processor
                         .get_timestamp()
-                        .wrap_err("timestamp parsing failed")?;
+                        .wrap_err("Timestamp parsing failed")?;
                     Some((thumb, taken_at))
                 }
                 (_, _) => None,

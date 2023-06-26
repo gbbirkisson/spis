@@ -1,13 +1,13 @@
 use clap::Parser;
-use color_eyre::Result;
+use color_eyre::{eyre::WrapErr, Result};
 use notify::Watcher;
 use spis_server::{
-    db, pipeline,
+    db,
+    pipeline::{self, JOB_TRIGGER},
     server::{self, Listener},
     SpisCfg, SpisServerListener,
 };
 use std::{net::TcpListener, path::PathBuf};
-use tokio::sync::mpsc::channel;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
 /// The SPIS server application
@@ -27,83 +27,82 @@ async fn main() -> Result<()> {
         .with(fmt::layer())
         .with(EnvFilter::from_default_env())
         .init();
-    color_eyre::install()?;
+    tracing::info!("Starting spis version {}", env!("CARGO_PKG_VERSION"));
 
-    let config = SpisCfg::new()?;
+    color_eyre::install().wrap_err("Failed to install color_eyre")?;
+    let config = SpisCfg::new().wrap_err("Failed to read configuration")?;
+    std::fs::create_dir_all(config.thumbnail_dir())?;
 
     // Parse args
     let args = Args::parse();
     tracing::debug!("Got args: {:?}", args);
     if !args.test_media.is_empty() {
-        let (file_sender, file_reciever) = channel(1);
-        let (media_sender, mut media_reciever) = channel(1);
-        let (tx, rx) = tokio::sync::oneshot::channel();
+        let (file_sender, mut media_reciever) =
+            pipeline::setup_media_processing(config.thumbnail_dir(), true)
+                .wrap_err("Failed to setup media processing")?;
 
-        pipeline::setup_media_processing(
-            file_reciever,
-            media_sender,
-            config.thumbnail_dir(),
-            true,
-        )?;
+        let (done_sender, done_reciever) = tokio::sync::oneshot::channel();
 
         tokio::spawn(async move {
             while let Some(media) = media_reciever.recv().await {
-                println!("{:?} {:?}", media.path, media.data.unwrap().taken_at);
+                println!(
+                    "{:?} {:?}",
+                    media.path,
+                    media.data.expect("Should get data").taken_at
+                );
             }
-            tx.send(()).unwrap();
+            done_sender.send(()).expect("send failed");
         });
 
         tokio::spawn(async move {
             for file in args.test_media {
-                file_sender.send((None, file)).await.unwrap()
+                file_sender.send((None, file)).await.expect("send failed");
             }
             drop(file_sender);
         });
 
-        rx.await.unwrap();
+        done_reciever.await.expect("recieve failed");
 
         return Ok(());
     }
 
-    tracing::info!("Starting spis version {}", env!("CARGO_PKG_VERSION"));
+    tracing::info!("Media dir: {:?}", config.media_dir());
+    tracing::info!("Thumb dir: {:?}", config.thumbnail_dir());
+    tracing::info!("Data file: {:?}", config.db_file());
 
-    std::fs::create_dir_all(&config.thumbnail_dir())?;
-
-    let pool = db::setup_db(&config.db_file()).await.unwrap();
-
-    tracing::info!("Creating channels");
-
-    // Channel with empty objects to trigger start of jobs
-    let (job_sender, job_reciever) = channel(1);
-
-    // Channel with PathBuf to send for media processing
-    let (file_sender, file_reciever) = channel(rayon::current_num_threads());
-
-    // Channel of processed media to save to DB
-    let (media_sender, media_reciever) = channel(rayon::current_num_threads());
-
-    tracing::info!("Setting up file watcher");
-    let mut file_watcher = pipeline::setup_filewatcher(file_sender.clone())?;
-    file_watcher.watch(&config.media_dir(), notify::RecursiveMode::Recursive)?;
-
-    tracing::info!("Setting up file walker");
-    pipeline::setup_filewalker(
-        job_reciever,
-        file_sender.clone(),
-        config.media_dir(),
-        pool.clone(),
-    )?;
+    tracing::info!("Setting up DB");
+    let pool = db::setup_db(&config.db_file())
+        .await
+        .wrap_err("Failed to initialize DB")?;
 
     tracing::info!("Setting up media processing");
-    pipeline::setup_media_processing(file_reciever, media_sender, config.thumbnail_dir(), false)?;
+    let (file_sender, media_reciever) =
+        pipeline::setup_media_processing(config.thumbnail_dir(), false)
+            .wrap_err("Failed to setup media processing")?;
 
-    pipeline::setup_db_store(pool.clone(), media_reciever)?;
+    tracing::info!("Setting up file watcher");
+    let mut file_watcher = pipeline::setup_filewatcher(file_sender.clone())
+        .wrap_err("Failed to setup file watcher")?;
+    file_watcher
+        .watch(&config.media_dir(), notify::RecursiveMode::Recursive)
+        .wrap_err("Failed to start file watcher")?;
+
+    tracing::info!("Setting up file walker");
+    let job_sender =
+        pipeline::setup_filewalker(pool.clone(), config.media_dir(), file_sender.clone())
+            .wrap_err("Failed to setup file walker")?;
+
+    pipeline::setup_db_store(pool.clone(), media_reciever).wrap_err("Failed to setup db store")?;
 
     if config.processing_run_on_start() {
-        job_sender.send(()).await?;
+        job_sender
+            .send(JOB_TRIGGER)
+            .await
+            .wrap_err("Failed to trigger job")?;
     }
 
-    pipeline::setup_cron(job_sender.clone(), config.processing_schedule())?;
+    pipeline::setup_cron(job_sender.clone(), config.processing_schedule())
+        .wrap_err("Failed to setup cron job")?;
 
     let listener = match &config.server_listener() {
         SpisServerListener::Address(address) => {

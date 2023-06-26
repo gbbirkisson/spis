@@ -5,3 +5,6 @@ members = [
     "spis-gui",
     "spis-server",
 ]
+
+[profile.dev.package.backtrace]
+opt-level = 3

@@ -51,7 +51,8 @@ dev-gui: ## Run gui
 .PHONY: dev-check-server
 dev-check-server: ${DEV_DB_FILE} ## Run check on server
 	$(info $(M) Running server checks dev)
-	$(Q) watchexec -r -e rs,toml -w spis-model -w spis-server -- cargo check -p spis-server
+	# $(Q) watchexec -r -e rs,toml -w spis-model -w spis-server -- cargo check -p spis-server
+	$(Q) watchexec -r -e rs,toml -w spis-model -w spis-server -- cargo clippy -p spis-server -- -W clippy::pedantic -W clippy::nursery -W clippy::unwrap_used
 
 TEST_PROJ?=spis-server
 TEST_NAME?=

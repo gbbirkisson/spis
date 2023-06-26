@@ -13,8 +13,8 @@ pub trait MediaTypeConverter<T> {
 impl MediaTypeConverter<i32> for ProcessedMediaType {
     fn convert(&self) -> i32 {
         match self {
-            ProcessedMediaType::Image => 0,
-            ProcessedMediaType::Video => 1,
+            Self::Image => 0,
+            Self::Video => 1,
         }
     }
 }
@@ -29,8 +29,9 @@ impl MediaTypeConverter<MediaType> for i32 {
     }
 }
 
+#[allow(clippy::missing_errors_doc, clippy::module_name_repetitions)]
 pub async fn setup_db(db_file: &str) -> Result<Pool<Sqlite>> {
-    tracing::info!("Setup db: {:?}", db_file);
+    tracing::debug!("Setup db");
 
     tracing::debug!("Ensure db exists");
     if !Sqlite::database_exists(db_file).await.unwrap_or(false) {
@@ -45,6 +46,7 @@ pub async fn setup_db(db_file: &str) -> Result<Pool<Sqlite>> {
     Ok(pool)
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn media_insert(pool: &SqlitePool, processed_media: ProcessedMedia) -> Result<()> {
     let media_type = processed_media.media_type.convert();
     match &processed_media.data {
@@ -81,6 +83,7 @@ pub struct MediaHashRow {
     pub path: String,
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn media_hashmap(pool: &SqlitePool) -> Result<HashMap<String, uuid::Uuid>> {
     tracing::debug!("Collect all DB entries UUIDs");
     let res = sqlx::query_as::<Sqlite, MediaHashRow>(
@@ -93,6 +96,7 @@ pub async fn media_hashmap(pool: &SqlitePool) -> Result<HashMap<String, uuid::Uu
     Ok(res.into_iter().map(|e| (e.path, e.id)).collect())
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn media_mark_unwalked(pool: &SqlitePool) -> Result<()> {
     sqlx::query!(
         r#"
@@ -104,6 +108,7 @@ pub async fn media_mark_unwalked(pool: &SqlitePool) -> Result<()> {
     Ok(())
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn media_mark_missing(pool: &SqlitePool) -> Result<u64> {
     let res = sqlx::query!(
         r#"
@@ -125,6 +130,7 @@ pub struct MediaCount {
     pub missing: Option<i32>,
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn media_count(pool: &SqlitePool) -> Result<MediaCount> {
     let res = sqlx::query_as::<Sqlite, MediaCount>(
         r#"
@@ -142,6 +148,7 @@ pub async fn media_count(pool: &SqlitePool) -> Result<MediaCount> {
     Ok(res)
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn media_archive(pool: &SqlitePool, uuid: &uuid::Uuid, archive: bool) -> Result<bool> {
     let res = sqlx::query!(
         r#"
@@ -155,6 +162,7 @@ pub async fn media_archive(pool: &SqlitePool, uuid: &uuid::Uuid, archive: bool) 
     Ok(res.rows_affected() > 0)
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn media_favorite(pool: &SqlitePool, uuid: &uuid::Uuid, archive: bool) -> Result<bool> {
     let res = sqlx::query!(
         r#"
@@ -178,6 +186,7 @@ pub struct MediaRow {
     pub favorite: bool,
 }
 
+#[allow(clippy::missing_errors_doc)]
 pub async fn media_get(
     pool: &SqlitePool,
     limit: i32,
