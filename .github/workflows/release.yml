@@ -6,7 +6,7 @@ on:
     types: [published]
 
 env:
-  RUST_VERSION: "1.65.0"
+  RUST_VERSION: "1.70.0"
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   VERSION: ${{ github.ref_name }}
