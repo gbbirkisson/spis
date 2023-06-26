@@ -96,22 +96,23 @@ pub fn setup_filewalker(
 
             tracing::debug!("Start walk thread");
             tokio::task::spawn_blocking(move || {
-                for entry in WalkDir::new(&media_dir) {
-                    match entry.wrap_err("Failed to walk") {
-                        Ok(entry) => {
-                            let path = entry.into_path();
-                            let path_string: String = W(&path).into();
-                            let uuid = old_uuids.get(&path_string).copied();
-                            if let Err(error) = file_sender
-                                .blocking_send((uuid, path))
-                                .wrap_err("blocking_send failed")
-                            {
-                                tracing::error!("Walk failed to send to channel: {:?}", error);
-                            }
-                        }
-                        Err(error) => tracing::error!("Walk failed: {:?}", error),
-                    }
-                }
+                walk_dir(&old_uuids, &media_dir, &file_sender);
+                // for entry in WalkDir::new(&media_dir) {
+                //     match entry.wrap_err("Failed to walk") {
+                //         Ok(entry) => {
+                //             let path = entry.into_path();
+                //             let path_string: String = W(&path).into();
+                //             let uuid = old_uuids.get(&path_string).copied();
+                //             if let Err(error) = file_sender
+                //                 .blocking_send((uuid, path))
+                //                 .wrap_err("blocking_send failed")
+                //             {
+                //                 tracing::error!("Walk failed to send to channel: {:?}", error);
+                //             }
+                //         }
+                //         Err(error) => tracing::error!("Walk failed: {:?}", error),
+                //     }
+                // }
                 if let Err(error) = walk_finished_sender.send(NOTHING) {
                     tracing::error!("Failed to trigger processing finish: {:?}", error);
                 };
@@ -180,6 +181,29 @@ pub fn setup_filewalker(
 
     tracing::debug!("Setup file done");
     Ok(job_sender)
+}
+
+fn walk_dir(
+    old_uuids: &HashMap<String, Uuid>,
+    media_dir: &PathBuf,
+    file_sender: &Sender<(Option<Uuid>, PathBuf)>,
+) {
+    for entry in WalkDir::new(media_dir) {
+        match entry.wrap_err("Failed to walk") {
+            Ok(entry) => {
+                let path = entry.into_path();
+                let path_string: String = W(&path).into();
+                let uuid = old_uuids.get(&path_string).copied();
+                if let Err(error) = file_sender
+                    .blocking_send((uuid, path))
+                    .wrap_err("blocking_send failed")
+                {
+                    tracing::error!("Walk failed to send to channel: {:?}", error);
+                }
+            }
+            Err(error) => tracing::error!("Walk failed: {:?}", error),
+        }
+    }
 }
 
 #[allow(clippy::missing_errors_doc)]

@@ -2559,6 +2559,7 @@ dependencies = [
  "clap",
  "color-eyre",
  "config",
+ "derive_more",
  "dotenv",
  "image",
  "include_dir",

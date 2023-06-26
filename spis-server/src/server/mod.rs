@@ -1,6 +1,10 @@
 use crate::db::{self};
-use actix_web::{dev::Server, web, App, HttpServer, Responder};
-use color_eyre::{eyre::eyre, Result};
+use actix_web::{dev::Server, web, App, HttpServer, Responder, ResponseError};
+use color_eyre::{
+    eyre::{eyre, Context},
+    Report, Result,
+};
+use derive_more::{Display, Error};
 use spis_model::Media;
 use sqlx::{Pool, Sqlite};
 use std::net::TcpListener;
@@ -12,6 +16,15 @@ pub mod convert;
 #[cfg(feature = "release")]
 static GUI: include_dir::Dir<'_> =
     include_dir::include_dir!("$CARGO_MANIFEST_DIR/../spis-gui/dist");
+
+#[derive(Debug, Display, Error)]
+#[display(fmt = "{msg} {cause}")]
+struct ServerError {
+    msg: &'static str,
+    cause: Report,
+}
+
+impl ResponseError for ServerError {}
 
 #[cfg(feature = "release")]
 fn find_gui_file(name: &str) -> &include_dir::File {
@@ -40,14 +53,22 @@ async fn media_list(
 ) -> actix_web::Result<impl Responder> {
     let media: Vec<Media> = db::media_get(
         &pool,
-        i32::try_from(params.page_size).unwrap(),
+        i32::try_from(params.page_size)
+            .wrap_err("cast failure")
+            .map_err(|e| ServerError {
+                msg: "failed to cast page size",
+                cause: e,
+            })?,
         params.archived.unwrap_or(false),
         params.favorite,
         params.taken_after,
         params.taken_before,
     )
     .await
-    .unwrap()
+    .map_err(|e| ServerError {
+        msg: "failed to list media",
+        cause: e,
+    })?
     .into_iter()
     .map(|m| converter.convert(&m))
     .collect();
@@ -64,10 +85,22 @@ async fn media_edit(
 
     let uuid = path.as_ref();
     if let Some(archive) = params.archive {
-        change = change || db::media_archive(&pool, uuid, archive).await.unwrap();
+        change = change
+            || db::media_archive(&pool, uuid, archive)
+                .await
+                .map_err(|e| ServerError {
+                    msg: "failed to archive media",
+                    cause: e,
+                })?;
     }
     if let Some(favorite) = params.favorite {
-        change = change || db::media_favorite(&pool, uuid, favorite).await.unwrap();
+        change = change
+            || db::media_favorite(&pool, uuid, favorite)
+                .await
+                .map_err(|e| ServerError {
+                    msg: "failed to favorite media",
+                    cause: e,
+                })?;
     }
 
     Ok(web::Json(change))
