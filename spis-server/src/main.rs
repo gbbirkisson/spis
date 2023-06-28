@@ -30,12 +30,13 @@ async fn main() -> Result<()> {
     tracing::info!("Starting spis version {}", env!("CARGO_PKG_VERSION"));
 
     color_eyre::install().wrap_err("Failed to install color_eyre")?;
+
+    let args = Args::parse();
+    tracing::debug!("Got args: {:?}", args);
+
     let config = SpisCfg::new().wrap_err("Failed to read configuration")?;
     std::fs::create_dir_all(config.thumbnail_dir())?;
 
-    // Parse args
-    let args = Args::parse();
-    tracing::debug!("Got args: {:?}", args);
     if !args.test_media.is_empty() {
         let (file_sender, mut media_reciever) =
             pipeline::setup_media_processing(config.thumbnail_dir(), true)
