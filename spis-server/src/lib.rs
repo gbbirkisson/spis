@@ -1,4 +1,8 @@
-use color_eyre::{eyre::eyre, Result};
+use crate::prelude::*;
+use color_eyre::{
+    eyre::{eyre, Context},
+    Result,
+};
 use config::{Config, Environment};
 use media::util::THUMBNAIL_FORMAT;
 use serde::Deserialize;
@@ -7,6 +11,8 @@ use std::path::{Path, PathBuf};
 
 pub mod db;
 pub mod media;
+pub mod pipeline;
+pub mod prelude;
 pub mod server;
 
 pub enum SpisServerListener {
@@ -27,8 +33,9 @@ pub struct SpisCfg {
 }
 
 impl SpisCfg {
+    #[allow(clippy::missing_errors_doc)]
     pub fn new() -> Result<Self> {
-        tracing::info!("Loading config");
+        tracing::debug!("Loading config");
         let b = Config::builder()
             .add_source(Environment::with_prefix("spis"))
             .set_default("processing_schedule", "0 0 2 * * *")?
@@ -36,9 +43,12 @@ impl SpisCfg {
             .set_default("api_media_path", "/assets/media")?
             .set_default("api_thumbnail_path", "/assets/thumbnails")?
             .set_default("server_socket", "/var/run/spis.sock")?
-            .build()?;
+            .build()
+            .wrap_err("Failed to build config")?;
 
-        let c: SpisCfg = b.try_deserialize()?;
+        let mut c: Self = b
+            .try_deserialize()
+            .wrap_err("Failed to deserialize config")?;
 
         if !Path::new(&c.media_dir).is_dir() {
             return Err(eyre!("SPIS_MEDIA_DIR {} is not a directory", c.media_dir));
@@ -48,10 +58,19 @@ impl SpisCfg {
             return Err(eyre!("SPIS_DATA_DIR {} is not a directory", c.data_dir));
         }
 
+        let media_dir = std::fs::canonicalize(&c.media_dir)
+            .wrap_err("Failed to get media_dir absolute path")?;
+        c.media_dir = W(media_dir).into();
+
+        let data_dir =
+            std::fs::canonicalize(&c.data_dir).wrap_err("Failed to get data_dir absolute path")?;
+        c.data_dir = W(data_dir).into();
+
         tracing::debug!("Loaded config: {:?}", c);
         Ok(c)
     }
 
+    #[allow(clippy::must_use_candidate)]
     pub fn server_listener(&self) -> SpisServerListener {
         match (&self.server_address, &self.server_socket) {
             (Some(address), _) => SpisServerListener::Address(address.clone()),
@@ -60,6 +79,7 @@ impl SpisCfg {
         }
     }
 
+    #[allow(clippy::must_use_candidate)]
     pub fn media_converter(&self) -> MediaConverter {
         MediaConverter::new(
             &self.media_dir,
@@ -69,22 +89,27 @@ impl SpisCfg {
         )
     }
 
+    #[allow(clippy::must_use_candidate)]
     pub fn media_dir(&self) -> PathBuf {
         PathBuf::from(self.media_dir.clone())
     }
 
+    #[allow(clippy::must_use_candidate)]
     pub fn thumbnail_dir(&self) -> PathBuf {
         PathBuf::from(self.data_dir.clone()).join("thumbnails")
     }
 
+    #[allow(clippy::must_use_candidate)]
     pub fn db_file(&self) -> String {
         self.data_dir.clone() + "/spis.db"
     }
 
+    #[allow(clippy::must_use_candidate)]
     pub fn processing_schedule(&self) -> String {
         self.processing_schedule.clone()
     }
 
+    #[allow(clippy::missing_const_for_fn, clippy::must_use_candidate)]
     pub fn processing_run_on_start(&self) -> bool {
         self.processing_run_on_start
     }

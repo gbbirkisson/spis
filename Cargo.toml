@@ -5,3 +5,7 @@ members = [
     "spis-gui",
     "spis-server",
 ]
+
+# https://docs.rs/color-eyre/latest/color_eyre/#improving-perf-on-debug-builds
+[profile.dev.package.backtrace]
+opt-level = 3

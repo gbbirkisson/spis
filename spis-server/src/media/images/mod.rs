@@ -13,34 +13,50 @@ pub struct ImageProcessor {
 }
 
 impl ImageProcessor {
+    #[allow(clippy::missing_errors_doc)]
     pub fn new(path: &Path) -> Result<Self> {
         let media_bytes = fs::read(path)?;
         let mut exif_buf_reader = std::io::Cursor::new(media_bytes);
         let exif_reader = exif::Reader::new();
+
         let exif = exif_reader
             .read_from_container(&mut exif_buf_reader)
-            .wrap_err("failed to read exif")?;
-        let image = image::open(path).wrap_err("failed to open image")?;
+            .wrap_err("Failed to read exif data")?;
+        let image = image::open(path).wrap_err("Failed to open image")?;
+
         Ok(Self { exif, image })
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub fn get_timestamp(&self) -> Result<DateTime<Utc>> {
-        let timestamp_tz = exif_get_str(&self.exif, Tag::OffsetTimeOriginal);
-        let mut timestamp = exif_get_str(&self.exif, Tag::DateTimeOriginal)
+        let timestamp = exif_get_str(&self.exif, Tag::DateTimeOriginal)
             .or_else(|_| exif_get_str(&self.exif, Tag::DateTime))
-            .wrap_err("failed to get timestamp in exif data")?
-            .to_string()
-            .replace('-', ":");
-        timestamp.push(' ');
-        timestamp.push_str(timestamp_tz.unwrap_or("+02:00")); // TODO: Make configurable
-        Ok(DateTime::parse_from_str(&timestamp, "%Y:%m:%d %H:%M:%S %z")?.with_timezone(&Utc))
+            .wrap_err("Failed to get DateTime/DateTimeOriginal tag from exif data")?;
+        let timestamp_tz = exif_get_str(&self.exif, Tag::OffsetTimeOriginal);
+
+        let mut timestamp_modified = timestamp.to_string().replace('-', ":");
+        timestamp_modified.push(' ');
+        match &timestamp_tz {
+            Ok(tz) => timestamp_modified.push_str(tz.as_ref()),
+            Err(_) => timestamp_modified.push_str("+02:00"), // TODO: Make configurable
+        }
+
+        let timestamp = DateTime::parse_from_str(&timestamp_modified, "%Y:%m:%d %H:%M:%S %z")
+            .wrap_err(format!(
+                "Failed to parse timestamp:{:?} tz:{:?}",
+                &timestamp, &timestamp_tz
+            ))?
+            .with_timezone(&Utc);
+
+        Ok(timestamp)
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub fn get_thumbnail(&self, size: u32) -> Result<DynamicImage> {
         let mut image = self.image.thumbnail(size, size);
         image = match exif_get_u32(&self.exif, Tag::Orientation) {
             // http://sylvana.net/jpegcrop/exif_orientation.html
-            Ok(1) => image,
+            // Ok(1) => image,
             Ok(2) => image.flipv(),
             Ok(3) => image.rotate180(),
             Ok(4) => image.rotate180().flipv(),
@@ -55,6 +71,7 @@ impl ImageProcessor {
 }
 
 fn exif_get_u32(exif: &exif::Exif, tag: Tag) -> Result<u32> {
+    #[allow(clippy::option_if_let_else)]
     match exif.get_field(tag, In::PRIMARY) {
         Some(field) => match field.value.get_uint(0) {
             Some(v) => Ok(v),
@@ -77,21 +94,23 @@ fn exif_get_str(exif: &exif::Exif, tag: Tag) -> Result<&str> {
     }
 }
 
+#[allow(clippy::must_use_candidate)]
 pub fn crop(mut image: DynamicImage) -> DynamicImage {
     let image_height = image.height();
     let image_width = image.width();
-    match image_height > image_width {
-        true => image.crop(
+    if image_height > image_width {
+        image.crop(
             0,
             (image_height - image_width) / 2,
             image_width,
             image_width,
-        ),
-        false => image.crop(
+        )
+    } else {
+        image.crop(
             (image_width - image_height) / 2,
             0,
             image_height,
             image_height,
-        ),
+        )
     }
 }

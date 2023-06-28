@@ -9,16 +9,19 @@ use image::DynamicImage;
 use std::io::{Cursor, Read};
 use subprocess::{Exec, Redirection};
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Clone)]
 pub struct VideoProcessor {}
 
 impl VideoProcessor {
+    #[allow(clippy::missing_errors_doc)]
     pub fn new() -> Result<Self> {
-        which::which("ffprobe").map_err(|_| eyre!("ffprobe not installed"))?;
-        which::which("ffmpeg").map_err(|_| eyre!("ffmpeg not installed"))?;
+        which::which("ffprobe").wrap_err("ffprobe not installed")?;
+        which::which("ffmpeg").wrap_err("ffmpeg not installed")?;
         Ok(Self {})
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub fn get_timestamp(&self, file: &str) -> Result<DateTime<Utc>> {
         let timestamp = Exec::cmd("ffprobe")
             .arg("-v")
@@ -31,15 +34,23 @@ impl VideoProcessor {
             .arg("default=noprint_wrappers=1:nokey=1")
             .arg(file)
             .stdout(Redirection::Pipe)
-            .capture()?
+            .capture()
+            .wrap_err("Failed to execute ffprobe")?
             .stdout_str()
             .trim()
-            .replace('z', "Z");
-        Ok(DateTime::parse_from_rfc3339(&timestamp)
-            .wrap_err("failed to parse video timestamp")?
+            .to_string();
+
+        if timestamp.is_empty() {
+            return Err(eyre!("No creation_time tag in video"));
+        }
+
+        let timestamp_modified = timestamp.replace('z', "Z");
+        Ok(DateTime::parse_from_rfc3339(&timestamp_modified)
+            .wrap_err(format!("Failed to parse video timestamp:{:?}", &timestamp))?
             .with_timezone(&Utc))
     }
 
+    #[allow(clippy::missing_errors_doc)]
     pub fn get_thumbnail(&self, file: &str, size: u32) -> Result<DynamicImage> {
         let mut img = Exec::cmd("ffmpeg")
             .arg("-v")
@@ -57,13 +68,16 @@ impl VideoProcessor {
             .arg("-f")
             .arg("webp")
             .arg("pipe:1")
-            .stream_stdout()?;
+            .stream_stdout()
+            .wrap_err("Failed to execute ffmpeg")?;
 
         let mut buffer = Vec::new();
-        img.read_to_end(&mut buffer)?;
+        img.read_to_end(&mut buffer)
+            .wrap_err("Failed to read thumbnail into buffer")?;
 
-        let mut img =
-            Reader::with_format(Cursor::new(&buffer), image::ImageFormat::WebP).decode()?;
+        let mut img = Reader::with_format(Cursor::new(&buffer), image::ImageFormat::WebP)
+            .decode()
+            .wrap_err("Failed to decode image")?;
 
         img = crop(img);
         img = img.thumbnail(size, size);
