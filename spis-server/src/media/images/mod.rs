@@ -18,10 +18,12 @@ impl ImageProcessor {
         let media_bytes = fs::read(path)?;
         let mut exif_buf_reader = std::io::Cursor::new(media_bytes);
         let exif_reader = exif::Reader::new();
+
         let exif = exif_reader
             .read_from_container(&mut exif_buf_reader)
             .wrap_err("Failed to read exif data")?;
         let image = image::open(path).wrap_err("Failed to open image")?;
+
         Ok(Self { exif, image })
     }
 
@@ -39,14 +41,14 @@ impl ImageProcessor {
             Err(_) => timestamp_modified.push_str("+02:00"), // TODO: Make configurable
         }
 
-        Ok(
-            DateTime::parse_from_str(&timestamp_modified, "%Y:%m:%d %H:%M:%S %z")
-                .wrap_err(format!(
-                    "Failed to parse timestamp:{:?} tz:{:?}",
-                    &timestamp, &timestamp_tz
-                ))?
-                .with_timezone(&Utc),
-        )
+        let timestamp = DateTime::parse_from_str(&timestamp_modified, "%Y:%m:%d %H:%M:%S %z")
+            .wrap_err(format!(
+                "Failed to parse timestamp:{:?} tz:{:?}",
+                &timestamp, &timestamp_tz
+            ))?
+            .with_timezone(&Utc);
+
+        Ok(timestamp)
     }
 
     #[allow(clippy::missing_errors_doc)]

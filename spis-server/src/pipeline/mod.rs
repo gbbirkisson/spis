@@ -167,12 +167,18 @@ pub fn setup_filewalker(
     Ok(job_sender)
 }
 
+#[allow(clippy::cognitive_complexity)]
 fn walk_dir(
     old_uuids: &HashMap<String, Uuid>,
     media_dir: &PathBuf,
     file_sender: &Sender<(Option<Uuid>, PathBuf)>,
 ) {
+    let mut count = 0;
     for entry in WalkDir::new(media_dir) {
+        count += 1;
+        if count % 1000 == 0 {
+            tracing::info!("Walked {} files so far ...", count);
+        }
         match entry.wrap_err("Failed to walk") {
             Ok(entry) => {
                 let path = entry.into_path();
@@ -188,6 +194,7 @@ fn walk_dir(
             Err(error) => tracing::error!("Walk failed: {:?}", error),
         }
     }
+    tracing::info!("Walked {} files in total", count);
 }
 
 #[allow(clippy::missing_errors_doc)]
@@ -203,7 +210,6 @@ pub fn setup_media_processing(
 
     let media_processor = MediaProcessor::new(thumb_dir, force_processing);
 
-    // Spawn a new thread that processes files
     tokio::task::spawn_blocking(move || {
         // TODO: Will collecting to a HashSet cause a memory leak?
         let _res: HashSet<Nothing> = W(file_reciever)
@@ -211,7 +217,6 @@ pub fn setup_media_processing(
             .par_bridge()
             .filter(|(_, path)| {
                 // Filter out hidden files
-                // TODO: Implement trait OsStr to string
                 !path
                     .components()
                     .any(|c| String::from(W(c)).starts_with('.'))

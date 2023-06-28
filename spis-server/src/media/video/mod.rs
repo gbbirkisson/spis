@@ -16,8 +16,8 @@ pub struct VideoProcessor {}
 impl VideoProcessor {
     #[allow(clippy::missing_errors_doc)]
     pub fn new() -> Result<Self> {
-        which::which("ffprobe").map_err(|_| eyre!("ffprobe not installed"))?;
-        which::which("ffmpeg").map_err(|_| eyre!("ffmpeg not installed"))?;
+        which::which("ffprobe").wrap_err("ffprobe not installed")?;
+        which::which("ffmpeg").wrap_err("ffmpeg not installed")?;
         Ok(Self {})
     }
 

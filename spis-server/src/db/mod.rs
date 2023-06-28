@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::media::{ProcessedMedia, ProcessedMediaType};
 use chrono::{DateTime, Utc};
-use color_eyre::{eyre::eyre, Result};
+use color_eyre::{eyre::Context, Result};
 use spis_model::MediaType;
 use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
 
@@ -231,8 +231,5 @@ pub async fn media_get(
 
     query = query.bind(limit);
 
-    query
-        .fetch_all(pool)
-        .await
-        .map_err(|e| eyre!("Failed to fetch rows: {e}"))
+    query.fetch_all(pool).await.wrap_err("Failed to fetch rows")
 }

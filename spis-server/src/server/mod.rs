@@ -1,4 +1,4 @@
-use crate::db::{self};
+use crate::db;
 use actix_web::{dev::Server, web, App, HttpServer, Responder, ResponseError};
 use color_eyre::{
     eyre::{eyre, Context},
