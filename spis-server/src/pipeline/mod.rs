@@ -32,6 +32,7 @@ pub fn setup_filewatcher(file_sender: Sender<File>) -> Result<RecommendedWatcher
     let file_watcher = RecommendedWatcher::new(
         move |event: Result<Event, Error>| {
             if let Ok(event) = event {
+                tracing::trace!("Got file event: {:?}", event);
                 #[allow(clippy::single_match)]
                 match event.kind {
                     EventKind::Access(AccessKind::Close(_)) => {
