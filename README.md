@@ -21,6 +21,7 @@ Some features worth mentioning:
 * Endless scrolling 📜
 * Mark favorites ❤️
 * Filter by year, month, favorites 🎚️
+* Instantly load new files 📨
 * Is a progressive web app 📲
 
 I personally use this project to host around `40.000` images on a [Raspberry Pi CM4](https://www.raspberrypi.com/products/compute-module-4/) 🤯
