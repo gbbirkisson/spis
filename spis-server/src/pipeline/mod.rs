@@ -4,22 +4,23 @@ use crate::media::{self, ProcessedMedia};
 use crate::prelude::*;
 use async_cron_scheduler::{Job, Scheduler};
 use chrono::Local;
-use chrono::{Duration, Utc};
+use chrono::{DateTime, Duration, Utc};
 use color_eyre::eyre::Context;
 use color_eyre::Result;
 use notify::{
-    event::{AccessKind, EventKind},
+    event::{AccessKind, CreateKind, EventKind},
     Config, Error, Event, RecommendedWatcher, Watcher,
 };
 use rayon::prelude::*;
 use sqlx::{Pool, Sqlite};
 use std::collections::HashMap;
 use std::{collections::HashSet, path::PathBuf};
-use tokio::sync::mpsc::{Receiver, Sender};
+use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::time::sleep;
 use uuid::Uuid;
 use walkdir::WalkDir;
 
+const DEBOUNCE_SECONDS: u64 = 5;
 pub const NOTHING: () = ();
 pub const JOB_TRIGGER: () = ();
 
@@ -29,31 +30,85 @@ pub type File = (Option<Uuid>, PathBuf);
 
 #[allow(clippy::missing_errors_doc)]
 pub fn setup_filewatcher(file_sender: Sender<File>) -> Result<RecommendedWatcher> {
+    // Setup debouncer channel
+    let (debouncer_sender, mut debouncer_reciever): (
+        Sender<Option<PathBuf>>,
+        Receiver<Option<PathBuf>>,
+    ) = channel(1);
+
+    // Trigger debouncer every DEBOUNCE_SECONDS / 2
+    let debouncer_sender_trigger = debouncer_sender.clone();
+    tokio::spawn(async move {
+        loop {
+            if let Err(error) = debouncer_sender_trigger.send(None).await {
+                tracing::error!("Failed to send trigger to debounce channel: {:?}", error);
+            }
+            tokio::time::sleep(tokio::time::Duration::from_secs(DEBOUNCE_SECONDS / 2)).await;
+        }
+    });
+
+    // Debouncer logic
+    tokio::spawn(async move {
+        let mut debounced_values: HashMap<PathBuf, DateTime<Utc>> = HashMap::new();
+
+        while let Some(optional_path) = debouncer_reciever.recv().await {
+            if let Some(path) = optional_path {
+                debounced_values.insert(path, Utc::now());
+            } else {
+                let now = Utc::now();
+                let retain = |_: &PathBuf, time: &mut DateTime<Utc>| {
+                    now - *time
+                        < Duration::seconds(
+                            DEBOUNCE_SECONDS
+                                .try_into()
+                                .expect("Convert DEBOUNCE_SECONDS should not fail"),
+                        )
+                };
+                for (path, time) in &mut debounced_values {
+                    if !retain(path, time) {
+                        tracing::debug!("Triggering processing for: {:?}", path);
+                        if let Err(error) = file_sender
+                            .send((None, path.clone()))
+                            .await
+                            .wrap_err("send failed")
+                        {
+                            tracing::error!("Failed to send file to channel: {:?}", error);
+                        }
+                    }
+                }
+                debounced_values.retain(retain);
+            }
+        }
+    });
+
+    // Setup file watcher
     let file_watcher = RecommendedWatcher::new(
         move |event: Result<Event, Error>| {
             if let Ok(event) = event {
                 tracing::trace!("Got file event: {:?}", event);
-                #[allow(clippy::single_match)]
-                match event.kind {
-                    EventKind::Access(AccessKind::Close(_)) => {
-                        for path in event.paths {
-                            if let Err(error) = file_sender
-                                .blocking_send((None, path))
-                                .wrap_err("blocking_send failed")
-                            {
-                                tracing::error!("Failed to send file to channel: {:?}", error);
-                            }
-                        }
-                    }
+                let trigger_processing = match event.kind {
+                    EventKind::Create(CreateKind::File)
+                    | EventKind::Access(AccessKind::Close(_)) => true,
                     // EventKind::Remove(RemoveKind::File) => {
                     //     // TODO: Handle file deletions?
                     // }
-                    _ => {}
+                    _ => false,
                 };
+                if trigger_processing {
+                    for path in event.paths {
+                        if let Err(error) = debouncer_sender
+                            .blocking_send(Some(path))
+                            .wrap_err("blocking_send failed")
+                        {
+                            tracing::error!("Failed to send file to debounce channel: {:?}", error);
+                        }
+                    }
+                }
             }
         },
         Config::default(),
     )?;
+
     Ok(file_watcher)
 }
 
