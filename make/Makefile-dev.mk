@@ -9,11 +9,10 @@ ${DEV_DB_FILE}:
 	$(info $(M) Creating state dir)
 	$(Q) mkdir -p ${DEV_STATE_DIR}  
 
-	$(info $(M) Creating database)
-	$(Q) sqlx --version > /dev/null || cargo install sqlx-cli
+	$(Q) echo "$(M) Creating database"
 	$(Q) sqlx database create
 
-	$(info $(M) Running database migrations)
+	$(Q) echo "$(M) Running database migrations"
 	$(Q) sqlx migrate run --source spis-server/migrations
 
 .PHONY: dev

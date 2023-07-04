@@ -1,0 +1,18 @@
+[toolchain]
+channel = "1.70.0"
+components = [
+  "rustfmt",
+  "rust-src",
+  "rust-std",
+  "clippy"
+]
+targets = [
+  "x86_64-unknown-linux-gnu",
+  "wasm33-unknown-unknown"
+]
+profile = "minimal"
+
+# bin trunk 0.17.1
+# bin cargo-audit 0.17.6
+# bin cargo-tarpaulin 0.26.1
+# bin sqlx-cli 0.7.0
