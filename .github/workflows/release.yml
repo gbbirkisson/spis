@@ -131,20 +131,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Create release dir
+        run: |
+          mkdir release
+
       - name: Get x86_64 server artifact
         uses: actions/download-artifact@v3
         with:
           name: spis-server-x86_64-unknown-linux-gnu
+          path: release
 
       - name: Get armv7 server artifact
         uses: actions/download-artifact@v3
         with:
           name: spis-server-armv7-unknown-linux-gnueabihf
+          path: release
 
       - name: Get aarch64 server artifact
         uses: actions/download-artifact@v3
         with:
           name: spis-server-aarch64-unknown-linux-gnu
+          path: release
 
       - name: Collect bins
         run: |
@@ -152,11 +159,11 @@ jobs:
           ls -l release
           exit 1
           
-          mkdir -p release
-          mv /tmp/x86_64-unknown-linux-gnu/spis-server release/spis-server-x86_64-unknown-linux-gnu
-          mv /tmp/armv7-unknown-linux-gnueabihf/spis-server release/spis-server-armv7-unknown-linux-gnueabihf
-          mv /tmp/aarch64-unknown-linux-gnu/spis-server release/spis-server-aarch64-unknown-linux-gnu
-          ls release
+          # mkdir -p release
+          # mv /tmp/x86_64-unknown-linux-gnu/spis-server release/spis-server-x86_64-unknown-linux-gnu
+          # mv /tmp/armv7-unknown-linux-gnueabihf/spis-server release/spis-server-armv7-unknown-linux-gnueabihf
+          # mv /tmp/aarch64-unknown-linux-gnu/spis-server release/spis-server-aarch64-unknown-linux-gnu
+          # ls release
       #
       # - name: Setup QEMU
       #   uses: docker/setup-qemu-action@v2
