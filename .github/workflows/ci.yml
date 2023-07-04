@@ -2,79 +2,39 @@
 name: CI
 
 on:
+  workflow_call:
   pull_request:
+    paths:
+      - 'spis-gui/**'
+      - 'spis-model/**'
+      - 'spis-server/**'
+      - 'Cargo.lock'
+      - 'Cargo.toml'
   push:
     branches: main
 
-env:
-  RUST_VERSION: "1.70.0"
-
 jobs:
-  lint:
-    name: Run ${{ matrix.check }}
+  ci:
+    name: Run ${{ matrix.target }}
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        check: [fmt, lint, audit]
+        target: [fmt, lint, audit, test]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Install rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ env.RUST_VERSION }}
-          components: rustfmt, clippy
+        uses: ./.github/actions/toolchain
 
-      - name: Set up cargo cache
-        uses: actions/cache@v3
-        continue-on-error: false
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/            
-          key: ${{ runner.os }}-cargo-${{ matrix.check }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-
-
-      - name: Run ${{ matrix.check }}
-        run: make ${{ matrix.check }}
-
-  test:
-    name: Run test
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ env.RUST_VERSION }}
-
-      - name: Set up cargo cache
-        uses: actions/cache@v3
-        continue-on-error: false
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/            
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-
-      
-      - name: Run test
-        run: make test
+      - name: Run ${{ matrix.target }}
+        run: make ${{ matrix.target }}
 
       - name: Upload test coverage
         uses: codecov/codecov-action@v3
+        if: matrix.target == 'test'
         with:
           fail_ci_if_error: true
