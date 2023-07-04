@@ -11,14 +11,14 @@ on:
     #   - 'spis-*/**'
 
 jobs:
-  lint:
-    name: Run ${{ matrix.check }}
+  ci:
+    name: Run ${{ matrix.target }}
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        check: [fmt, lint, audit]
+        target: [fmt, lint, audit, test]
 
     steps:
       - name: Checkout
@@ -27,24 +27,11 @@ jobs:
       - name: Install rust toolchain
         uses: ./.github/actions/toolchain
 
-      - name: Run ${{ matrix.check }}
-        run: make ${{ matrix.check }}
-
-  test:
-    name: Run test
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install rust toolchain
-        uses: ./.github/actions/toolchain
-
-      - name: Run test
-        run: make test
+      - name: Run ${{ matrix.target }}
+        run: make ${{ matrix.target }}
 
       - name: Upload test coverage
         uses: codecov/codecov-action@v3
+        if: matrix.target == 'test'
         with:
           fail_ci_if_error: true
