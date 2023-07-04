@@ -42,6 +42,7 @@ runs:
 
         echo asdf
         ls ${{ inputs.bin-cache }}
+        echo asdf
 
         rustc --version --verbose
       shell: bash
