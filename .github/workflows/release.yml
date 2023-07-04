@@ -2,6 +2,7 @@
 name: Release
 
 on:
+  pull_request:
   release:
     types: [published]
 
@@ -11,22 +12,27 @@ env:
   VERSION: ${{ github.ref_name }}
 
 jobs:
-  validate:
-    name: Validate
-    runs-on: ubuntu-latest
+  # validate:
+  #   name: Validate
+  #   runs-on: ubuntu-latest
+  #
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #
+  #     - name: Validate
+  #       run: |
+  #         make validate
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Validate
-        run: |
-          make validate
+  ci:
+    name: Run CI
+    # needs: validate
+    uses: ./.github/workflows/ci.yml
 
   build-gui:
     name: Build GUI
     runs-on: ubuntu-latest
-    needs: validate
+    needs: ci
 
     steps:
       - name: Checkout
@@ -44,41 +50,41 @@ jobs:
           name: gui-artifacts
           path: spis-gui/dist
 
-  prep-db:
-    name: Create DB
-    runs-on: ubuntu-latest
-    needs: validate
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install rust toolchain
-        uses: ./.github/actions/toolchain
-
-      - name: Setup DB
-        run: make dev/api/state/spis.db
-
-      - name: Store DB artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: db-artifact
-          path: dev/api/state
+  # prep-db:
+  #   name: Create DB
+  #   runs-on: ubuntu-latest
+  #   needs: validate
+  #
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #
+  #     - name: Install rust toolchain
+  #       uses: ./.github/actions/toolchain
+  #
+  #     - name: Setup DB
+  #       run: make dev/api/state/spis.db
+  #
+  #     - name: Store DB artifacts
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: db-artifact
+  #         path: dev/api/state
 
   build-server:
     name: Build server for ${{ matrix.target }}
     runs-on: ubuntu-latest
     needs:
       - build-gui
-      - prep-db
+      # - prep-db
 
     strategy:
       fail-fast: true
       matrix:
         target:
-          - x86_64-unknown-linux-gnu
-          - armv7-unknown-linux-gnueabihf
-          - aarch64-unknown-linux-gnu
+          - release/spis-server-x86_64-unknown-linux-gnu
+          - release/spis-server-armv7-unknown-linux-gnueabihf
+          - release/spis-server-aarch64-unknown-linux-gnu
 
     steps:
       - name: Checkout
@@ -87,11 +93,11 @@ jobs:
       - name: Install rust toolchain
         uses: ./.github/actions/toolchain
 
-      - name: Get DB artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: db-artifact
-          path: dev/api/state
+      # - name: Get DB artifact
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: db-artifact
+      #     path: dev/api/state
 
       - name: Get GUI artifacts
         uses: actions/download-artifact@v3
@@ -100,17 +106,21 @@ jobs:
           path: spis-gui/dist
 
       - name: Compile server
-        uses: actions-rs/cargo@v1
-        with:
-          use-cross: true
-          command: build
-          args: -p spis-server --features release --release --target ${{ matrix.target }}
+        run: |
+          make ${{ matrix.target }}
+
+      # - name: Compile server
+      #   uses: actions-rs/cargo@v1
+      #   with:
+      #     use-cross: true
+      #     command: build
+      #     args: -p spis-server --features release --release --target ${{ matrix.target }}
 
       - name: Store server artifact
         uses: actions/upload-artifact@v3
         with:
-          name: server-artifact-${{ matrix.target }}
-          path: target/${{ matrix.target }}/release/spis-server
+          name: ${{ matrix.target }}
+          path: ${{ matrix.target }}
 
   release-assets:
     name: Create release assets
@@ -124,56 +134,75 @@ jobs:
       - name: Get x86_64 server artifact
         uses: actions/download-artifact@v3
         with:
-          name: server-artifact-x86_64-unknown-linux-gnu
-          path: /tmp/x86_64-unknown-linux-gnu
+          name: release/spis-server-x86_64-unknown-linux-gnu
 
       - name: Get armv7 server artifact
         uses: actions/download-artifact@v3
         with:
-          name: server-artifact-armv7-unknown-linux-gnueabihf
-          path: /tmp/armv7-unknown-linux-gnueabihf
+          name: release/spis-server-armv7-unknown-linux-gnueabihf
 
       - name: Get aarch64 server artifact
         uses: actions/download-artifact@v3
         with:
-          name: server-artifact-aarch64-unknown-linux-gnu
-          path: /tmp/aarch64-unknown-linux-gnu
+          name: release/spis-server-aarch64-unknown-linux-gnu
+
+      # - name: Get x86_64 server artifact
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: server-artifact-x86_64-unknown-linux-gnu
+      #     path: /tmp/x86_64-unknown-linux-gnu
+      #
+      # - name: Get armv7 server artifact
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: server-artifact-armv7-unknown-linux-gnueabihf
+      #     path: /tmp/armv7-unknown-linux-gnueabihf
+      #
+      # - name: Get aarch64 server artifact
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: server-artifact-aarch64-unknown-linux-gnu
+      #     path: /tmp/aarch64-unknown-linux-gnu
 
       - name: Collect bins
         run: |
-          mkdir -p release
-          mv /tmp/x86_64-unknown-linux-gnu/spis-server release/spis-server-x86_64-unknown-linux-gnu
-          mv /tmp/armv7-unknown-linux-gnueabihf/spis-server release/spis-server-armv7-unknown-linux-gnueabihf
-          mv /tmp/aarch64-unknown-linux-gnu/spis-server release/spis-server-aarch64-unknown-linux-gnu
-
-      - name: Setup QEMU
-        uses: docker/setup-qemu-action@v2
-        with:
-          image: tonistiigi/binfmt:qemu-v6.1.0-20
-          platforms: all
-
-      - name: Setup buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Docker login
-        uses: docker/login-action@v2
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Docker build and push
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: docker/Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
-
-      - name: Upload artifacts to release
-        uses: AButler/upload-release-assets@v2.0
-        with:
-          files: 'release/*'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          release-tag: ${{ env.VERSION }}
+          ls release
+          exit 1
+      # - name: Collect bins
+      #   run: |
+      #     mkdir -p release
+      #     mv /tmp/x86_64-unknown-linux-gnu/spis-server release/spis-server-x86_64-unknown-linux-gnu
+      #     mv /tmp/armv7-unknown-linux-gnueabihf/spis-server release/spis-server-armv7-unknown-linux-gnueabihf
+      #     mv /tmp/aarch64-unknown-linux-gnu/spis-server release/spis-server-aarch64-unknown-linux-gnu
+      #
+      # - name: Setup QEMU
+      #   uses: docker/setup-qemu-action@v2
+      #   with:
+      #     image: tonistiigi/binfmt:qemu-v6.1.0-20
+      #     platforms: all
+      #
+      # - name: Setup buildx
+      #   uses: docker/setup-buildx-action@v2
+      #
+      # - name: Docker login
+      #   uses: docker/login-action@v2
+      #   with:
+      #     registry: ${{ env.REGISTRY }}
+      #     username: ${{ github.actor }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+      #
+      # - name: Docker build and push
+      #   uses: docker/build-push-action@v4
+      #   with:
+      #     context: .
+      #     file: docker/Dockerfile
+      #     push: true
+      #     tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+      #     platforms: linux/amd64,linux/arm64,linux/arm/v7
+      #
+      # - name: Upload artifacts to release
+      #   uses: AButler/upload-release-assets@v2.0
+      #   with:
+      #     files: 'release/*'
+      #     repo-token: ${{ secrets.GITHUB_TOKEN }}
+      #     release-tag: ${{ env.VERSION }}
