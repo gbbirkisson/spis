@@ -7,10 +7,15 @@ runs:
   steps:
     - name: "Install rust toolchain"
       run: |
+        # Copy from backup folder if present
         mkdir -p ~/.cargo/bak ~/.cargo/bin
+        touch ~/.cargo/bak/empty
         cp -f ~/.cargo/bak/* ~/.cargo/bin
+
         make setup-toolchain
-        cat rust-toolchain.toml | grep '# bin' | sed 's/-cli//g' | xargs -n 4 sh -c 'cp -f ~/.cargo/bin/$2 ~/.cargo/bak'
+
+        # Backup binaries
+        cat rust-toolchain.toml | grep '# bin' | sed 's/sqlx-cli/sqlx/g' | xargs -n 4 sh -c 'cp -f ~/.cargo/bin/$2 ~/.cargo/bak'
       shell: bash
 
     - uses: Swatinem/rust-cache@v2
