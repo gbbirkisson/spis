@@ -30,7 +30,6 @@ runs:
 
         echo asdf
         ls ${{ inputs.bin-cache }}
-        echo asdf
       shell: bash
 
     - uses: Swatinem/rust-cache@v2
