@@ -18,10 +18,10 @@ runs:
         cp -f ~/.cargo/bin_cache/* ~/.cargo/bin
 
         # Install everything needed
-        make setup-toolchain
+        # make setup-toolchain
 
         # Move bins to bin_cache
-        cat rust-toolchain.toml | grep '# bin' | sed 's/sqlx-cli/sqlx/g' | xargs -n 4 sh -c 'cp -f ~/.cargo/bin/$2 ~/.cargo/bin_cache'
+        # cat rust-toolchain.toml | grep '# bin' | sed 's/sqlx-cli/sqlx/g' | xargs -n 4 sh -c 'cp -f ~/.cargo/bin/$2 ~/.cargo/bin_cache'
       shell: bash
 
     - uses: Swatinem/rust-cache@v2
