@@ -10,6 +10,11 @@ runs:
         # Copy bins from cache if present
         mkdir -p ~/.cargo/bin_cache ~/.cargo/bin
         touch ~/.cargo/bin_cache/empty
+
+        echo asdf
+        ls ~/.cargo/bin_cache
+        echo asdf
+
         cp -f ~/.cargo/bin_cache/* ~/.cargo/bin
 
         # Install everything needed
