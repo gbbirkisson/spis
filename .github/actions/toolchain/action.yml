@@ -16,6 +16,13 @@ runs:
         shared-key: toolchain
         cache-directories: ${{ inputs.bin-cache }}
 
+    - name: "Set environment variables used by toolchain"
+      run: |
+        echo CARGO_TERM_COLOR=always >> $GITHUB_ENV
+        echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV
+        echo RUST_BACKTRACE=1 >> $GITHUB_ENV
+      shell: bash
+
     - name: "Install rust toolchain"
       run: |
         mkdir -p ${{ inputs.bin-cache }}
@@ -35,13 +42,6 @@ runs:
 
         echo asdf
         ls ${{ inputs.bin-cache }}
-      shell: bash
-
-    - name: "Set environment variables used by toolchain"
-      run: |
-        echo CARGO_TERM_COLOR=always >> $GITHUB_ENV
-        echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV
-        echo RUST_BACKTRACE=1 >> $GITHUB_ENV
 
         rustc --version --verbose
       shell: bash
