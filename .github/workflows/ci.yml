@@ -3,11 +3,11 @@ name: CI
 
 on:
   workflow_call:
-  # pull_request:
+  pull_request:
     # paths:
     #   - 'spis-*/**'
-  # push:
-  #   branches: main
+  push:
+    branches: main
     # paths:
     #   - 'spis-*/**'
 
