@@ -2,7 +2,7 @@
 setup-toolchain: ## Setup rust toolchain
 	$(info $(M) Setup rust toolchain)
 	$(Q) rustup show
-	$(Q) cat rust-toolchain.toml | grep '# bin' | xargs -n 4 sh -c 'cargo install --version $$3 $$2'
+	$(Q) cat rust-toolchain.toml | grep '# bin' | xargs -n 4 sh -c './make/cargo-bin.sh $$2 $$3'
 
 .PHONY: setup
 setup: ${DEV_MEDIA_DIR} ${DEV_DB_FILE} setup-toolchain ## Setup project dependencies and dirs
