@@ -72,7 +72,7 @@ jobs:
   #         path: dev/api/state
 
   build-server:
-    name: Build server for ${{ matrix.target }}
+    name: Build ${{ matrix.target }}
     runs-on: ubuntu-latest
     needs:
       - build-gui
@@ -82,9 +82,9 @@ jobs:
       fail-fast: true
       matrix:
         target:
-          - release/spis-server-x86_64-unknown-linux-gnu
-          - release/spis-server-armv7-unknown-linux-gnueabihf
-          - release/spis-server-aarch64-unknown-linux-gnu
+          - spis-server-x86_64-unknown-linux-gnu
+          - spis-server-armv7-unknown-linux-gnueabihf
+          - spis-server-aarch64-unknown-linux-gnu
 
     steps:
       - name: Checkout
@@ -107,7 +107,7 @@ jobs:
 
       - name: Compile server
         run: |
-          make ${{ matrix.target }}
+          make release/${{ matrix.target }}
 
       # - name: Compile server
       #   uses: actions-rs/cargo@v1
@@ -120,7 +120,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.target }}
-          path: ${{ matrix.target }}
+          path: release/${{ matrix.target }}
 
   release-assets:
     name: Create release assets
@@ -134,17 +134,17 @@ jobs:
       - name: Get x86_64 server artifact
         uses: actions/download-artifact@v3
         with:
-          name: release/spis-server-x86_64-unknown-linux-gnu
+          name: spis-server-x86_64-unknown-linux-gnu
 
       - name: Get armv7 server artifact
         uses: actions/download-artifact@v3
         with:
-          name: release/spis-server-armv7-unknown-linux-gnueabihf
+          name: spis-server-armv7-unknown-linux-gnueabihf
 
       - name: Get aarch64 server artifact
         uses: actions/download-artifact@v3
         with:
-          name: release/spis-server-aarch64-unknown-linux-gnu
+          name: spis-server-aarch64-unknown-linux-gnu
 
       # - name: Get x86_64 server artifact
       #   uses: actions/download-artifact@v3
