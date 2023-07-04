@@ -7,12 +7,13 @@ runs:
   steps:
     - name: "Install rust toolchain"
       run: |
+        ls ~/.cargo
+
         # Copy from backup folder if present
         mkdir -p ~/.cargo/bak ~/.cargo/bin
         touch ~/.cargo/bak/empty
         cp -f ~/.cargo/bak/* ~/.cargo/bin
 
-        ls ~/.cargo
         ls ~/.cargo/bin
         ls ~/.cargo/bak
         #make setup-toolchain
