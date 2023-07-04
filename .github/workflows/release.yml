@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install rust toolchain
-        uses: ./.github/actions/toolchain.yml
+        uses: ./.github/actions/toolchain
 
       - name: Build gui
         run: make release-gui
@@ -54,7 +54,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install rust toolchain
-        uses: ./.github/actions/toolchain.yml
+        uses: ./.github/actions/toolchain
 
       - name: Setup DB
         run: make dev/api/state/spis.db
@@ -85,7 +85,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install rust toolchain
-        uses: ./.github/actions/toolchain.yml
+        uses: ./.github/actions/toolchain
 
       - name: Get DB artifact
         uses: actions/download-artifact@v3
