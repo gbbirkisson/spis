@@ -11,6 +11,11 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - uses: Swatinem/rust-cache@v2
+      with:
+        shared-key: toolchain
+        cache-directories: ${{ inputs.bin-cache }}
+
     - name: "Install rust toolchain"
       run: |
         mkdir -p ${{ inputs.bin-cache }}
@@ -31,11 +36,6 @@ runs:
         echo asdf
         ls ${{ inputs.bin-cache }}
       shell: bash
-
-    - uses: Swatinem/rust-cache@v2
-      with:
-        shared-key: toolchain
-        cache-directories: ~/.cargo/bin_cache
 
     - name: "Set environment variables used by toolchain"
       run: |
