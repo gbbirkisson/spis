@@ -135,45 +135,27 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: spis-server-x86_64-unknown-linux-gnu
+          path: /tmp/x86_64-unknown-linux-gnu
 
       - name: Get armv7 server artifact
         uses: actions/download-artifact@v3
         with:
           name: spis-server-armv7-unknown-linux-gnueabihf
+          path: /tmp/armv7-unknown-linux-gnueabihf
 
       - name: Get aarch64 server artifact
         uses: actions/download-artifact@v3
         with:
           name: spis-server-aarch64-unknown-linux-gnu
-
-      # - name: Get x86_64 server artifact
-      #   uses: actions/download-artifact@v3
-      #   with:
-      #     name: server-artifact-x86_64-unknown-linux-gnu
-      #     path: /tmp/x86_64-unknown-linux-gnu
-      #
-      # - name: Get armv7 server artifact
-      #   uses: actions/download-artifact@v3
-      #   with:
-      #     name: server-artifact-armv7-unknown-linux-gnueabihf
-      #     path: /tmp/armv7-unknown-linux-gnueabihf
-      #
-      # - name: Get aarch64 server artifact
-      #   uses: actions/download-artifact@v3
-      #   with:
-      #     name: server-artifact-aarch64-unknown-linux-gnu
-      #     path: /tmp/aarch64-unknown-linux-gnu
+          path: /tmp/aarch64-unknown-linux-gnu
 
       - name: Collect bins
         run: |
+          mkdir -p release
+          mv /tmp/x86_64-unknown-linux-gnu/spis-server release/spis-server-x86_64-unknown-linux-gnu
+          mv /tmp/armv7-unknown-linux-gnueabihf/spis-server release/spis-server-armv7-unknown-linux-gnueabihf
+          mv /tmp/aarch64-unknown-linux-gnu/spis-server release/spis-server-aarch64-unknown-linux-gnu
           ls release
-          exit 1
-      # - name: Collect bins
-      #   run: |
-      #     mkdir -p release
-      #     mv /tmp/x86_64-unknown-linux-gnu/spis-server release/spis-server-x86_64-unknown-linux-gnu
-      #     mv /tmp/armv7-unknown-linux-gnueabihf/spis-server release/spis-server-armv7-unknown-linux-gnueabihf
-      #     mv /tmp/aarch64-unknown-linux-gnu/spis-server release/spis-server-aarch64-unknown-linux-gnu
       #
       # - name: Setup QEMU
       #   uses: docker/setup-qemu-action@v2
