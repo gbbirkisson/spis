@@ -18,8 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [fmt]
-        # target: [fmt, lint, audit, test]
+        target: [fmt, lint, audit, test]
 
     steps:
       - name: Checkout
