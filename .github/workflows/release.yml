@@ -54,7 +54,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build-gui
-      # - prep-db
 
     strategy:
       fail-fast: true

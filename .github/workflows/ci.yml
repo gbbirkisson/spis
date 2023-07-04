@@ -4,12 +4,14 @@ name: CI
 on:
   workflow_call:
   pull_request:
-    # paths:
-    #   - 'spis-*/**'
+    paths:
+      - 'spis-gui/**'
+      - 'spis-model/**'
+      - 'spis-server/**'
+      - 'Cargo.lock'
+      - 'Cargo.toml'
   push:
     branches: main
-    # paths:
-    #   - 'spis-*/**'
 
 jobs:
   ci:
