@@ -7,24 +7,22 @@ runs:
   steps:
     - name: "Install rust toolchain"
       run: |
-        ls ~/.cargo
+        # Copy bins from cache if present
+        mkdir -p ~/.cargo/bin_cache ~/.cargo/bin
+        touch ~/.cargo/bin_cache/empty
+        cp -f ~/.cargo/bin_cache/* ~/.cargo/bin
 
-        # Copy from backup folder if present
-        mkdir -p ~/.cargo/bak ~/.cargo/bin
-        touch ~/.cargo/bak/empty
-        cp -f ~/.cargo/bak/* ~/.cargo/bin
+        # Install everything needed
+        make setup-toolchain
 
-        ls ~/.cargo/bin
-        ls ~/.cargo/bak
-        #make setup-toolchain
-
-        # Backup binaries
-        cat rust-toolchain.toml | grep '# bin' | sed 's/sqlx-cli/sqlx/g' | xargs -n 4 sh -c 'cp -f ~/.cargo/bin/$2 ~/.cargo/bak'
+        # Move bins to bin_cache
+        cat rust-toolchain.toml | grep '# bin' | sed 's/sqlx-cli/sqlx/g' | xargs -n 4 sh -c 'cp -f ~/.cargo/bin/$2 ~/.cargo/bin_cache'
       shell: bash
 
     - uses: Swatinem/rust-cache@v2
       with:
         shared-key: toolchain
+        cache-directories: ~/.cargo/bin_cache
 
     - name: "Set environment variables used by toolchain"
       run: |
