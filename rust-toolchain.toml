@@ -12,7 +12,8 @@ targets = [
 ]
 profile = "minimal"
 
-# bin trunk 0.17.1
 # bin cargo-audit 0.17.6
 # bin cargo-tarpaulin 0.26.1
+# bin cross 0.2.5
 # bin sqlx-cli 0.7.0
+# bin trunk 0.17.1
