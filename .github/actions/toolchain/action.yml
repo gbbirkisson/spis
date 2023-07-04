@@ -2,26 +2,35 @@
 name: rustup
 description: "Install Rust toolchain"
 
+inputs:
+  bin-cache:
+    description: 'Where to keep cached bins'
+    required: false
+    default: /home/runner/.bin-cache
+
 runs:
   using: "composite"
   steps:
     - name: "Install rust toolchain"
       run: |
-        # Copy bins from cache if present
-        mkdir -p ~/.cargo/bin_cache ~/.cargo/bin
-        touch ~/.cargo/bin_cache/empty
+        mkdir -p ${{ inputs.bin-cache }}
 
         echo asdf
-        ls ~/.cargo/bin_cache
+        ls ${{ inputs.bin-cache }}
         echo asdf
 
-        cp -f ~/.cargo/bin_cache/* ~/.cargo/bin
+        touch ${{ inputs.bin-cache }}/empty
+        cp ${{ inputs.bin-cache }}/* /home/runner/.cargo/bin
 
         # Install everything needed
-        # make setup-toolchain
+        make setup-toolchain
 
         # Move bins to bin_cache
-        # cat rust-toolchain.toml | grep '# bin' | sed 's/sqlx-cli/sqlx/g' | xargs -n 4 sh -c 'cp -f ~/.cargo/bin/$2 ~/.cargo/bin_cache'
+        cat rust-toolchain.toml | grep '# bin' | sed 's/sqlx-cli/sqlx/g' | xargs -n 4 sh -c 'cp -f /home/runner/.cargo/bin/$2 ${{ inputs.bin-cache }}'
+
+        echo asdf
+        ls ${{ inputs.bin-cache }}
+        echo asdf
       shell: bash
 
     - uses: Swatinem/rust-cache@v2
