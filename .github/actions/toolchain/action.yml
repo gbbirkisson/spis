@@ -11,9 +11,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Read .envrc
-      uses: HatsuneMiku3939/direnv-action@v1
-
     - name: Setup caching
       uses: Swatinem/rust-cache@v2
       with:
