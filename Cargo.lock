@@ -2582,6 +2582,7 @@ dependencies = [
  "tempfile",
  "tokio",
  "tracing",
+ "tracing-actix-web",
  "tracing-subscriber",
  "uuid",
  "walkdir",
@@ -3029,6 +3030,18 @@ dependencies = [
  "pin-project-lite",
  "tracing-attributes",
  "tracing-core",
+]
+
+[[package]]
+name = "tracing-actix-web"
+version = "0.7.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ce52ffaf2d544e317d3bef63f49a6a22022866505fa4840a4339b1756834a2a9"
+dependencies = [
+ "actix-web",
+ "pin-project",
+ "tracing",
+ "uuid",
 ]
 
 [[package]]

@@ -1,3 +1,4 @@
+use self::convert::MediaConverter;
 use crate::db;
 use actix_web::{dev::Server, web, App, HttpServer, Responder, ResponseError};
 use color_eyre::{
@@ -8,8 +9,7 @@ use derive_more::{Display, Error};
 use spis_model::Media;
 use sqlx::{Pool, Sqlite};
 use std::net::TcpListener;
-
-use self::convert::MediaConverter;
+use tracing_actix_web::TracingLogger;
 
 pub mod convert;
 
@@ -118,8 +118,7 @@ pub fn run(listener: Listener, pool: Pool<Sqlite>, converter: MediaConverter) ->
 
     let server = HttpServer::new(move || {
         #[allow(unused_mut)]
-        let mut app = App::new();
-
+        let mut app = App::new().wrap(TracingLogger::default());
         #[cfg(feature = "release")]
         {
             let html_file = find_gui_file("*html");

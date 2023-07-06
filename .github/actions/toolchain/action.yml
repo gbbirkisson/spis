@@ -11,7 +11,8 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: Swatinem/rust-cache@v2
+    - name: Setup caching
+      uses: Swatinem/rust-cache@v2
       with:
         shared-key: toolchain
         cache-directories: ${{ inputs.bin-cache }}
