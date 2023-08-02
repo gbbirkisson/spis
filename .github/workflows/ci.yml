@@ -40,4 +40,5 @@ jobs:
         uses: codecov/codecov-action@v3
         if: matrix.target == 'test'
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
