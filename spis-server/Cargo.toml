@@ -33,9 +33,7 @@ sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "sqlite", "macros"
 
 # Model
 spis-model = { path = "../spis-model" }
-# Pinning serde for now to avoid precompiled binaries
-# https://github.com/serde-rs/serde/issues/2538#issuecomment-1684517372
-serde = { version = "1.0.156, < 1.0.172", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
 
 # Processing
 walkdir = "2"

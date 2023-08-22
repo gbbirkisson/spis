@@ -4,7 +4,5 @@ version = "0.5.3"
 edition = "2021"
 
 [dependencies]
-# Pinning serde for now to avoid precompiled binaries
-# https://github.com/serde-rs/serde/issues/2538#issuecomment-1684517372
-serde = { version = "1.0.156, < 1.0.172", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde"] }
