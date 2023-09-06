@@ -3,4 +3,5 @@ ignore = [
     "RUSTSEC-2021-0141", # dotenv is Unmaintained
     "RUSTSEC-2020-0071", # Potential segfault in the time crate
     "RUSTSEC-2022-0090", # `libsqlite3-sys` via C SQLite CVE-2022-35737
+    "RUSTSEC-2023-0052", # webpki: CPU denial of service in certificate path building
 ]
