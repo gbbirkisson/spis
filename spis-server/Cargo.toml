@@ -27,7 +27,7 @@ derive_more = "0.99.17"
 # Runtime
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync"]}
 actix-web = "4"
-tracing-actix-web = "0.7.7"
+tracing-actix-web = "0.7.8"
 async-cron-scheduler = "1"
 sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "sqlite", "macros", "chrono", "migrate", "uuid"] }
 
