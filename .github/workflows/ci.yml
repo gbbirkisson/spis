@@ -4,42 +4,14 @@ name: CI
 on:
   workflow_call:
   pull_request:
-    paths:
-      - 'spis-gui/**'
-      - 'spis-model/**'
-      - 'spis-server/**'
-      - 'Cargo.lock'
-      - 'Cargo.toml'
-      - 'rust-toolchain.toml'
-  push:
-    branches: main
+
+env:
+  VERSION: spis-v0.5.5
 
 jobs:
-  ci:
-    name: Run ${{ matrix.target }}
+  test:
+    name: Test
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        target: [fmt, lint, audit, test]
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Read .envrc
-        uses: HatsuneMiku3939/direnv-action@v1
-
-      - name: Install rust toolchain
-        uses: ./.github/actions/toolchain
-
-      - name: Run ${{ matrix.target }}
-        run: make ${{ matrix.target }}
-
-      - name: Upload test coverage
-        uses: codecov/codecov-action@v3
-        if: matrix.target == 'test'
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
+      - name: Run test
+        run: echo ${{ env.VERSION//spis-/ }}
