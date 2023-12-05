@@ -1,0 +1,46 @@
+---
+name: Conventional commit
+
+on:
+  pull_request_target:
+    types:
+      - edited
+      - opened
+      - ready_for_review
+      - reopened
+      - synchronize
+
+permissions:
+  pull-requests: write
+
+jobs:
+  main:
+    name: Validate PR title
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        id: lint_pr_title
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: marocchino/sticky-pull-request-comment@v2
+        if: always() && (steps.lint_pr_title.outputs.error_message != null)
+        with:
+          header: pr-title-wrong
+          message: |
+            Pull request titles should follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) and it looks like this PRs title does not.
+
+            <details>
+              <summary>Details</summary>
+
+              ```
+              ${{ steps.lint_pr_title.outputs.error_message }}
+              ```
+            </details>
+
+      - uses: marocchino/sticky-pull-request-comment@v2
+        if: ${{ steps.lint_pr_title.outputs.error_message == null }}
+        with:
+          header: pr-title-wrong
+          delete: true
