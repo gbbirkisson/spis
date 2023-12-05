@@ -1,0 +1,39 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "dependencyDashboard": true,
+  "semanticCommitType": "fix",
+  "packageRules": [
+    {
+      "packagePatterns": ["^futures[-_]?"],
+      "groupName": "futures packages"
+    },
+    {
+      "packagePatterns": ["^serde[-_]?"],
+      "groupName": "serde packages"
+    },
+    {
+      "packagePatterns": ["^tokio[-_]?"],
+      "groupName": "tokio packages"
+    },
+    {
+      "packagePatterns": ["^tracing[-_]?"],
+      "excludePackageNames": ["tracing-opentelemetry"],
+      "groupName": "tracing packages"
+    },
+    {
+      "packagePatterns": ["^liquid[-_]?", "^kstring$"],
+      "groupName": "liquid packages"
+    }
+  ],
+  "regexManagers": [
+    {
+      "fileMatch": ["^rust-toolchain\\.toml?$"],
+      "matchStrings": [
+        "channel\\s*=\\s*\"(?<currentValue>\\d+\\.\\d+\\.\\d+)\""
+      ],
+      "depNameTemplate": "rust",
+      "lookupNameTemplate": "rust-lang/rust",
+      "datasourceTemplate": "github-releases"
+    }
+  ]
+}
