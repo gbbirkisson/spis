@@ -1,0 +1,21 @@
+{
+  "bootstrap-sha": "80fbba33a216d3e04aac840576c49ee13e9fae4e",
+  "plugins": ["cargo-workspace"],
+  "packages": {
+    "spis-gui": {
+      "release-type": "rust",
+      "include-component-in-tag": false,
+      "skip-github-release": true
+    },
+    "spis-model": {
+      "release-type": "rust",
+      "include-component-in-tag": false,
+      "skip-github-release": true
+    },
+    "spis-server": {
+      "release-type": "rust",
+      "include-component-in-tag": false,
+      "include-v-in-tag": true
+    }
+  }
+}
