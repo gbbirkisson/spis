@@ -1,3 +1,4 @@
+---
 version: 2
 updates:
   - package-ecosystem: "cargo"
@@ -9,6 +10,10 @@ updates:
       - "gbbirkisson"
     reviewers:
       - "gbbirkisson"
+    commit-message:
+      prefix: fix
+      prefix-development: chore
+      include: scope
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -18,3 +23,7 @@ updates:
       - "gbbirkisson"
     reviewers:
       - "gbbirkisson"
+    commit-message:
+      prefix: fix
+      prefix-development: chore
+      include: scope
