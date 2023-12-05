@@ -11,21 +11,8 @@ env:
   VERSION: ${{ github.ref_name }}
 
 jobs:
-  validate:
-    name: Validate
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Validate
-        run: |
-          make validate
-
   ci:
     name: Run CI
-    needs: validate
     uses: ./.github/workflows/ci.yml
 
   build-gui:

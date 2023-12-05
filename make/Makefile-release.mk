@@ -38,19 +38,6 @@ release: ${RELEASE_X86_60_GNU} ${RELEASE_ARMV7_GNUEABIHF} ${RELEASE_AARCH64_GNU}
 release-gui: ${RELEASE_GUI} ## Create release build of GUI
 	$(info $(M) Release for gui created!)
 
-.PHONY: validate
-validate:
-	$(info $(M) Validate gui version)
-	$(Q) test "${GITHUB_REF_NAME}" = "$(shell awk -F ' = ' '$$1 ~ /version/ { gsub(/[\"]/, "", $$2); printf("v%s",$$2) }' spis-gui/Cargo.toml)"
-
-	$(Q) echo "$(M) Validate model version"
-	$(Q) test "${GITHUB_REF_NAME}" = "$(shell awk -F ' = ' '$$1 ~ /version/ { gsub(/[\"]/, "", $$2); printf("v%s",$$2) }' spis-model/Cargo.toml)"
-
-	$(Q) echo "$(M) Validate server version"
-	$(Q) test "${GITHUB_REF_NAME}" = "$(shell awk -F ' = ' '$$1 ~ /version/ { gsub(/[\"]/, "", $$2); printf("v%s",$$2) }' spis-server/Cargo.toml)"
-
-	$(Q) echo "$(M) Validation passed!"
-
 .PHONY: docker-local
 docker-local: ${RELEASE_X86_60_GNU} ## Create and run docker image
 	$(info $(M) Building docker image)
