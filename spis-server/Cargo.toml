@@ -40,7 +40,7 @@ walkdir = "2"
 rayon = "1"
 uuid = { version = "1", features = ["serde", "v4"] }
 chrono = "0.4"
-notify = "6.0.0"
+notify = "6.1.1"
 
 # Image processing
 image = { version = "0.24.7", features = ["jpeg", "webp-encoder"]}
