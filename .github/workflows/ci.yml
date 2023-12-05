@@ -10,6 +10,7 @@ on:
       - 'spis-server/**'
       - 'Cargo.lock'
       - 'Cargo.toml'
+      - 'rust-toolchain.toml'
   push:
     branches: main
 
