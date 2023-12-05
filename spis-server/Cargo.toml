@@ -29,7 +29,7 @@ tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync"]}
 actix-web = "4"
 tracing-actix-web = "0.7.9"
 async-cron-scheduler = "1"
-sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "sqlite", "macros", "chrono", "migrate", "uuid"] }
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "macros", "chrono", "migrate", "uuid"] }
 
 # Model
 spis-model = { path = "../spis-model" }
