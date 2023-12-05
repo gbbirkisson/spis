@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.6](https://github.com/gbbirkisson/spis/compare/server-v0.5.5...server-v0.5.6) (2023-12-05)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate image to 0.24.7 ([#147](https://github.com/gbbirkisson/spis/issues/147)) ([3813a7c](https://github.com/gbbirkisson/spis/commit/3813a7c1807d7780cd2720b810fa54cd8ef00a6a))
+* **deps:** update rust crate notify to 6.1.1 ([#154](https://github.com/gbbirkisson/spis/issues/154)) ([7e8b8ee](https://github.com/gbbirkisson/spis/commit/7e8b8ee925d1bc76d37739afe2b31e5d2c0397ac))
+* **deps:** update rust crate sqlx to 0.7 ([#155](https://github.com/gbbirkisson/spis/issues/155)) ([01b79a7](https://github.com/gbbirkisson/spis/commit/01b79a7d1c2ec66c7e56f596c8fed9aefb230c09))
+* **deps:** update rust crate which to 4.4 ([#156](https://github.com/gbbirkisson/spis/issues/156)) ([cefc6a5](https://github.com/gbbirkisson/spis/commit/cefc6a53103b27240b76e14754c04aee081fb082))
+* **deps:** update rust crate which to v5 ([#157](https://github.com/gbbirkisson/spis/issues/157)) ([69521da](https://github.com/gbbirkisson/spis/commit/69521daf96a8ea2af75a6e7f9deed8c963ca836d))
+* Update cargo configuration ([4039028](https://github.com/gbbirkisson/spis/commit/4039028ee68f17fc4a3fd25cf078da262f756346))
+
 ## [0.5.5](https://github.com/gbbirkisson/spis/compare/server-v0.5.4...server-v0.5.5) (2023-12-05)
 
 
