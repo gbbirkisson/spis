@@ -1,10 +1,9 @@
 [workspace]
+resolver = "2"
+members = ["spis-model", "spis-gui", "spis-server"]
 
-members = [
-    "spis-model",
-    "spis-gui",
-    "spis-server",
-]
+[workspace.package]
+edition = "2021"
 
 # https://docs.rs/color-eyre/latest/color_eyre/#improving-perf-on-debug-builds
 [profile.dev.package.backtrace]

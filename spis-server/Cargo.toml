@@ -1,7 +1,7 @@
 [package]
 name = "spis-server"
 version = "0.5.5"
-edition = "2021"
+edition.workspace = true
 
 [lib]
 path = "src/lib.rs"
@@ -25,11 +25,18 @@ clap = { version = "4", features = ["derive"] }
 derive_more = "0.99.17"
 
 # Runtime
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync"]}
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync"] }
 actix-web = "4"
 tracing-actix-web = "0.7.9"
 async-cron-scheduler = "1"
-sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "macros", "chrono", "migrate", "uuid"] }
+sqlx = { version = "0.7", features = [
+  "runtime-tokio-rustls",
+  "sqlite",
+  "macros",
+  "chrono",
+  "migrate",
+  "uuid",
+] }
 
 # Model
 spis-model = { path = "../spis-model" }
@@ -43,7 +50,7 @@ chrono = "0.4"
 notify = "6.1.1"
 
 # Image processing
-image = { version = "0.24.7", features = ["jpeg", "webp-encoder"]}
+image = { version = "0.24.7", features = ["jpeg", "webp-encoder"] }
 kamadak-exif = "0.5"
 
 # Video processing
@@ -52,7 +59,7 @@ subprocess = "0.2"
 md-5 = "0.10"
 
 # Bake GUI into bin
-include_dir = { version = "0.7.3", features = ["glob"], optional=true }
+include_dir = { version = "0.7.3", features = ["glob"], optional = true }
 
 [dev-dependencies]
 reqwest = { version = "0.11", features = ["json"] }
