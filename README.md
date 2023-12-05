@@ -40,6 +40,7 @@ If this project is just what you needed and/or has been helpful to you, please c
     * [Docker](#docker)
     * [Binary](#binary)
 * [Progressive Web App](#progressive-web-app)
+* [Release notes](#release-notes)
 * [Development](#development)
     * [Setup dependencies](#setup-dependencies)
     * [Get some test media](#get-some-test-media)
@@ -95,6 +96,10 @@ Just [download a binary](https://github.com/gbbirkisson/spis/releases) for your 
 ## Progressive Web App
 
 If you have an Android mobile device, you can add `SPIS` as a `PWA` to it. Open up the `SPIS` home page in the chrome browser on the device, open the top-right menu, and select `Add to Home screen`.
+
+## Release notes
+
+This project uses [release-please](https://github.com/googleapis/release-please) and because of how it is set up, the easiest way to read all the release notes is to look at the relevant [PR for each release](https://github.com/gbbirkisson/spis/pulls?q=is%3Apr+label%3Arelease+is%3Aclosed). There you will find all relevant changes for each release.
 
 ## Development
 
