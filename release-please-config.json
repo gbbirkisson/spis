@@ -21,8 +21,7 @@
   "packages": {
     ".": {
       "component": "spis",
-      "release-type": "simple",
-      "include-component-in-tag": true
+      "release-type": "simple"
     },
     "spis-gui": {
       "component": "gui",
