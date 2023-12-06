@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.7](https://github.com/gbbirkisson/spis/compare/model-v0.5.6...model-v0.5.7) (2023-12-06)
+
+
+### Bug Fixes
+
+* Update cargo configuration ([4039028](https://github.com/gbbirkisson/spis/commit/4039028ee68f17fc4a3fd25cf078da262f756346))
+
 ## [0.5.6](https://github.com/gbbirkisson/spis/compare/model-v0.5.5...model-v0.5.6) (2023-12-05)
 
 

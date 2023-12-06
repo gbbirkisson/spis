@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.7](https://github.com/gbbirkisson/spis/compare/spis-v0.5.6...spis-v0.5.7) (2023-12-06)
+
+
+### Bug Fixes
+
+* Add pre-commit hook for conventional commits ([fdc95e8](https://github.com/gbbirkisson/spis/commit/fdc95e86853bf4e67156a6230d52fff2ddb49182))
+* Docker tag ([ddd832b](https://github.com/gbbirkisson/spis/commit/ddd832bfd456309781d9761cfefaf710f4311603))
+
 ## [0.5.6](https://github.com/gbbirkisson/spis/compare/spis-v0.5.5...spis-v0.5.6) (2023-12-05)
 
 
