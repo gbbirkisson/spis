@@ -43,6 +43,7 @@ If this project is just what you needed and/or has been helpful to you, please c
 * [Release notes](#release-notes)
 * [Development](#development)
     * [Setup dependencies](#setup-dependencies)
+    * [Install pre-commit hooks](#install-pre-commit-hooks)
     * [Get some test media](#get-some-test-media)
     * [Running](#running)
 
@@ -107,6 +108,12 @@ This project uses [release-please](https://github.com/googleapis/release-please)
 
 ```console
 $ make setup
+```
+
+### Install pre-commit hooks
+
+```console
+$ pre-commit install --hook-type commit-msg
 ```
 
 ### Get some test media
