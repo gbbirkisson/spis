@@ -13,5 +13,7 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
+      - name: Set env
+        run: echo "DOCKER_TAG=$(echo $VERSION | awk -F- '{print $2}')" >> $GITHUB_ENV
       - name: Run test
-        run: echo ${{ env.VERSION }}
+        run: echo ${{ env.DOCKER_TAG }}
