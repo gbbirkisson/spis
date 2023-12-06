@@ -17,7 +17,6 @@ mod filters;
 mod motions;
 mod preview;
 mod signals;
-mod svg;
 
 fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
     let signals = signals::get_signals(cx);
@@ -33,7 +32,7 @@ fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
             ({ if media.media.media_type == MediaType::Video {
                 view!( cx,
                     div(class="media-thumbnail-vid", on:click=preview_open) {
-                        (svg_PLAY!(cx, "gainsboro"))
+                        i(class="fa-solid fa-play icon-white"){}
                     }
                 )
                 } else {
@@ -43,7 +42,7 @@ fn render_thumbnail<G: Html>(cx: Scope<'_>, media: MediaDataEntry) -> View<G> {
             ({ if media.media.favorite {
                 view!( cx,
                     div(class="media-thumbnail-fav", on:click=preview_open) {
-                        (svg_FAV_WITH_FILL!(cx, "pink"))
+                        i(class="fa-solid fa-heart icon-pink"){}
                     }
                 )
                 } else {
@@ -112,34 +111,34 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
                                 if media_prev {
                                     view! {cx,
                                         div(class="media-action-button", on:click=preview_previous) {
-                                            (svg_LEFT!(cx, "white"))
+                                            i(class="fa-solid fa-chevron-left icon-white"){}
                                         }
                                     }
                                 } else {
                                     view! {cx,
                                         div(class="media-action-button") {
-                                            (svg_EMPTY!(cx))
+                                            i(){}
                                         }
                                     }
                                 }
                             })
                             div(class="media-action-button", on:click=preview_archive) {
-                                (svg_TRASHCAN!(cx, archive_color))
+                                i(class=format!("fa-regular fa-trash-can {}", archive_color)){}
                             }
                             div(class="media-action-button", on:click=preview_close) {
-                                (svg_X!(cx, "white"))
+                                i(class="fa-solid fa-xmark icon-white"){}
                             }
                             ({
                                 if media_favorite {
                                     view! {cx,
                                         div(class="media-action-button", on:click=preview_favorite) {
-                                            (svg_FAV_WITH_FILL!(cx, "pink"))
+                                            i(class="fa-solid fa-heart icon-pink"){}
                                         }
                                     }
                                 } else {
                                     view! {cx,
                                         div(class="media-action-button", on:click=preview_favorite) {
-                                            (svg_FAV_NO_FILL!(cx, "white"))
+                                            i(class="fa-regular fa-heart icon-white"){}
                                         }
                                     }
                                 }
@@ -148,13 +147,13 @@ async fn MediaPreview<G: Html>(cx: Scope<'_>) -> View<G> {
                                 if media_next {
                                     view! {cx,
                                         div(class="media-action-button", on:click=preview_next) {
-                                            (svg_RIGHT!(cx, "white"))
+                                            i(class="fa-solid fa-chevron-right icon-white"){}
                                         }
                                     }
                                 } else {
                                     view! {cx,
                                         div(class="media-action-button") {
-                                            (svg_EMPTY!(cx))
+                                            i(){}
                                         }
                                     }
                                 }
@@ -255,7 +254,7 @@ fn render_filter<G: Html>(cx: Scope<'_>, filter_element: FilterElement) -> View<
         FilterElement::NoOp => {
             view! { cx,
                 li(class="bar-filter-item") {
-                    (svg_EMPTY!(cx))
+                    i(){}
                 }
             }
         }
@@ -263,7 +262,7 @@ fn render_filter<G: Html>(cx: Scope<'_>, filter_element: FilterElement) -> View<
             view! { cx,
                 li(class="bar-filter-item") {
                     a(class=filter_element_class, href="#", on:click=toggle_filter) {
-                        (svg_FAV_WITH_FILL!(cx, "white"))
+                        i(class="fa-solid fa-heart icon-white"){}
                     }
                 }
             }
@@ -307,7 +306,7 @@ async fn Bar<G: Html>(cx: Scope<'_>) -> View<G> {
                         )
                         li(class="bar-filter-item") {
                             a(href="#", on:click=clear_all_filters) {
-                                (svg_X!(cx, "white"))
+                                i(class="fa-solid fa-xmark"){}
                             }
                         }
                     }
@@ -318,7 +317,7 @@ async fn Bar<G: Html>(cx: Scope<'_>) -> View<G> {
                             view=|cx, filter| render_filter(cx, filter),
                         )
                         li(class="bar-filter-item") {
-                            (svg_EMPTY!(cx))
+                            i(){}
                         }
                     }
                 })

@@ -27,13 +27,14 @@ struct ServerError {
 impl ResponseError for ServerError {}
 
 #[cfg(feature = "release")]
-fn find_gui_file(name: &str) -> &include_dir::File {
+fn find_gui_files(name: &str) -> Vec<&include_dir::File> {
     GUI.find(name)
         .unwrap_or_else(|_| panic!("Could not find {}", name))
-        .next()
-        .unwrap_or_else(|| panic!("Iterator has not file: {}", name))
-        .as_file()
-        .unwrap_or_else(|| panic!("Could not convert to file: {}", name))
+        .map(|f| {
+            f.as_file()
+                .unwrap_or_else(|| panic!("Could not convert to file: {}", name))
+        })
+        .collect()
 }
 
 #[cfg(feature = "release")]
@@ -121,40 +122,29 @@ pub fn run(listener: Listener, pool: Pool<Sqlite>, converter: MediaConverter) ->
         let mut app = App::new().wrap(TracingLogger::default());
         #[cfg(feature = "release")]
         {
-            let html_file = find_gui_file("*html");
-            app = app.route(
-                "/",
-                web::get().to(move || async move { create_gui_route("text/html", html_file) }),
-            );
+            let files = vec![
+                ("*.html", "text/html"),
+                ("*.json", "application/json"),
+                ("*.js", "application/javascript"),
+                ("*.wasm", "application/wasm"),
+                ("*.png", "image/png"),
+                ("*.css", "text/css"),
+                ("*.ttf", "font/ttf"),
+                ("*.woff2", "font/woff2"),
+            ];
 
-            let js_file = find_gui_file("*js");
-            let js_path_name = format!("/{}", js_file.path().to_str().unwrap());
-            app = app.route(
-                &js_path_name,
-                web::get()
-                    .to(move || async move { create_gui_route("application/javascript", js_file) }),
-            );
-
-            let wasm_file = find_gui_file("*wasm");
-            let wasm_path_name = format!("/{}", wasm_file.path().to_str().unwrap());
-            app = app.route(
-                &wasm_path_name,
-                web::get()
-                    .to(move || async move { create_gui_route("application/wasm", wasm_file) }),
-            );
-
-            let icon_file = find_gui_file("*png");
-            app = app.route(
-                "/favicon.png",
-                web::get().to(move || async move { create_gui_route("image/png", icon_file) }),
-            );
-
-            let manifest_file = find_gui_file("*json");
-            app = app.route(
-                "/manifest.json",
-                web::get()
-                    .to(move || async move { create_gui_route("application/json", manifest_file) }),
-            );
+            for (file_regex, content_type) in files {
+                for file in find_gui_files(file_regex) {
+                    let mut file_path = format!("/{}", file.path().to_str().unwrap());
+                    if file_path == "/index.html" {
+                        file_path = "/".to_string();
+                    }
+                    app = app.route(
+                        &file_path,
+                        web::get().to(move || async move { create_gui_route(content_type, file) }),
+                    );
+                }
+            }
         };
         app.route("/api", web::get().to(media_list))
             .route("/api/{uuid}", web::post().to(media_edit))
