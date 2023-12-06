@@ -8,8 +8,6 @@ RELEASE_AARCH64_GNU:=release/spis-server-aarch64-unknown-linux-gnu
 ${RELEASE_GUI}:
 	$(info $(M) Build GUI release)
 	$(Q) cd spis-gui && trunk build --release
-	$(Q) cp -f spis-gui/manifest.json spis-gui/dist/manifest.json
-	$(Q) cp -f assets/logo.png spis-gui/dist/logo.png
 	$(Q) rm -r target/release
 
 ${RELEASE_X86_60_GNU}: ${RELEASE_GUI} ${DEV_DB_FILE}

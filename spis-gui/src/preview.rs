@@ -65,12 +65,18 @@ pub fn open(signals: &RcSignal<AppSignals>, media: MediaDataEntry) {
             media_list_fetch_more(&closure_signals).await;
         });
     }
-    signals.get().icon_archive_color.set("white".to_string());
+    signals
+        .get()
+        .icon_archive_color
+        .set("icon-white".to_string());
     signals.get().media_preview.set(Some(media));
 }
 
 pub fn close(signals: &RcSignal<AppSignals>) {
-    signals.get().icon_archive_color.set("white".to_string());
+    signals
+        .get()
+        .icon_archive_color
+        .set("icon-white".to_string());
     signals.get().media_preview.set(None);
 }
 
@@ -92,16 +98,16 @@ pub fn archive(signals: &RcSignal<AppSignals>) {
         .uuid
         .clone();
 
-    let confirm_color = "red";
+    let confirm_color = "icon-red";
     if !archive_color.get().as_ref().contains(confirm_color) {
-        archive_color.set("red".to_string());
+        archive_color.set("icon-red".to_string());
     } else {
         let index = media_preview.get().as_ref().as_ref().unwrap().index;
         let old_media = media_list.get().as_ref().clone();
         let old_media = old_media.safe_remove(index);
         let next = old_media.get(index).cloned();
         media_list.set(old_media);
-        archive_color.set("white".to_string());
+        archive_color.set("icon-white".to_string());
         media_preview.set(next);
         spawn_local(async move {
             api::media_edit(
@@ -135,7 +141,7 @@ pub fn favorite(signals: &RcSignal<AppSignals>) {
         .uuid
         .clone();
 
-    icon_archive_color.set("white".to_string());
+    icon_archive_color.set("icon-white".to_string());
 
     let mut new_val = signals
         .get()

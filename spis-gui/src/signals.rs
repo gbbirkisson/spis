@@ -25,7 +25,7 @@ pub fn initialize(cx: Scope<'_>) -> RcSignal<AppSignals> {
     let media_data_state = create_rc_signal(MediaDataState::new());
     provide_context(cx, media_data_state.clone());
 
-    let icon_archive_color: RcSignal<IconColor> = create_rc_signal("white".to_string());
+    let icon_archive_color: RcSignal<IconColor> = create_rc_signal("icon-white".to_string());
     provide_context(cx, icon_archive_color.clone());
 
     let active_filter: RcSignal<ActiveFilter> = create_rc_signal(ActiveFilter::default());
