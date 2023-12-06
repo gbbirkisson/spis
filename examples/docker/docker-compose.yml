@@ -1,0 +1,13 @@
+---
+services:
+  spis:
+    image: ghcr.io/gbbirkisson/spis
+    ports:
+      - "8080:8080"
+    volumes:
+      # This assumes you want to keep the SPIS data in a
+      # docker volume and not in some directory
+      - data:/var/lib/spis/data
+      - ./path/to/your/media:/var/lib/spis/media
+volumes:
+  data:

@@ -1,0 +1,18 @@
+[Unit]
+Requires=multi-user.target
+After=multi-user.target
+
+[Service]
+Environment="SPIS_MEDIA_DIR=/storage/spis/media"
+Environment="SPIS_DATA_DIR=/storage/spis/data"
+Environment="SPIS_PROCESSING_RUN_ON_START=false"
+Environment="SPIS_PROCESSING_SCHEDULE=0 0 1 * * *"
+Environment="SPIS_SERVER_SOCKET=/storage/spis/data/spis.sock"
+Environment="RUST_LOG=error,spis_server=info"
+User=www-data
+ExecStart=/usr/local/bin/spis
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
