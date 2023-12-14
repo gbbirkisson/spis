@@ -58,7 +58,7 @@ jobs:
         uses: ./.github/actions/toolchain
 
       - name: Get GUI artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: gui-artifacts
           path: spis-gui/dist
@@ -87,19 +87,19 @@ jobs:
           mkdir release
 
       - name: Get x86_64 server artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: spis-server-x86_64-unknown-linux-gnu
           path: release
 
       - name: Get armv7 server artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: spis-server-armv7-unknown-linux-gnueabihf
           path: release
 
       - name: Get aarch64 server artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: spis-server-aarch64-unknown-linux-gnu
           path: release
