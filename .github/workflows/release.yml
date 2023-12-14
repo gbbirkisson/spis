@@ -31,7 +31,7 @@ jobs:
         run: make release-gui
 
       - name: Store GUI artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: gui-artifacts
           path: spis-gui/dist
@@ -68,7 +68,7 @@ jobs:
           make release/${{ matrix.target }}
 
       - name: Store server artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}
           path: release/${{ matrix.target }}
