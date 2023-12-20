@@ -1,6 +1,7 @@
 [advisories]
 ignore = [
-  "RUSTSEC-2023-0061", # libwebp: OOB write in BuildHuffmanTable
+  "RUSTSEC-2023-0074", # zerocopy: Some Ref methods are unsound with some type parameters
   "RUSTSEC-2023-0071", # Marvin Attack: potential key recovery through timing sidechannels
+  "RUSTSEC-2023-0061", # libwebp: OOB write in BuildHuffmanTable
   "RUSTSEC-2020-0071", # Potential segfault in the time crate
 ]
