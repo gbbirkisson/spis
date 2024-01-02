@@ -85,7 +85,7 @@ fn exif_get_str(exif: &exif::Exif, tag: Tag) -> Result<&str> {
     match exif.get_field(tag, In::PRIMARY) {
         Some(field) => match &field.value {
             Value::Ascii(bytes) => {
-                let bytes = bytes.get(0).ok_or(eyre!("Something is wrong"))?;
+                let bytes = bytes.first().ok_or(eyre!("Something is wrong"))?;
                 Ok(std::str::from_utf8(bytes)?)
             }
             _ => Err(eyre!("Not Ascii value")),
