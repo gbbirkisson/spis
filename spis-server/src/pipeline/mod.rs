@@ -341,15 +341,17 @@ pub fn setup_cron(job_sender: Sender<()>, schedule: String) -> Result<()> {
     tokio::spawn(async move {
         tracing::info!("Added processing schedule: {}", schedule);
         let (mut scheduler, sched_service) = Scheduler::<Local>::launch(tokio::time::sleep);
-        scheduler.insert(job, move |_| {
-            tracing::info!("Triggering cron job: {}", schedule);
-            let job_sender = job_sender.clone();
-            tokio::spawn(async move {
-                if let Err(error) = job_sender.send(JOB_TRIGGER).await.wrap_err("send failed") {
-                    tracing::error!("Failed triggering cron job: {:?}", error);
-                }
-            });
-        });
+        scheduler
+            .insert(job, move |_| {
+                tracing::info!("Triggering cron job: {}", schedule);
+                let job_sender = job_sender.clone();
+                tokio::spawn(async move {
+                    if let Err(error) = job_sender.send(JOB_TRIGGER).await.wrap_err("send failed") {
+                        tracing::error!("Failed triggering cron job: {:?}", error);
+                    }
+                });
+            })
+            .await;
         sched_service.await;
     });
 
