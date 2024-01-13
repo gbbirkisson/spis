@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.6.0](https://github.com/gbbirkisson/spis/compare/spis-v0.5.7...spis-v0.6.0) (2024-01-13)
+
+
+### Bug Fixes
+
+* **deps:** update actions/download-artifact action to v4 ([#165](https://github.com/gbbirkisson/spis/issues/165)) ([f561cb0](https://github.com/gbbirkisson/spis/commit/f561cb07568e71647126a2b4ace33cae5409fd9e))
+* **deps:** update actions/stale action to v9 ([#163](https://github.com/gbbirkisson/spis/issues/163)) ([ba739a0](https://github.com/gbbirkisson/spis/commit/ba739a04d72f75e10cd9557b10fba301e3b4d9d4))
+* **deps:** update actions/upload-artifact action to v4 ([#164](https://github.com/gbbirkisson/spis/issues/164)) ([9424bd0](https://github.com/gbbirkisson/spis/commit/9424bd028e880bdec41af6828ab97323c0e1c1a2))
+* **deps:** update dependency rust to v1.74.1 ([#166](https://github.com/gbbirkisson/spis/issues/166)) ([4ac7933](https://github.com/gbbirkisson/spis/commit/4ac7933ba595b2de69209c94472eead1018c721d))
+* **deps:** update dependency rust to v1.75.0 ([#167](https://github.com/gbbirkisson/spis/issues/167)) ([4cbab5d](https://github.com/gbbirkisson/spis/commit/4cbab5dc5a749fc9da288d9bf635c225ab027445))
+* **deps:** update rust crate async-cron-scheduler to v2 ([#168](https://github.com/gbbirkisson/spis/issues/168)) ([f7cb8c8](https://github.com/gbbirkisson/spis/commit/f7cb8c825438f63e061d66ade227d2ace152fee2))
+* **deps:** update rust crate image to 0.24.8 ([#171](https://github.com/gbbirkisson/spis/issues/171)) ([9c8f1b2](https://github.com/gbbirkisson/spis/commit/9c8f1b23074dad80f23fae611df806390eef665f))
+* Update renovate configuration ([6975373](https://github.com/gbbirkisson/spis/commit/6975373ac5ba408408890b623b92e683d0a4996a))
+* Use font awesome instead of svg ([#161](https://github.com/gbbirkisson/spis/issues/161)) ([644e590](https://github.com/gbbirkisson/spis/commit/644e590bb4b7e014714ee4a0971a2568472aa3d0))
+
+
+### Miscellaneous Chores
+
+* release 0.6.0 ([6f5f42f](https://github.com/gbbirkisson/spis/commit/6f5f42fbe3226911d87e7903b8745ce80cb11ddb))
+
 ## [0.5.7](https://github.com/gbbirkisson/spis/compare/spis-v0.5.6...spis-v0.5.7) (2023-12-06)
 
 
