@@ -1,6 +1,6 @@
 {
-  ".": "0.5.7",
-  "spis-gui": "0.5.7",
-  "spis-model": "0.5.7",
-  "spis-server": "0.5.7"
+  ".": "0.6.0",
+  "spis-gui": "0.6.0",
+  "spis-model": "0.6.0",
+  "spis-server": "0.6.0"
 }
