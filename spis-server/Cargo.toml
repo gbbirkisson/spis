@@ -50,7 +50,7 @@ chrono = "0.4"
 notify = "6.1.1"
 
 # Image processing
-image = { version = "0.24.7", features = ["jpeg", "webp-encoder"] }
+image = { version = "0.24.8", features = ["jpeg", "webp-encoder"] }
 kamadak-exif = "0.5"
 
 # Video processing
