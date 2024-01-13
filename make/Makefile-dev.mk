@@ -28,18 +28,18 @@ _dev-run-nginx-nowatch:
 .PHONY: dev-nginx
 dev-nginx: ## Run nginx
 	$(info $(M) Running nginx dev)
-	$(Q) watchexec -r -w dev/nginx.conf -- make _dev-run-nginx-nowatch
+	$(Q) watchexec --stop-timeout=0 -r -w dev/nginx.conf -- make _dev-run-nginx-nowatch
 
 .PHONY: dev-server
 dev-server: ${DEV_MEDIA_DIR} ${DEV_DB_FILE} ## Run server
 	$(info $(M) Running server dev)
-	$(Q) watchexec -r -e rs,toml -w spis-model -w spis-server -- cargo run -p spis-server
+	$(Q) watchexec --stop-timeout=0 -r -e rs,toml -w spis-model -w spis-server -- cargo run -p spis-server
 
 TEST_FILE?=somefile.mp4
 .PHONY: dev-processing
 dev-processing: ${DEV_MEDIA_DIR} ${DEV_DB_FILE} ## Run processing of file
 	$(info $(M) Running processing dev)
-	$(Q) watchexec -r -e rs,toml -w spis-server -- cargo run -p spis-server -- \
+	$(Q) watchexec --stop-timeout=0 -r -e rs,toml -w spis-server -- cargo run -p spis-server -- \
 		-t "dev/api/media/${TEST_FILE}" 
 
 .PHONY: dev-gui
@@ -51,7 +51,7 @@ dev-gui: ## Run gui
 dev-check-server: ${DEV_DB_FILE} ## Run check on server
 	$(info $(M) Running server checks dev)
 	# $(Q) watchexec -r -e rs,toml -w spis-model -w spis-server -- cargo check -p spis-server
-	$(Q) watchexec -r -e rs,toml -w spis-model -w spis-server -- cargo clippy -p spis-server -- -W clippy::pedantic -W clippy::nursery -W clippy::unwrap_used
+	$(Q) watchexec --stop-timeout=0 -r -e rs,toml -w spis-model -w spis-server -- cargo clippy -p spis-server -- -W clippy::pedantic -W clippy::nursery -W clippy::unwrap_used
 
 TEST_PROJ?=spis-server
 TEST_NAME?=
@@ -59,4 +59,4 @@ TEST_NAME?=
 dev-test: ## Run specific test
 	$(info $(M) Running test dev)
 	$(Q) test ${TEST_NAME} || (echo "Set env var TEST_NAME to specify test name!"; exit 1)
-	$(Q) watchexec -r -e rs,toml -w ${TEST_PROJ} -- cargo test -q -p ${TEST_PROJ} ${TEST_NAME} -- --nocapture
+	$(Q) watchexec --stop-timeout=0 -r -e rs,toml -w ${TEST_PROJ} -- cargo test -q -p ${TEST_PROJ} ${TEST_NAME} -- --nocapture
