@@ -1,5 +1,6 @@
 [advisories]
 ignore = [
+  "RUSTSEC-2024-0003", # Resource exhaustion vulnerability in h2 may lead to Denial of Service
   "RUSTSEC-2023-0074", # zerocopy: Some Ref methods are unsound with some type parameters
   "RUSTSEC-2023-0071", # Marvin Attack: potential key recovery through timing sidechannels
   "RUSTSEC-2023-0061", # libwebp: OOB write in BuildHuffmanTable
