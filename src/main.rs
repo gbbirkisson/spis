@@ -115,9 +115,9 @@ async fn main() -> Result<()> {
             Listener::Socket(socket.clone())
         }
     };
-    // let converter = config.media_converter();
-    //
-    let server = server::run(listener, pool).expect("Failed to create server");
+
+    let pathfinder = config.pathfinder();
+    let server = server::run(listener, pool, pathfinder).expect("Failed to create server");
     server.await?;
 
     Ok(())

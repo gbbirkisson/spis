@@ -6,7 +6,6 @@ use color_eyre::{
 use config::{Config, Environment};
 use media::util::THUMBNAIL_FORMAT;
 use serde::Deserialize;
-// use server::convert::MediaConverter;
 use std::path::{Path, PathBuf};
 
 pub mod db;
@@ -18,6 +17,37 @@ pub mod server;
 pub enum SpisServerListener {
     Address(String),
     Socket(String),
+}
+
+pub struct PathFinder {
+    media_dir: String,
+    media_path: String,
+    thumbnail_path: String,
+    thumbnail_ext: String,
+}
+
+impl PathFinder {
+    pub fn new(
+        media_dir: &str,
+        media_path: &str,
+        thumbnail_path: &str,
+        thumbnail_ext: &str,
+    ) -> Self {
+        Self {
+            media_dir: media_dir.to_string(),
+            media_path: media_path.to_string(),
+            thumbnail_path: thumbnail_path.to_string(),
+            thumbnail_ext: thumbnail_ext.to_string(),
+        }
+    }
+
+    pub fn thumbnail(&self, id: &uuid::Uuid) -> String {
+        format!("{}/{}.{}", self.thumbnail_path, id, self.thumbnail_ext)
+    }
+
+    pub fn media(&self, path: &str) -> String {
+        path.replace(&self.media_dir, &self.media_path)
+    }
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -79,15 +109,15 @@ impl SpisCfg {
         }
     }
 
-    // #[allow(clippy::must_use_candidate)]
-    // pub fn media_converter(&self) -> MediaConverter {
-    //     MediaConverter::new(
-    //         &self.media_dir,
-    //         &self.api_media_path,
-    //         &self.api_thumbnail_path,
-    //         THUMBNAIL_FORMAT,
-    //     )
-    // }
+    #[allow(clippy::must_use_candidate)]
+    pub fn pathfinder(&self) -> PathFinder {
+        PathFinder::new(
+            &self.media_dir,
+            &self.api_media_path,
+            &self.api_thumbnail_path,
+            THUMBNAIL_FORMAT,
+        )
+    }
 
     #[allow(clippy::must_use_candidate)]
     pub fn media_dir(&self) -> PathBuf {

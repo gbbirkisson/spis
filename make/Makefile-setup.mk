@@ -2,7 +2,6 @@
 setup-toolchain: ## Setup rust toolchain
 	$(info $(M) Setup rust toolchain)
 	$(Q) rustup show
-	$(Q) rustup target add wasm32-unknown-unknown
 	$(Q) cat rust-toolchain.toml | grep '# bin' | xargs -n 4 sh -c 'cargo install --version $$3 $$2'
 
 .PHONY: setup

@@ -1,10 +1,9 @@
-use actix_web::{dev::Server, web, App, HttpServer, Responder, ResponseError};
-use color_eyre::{
-    eyre::{eyre, Context},
-    Report, Result,
-};
+use actix_web::{dev::Server, web, App, HttpServer};
+use color_eyre::{eyre::eyre, Result};
 use sqlx::{Pool, Sqlite};
 use std::net::TcpListener;
+
+use crate::PathFinder;
 
 mod assets;
 #[cfg(feature = "dev")]
@@ -16,8 +15,9 @@ pub enum Listener {
     Socket(String),
 }
 
-pub fn run(listener: Listener, pool: Pool<Sqlite>) -> Result<Server> {
+pub fn run(listener: Listener, pool: Pool<Sqlite>, pathfinder: PathFinder) -> Result<Server> {
     let pool = web::Data::new(pool);
+    let pathfinder = web::Data::new(pathfinder);
 
     let server = HttpServer::new(move || {
         let mut app = App::new()
@@ -30,7 +30,7 @@ pub fn run(listener: Listener, pool: Pool<Sqlite>) -> Result<Server> {
             app = app.route("/dev/ws", dev::create_socket());
         }
 
-        app
+        app.app_data(pool.clone()).app_data(pathfinder.clone())
     });
 
     let server = match listener {

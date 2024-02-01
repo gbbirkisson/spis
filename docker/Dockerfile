@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y \
 # Set spis variables
 ENV \
     NGINX_PORT=8080 \
-    RUST_LOG=error,spis_server=info \
+    RUST_LOG=error,spis=info \
     SPIS_MEDIA_DIR=/var/lib/spis/media \
     SPIS_DATA_DIR=/var/lib/spis/data \
     SPIS_API_MEDIA_PATH=/assets/media \
