@@ -1,0 +1,22 @@
+<div class="bar-inner">
+  <ul class="bar-filter-list-main">
+    {% for button in bar_buttons %}
+      {% include "bar/item.html" %}
+    {% endfor %}
+  </ul>
+  {% match state.filter_favorite %}
+    {% when Some with (filter_favorite) %}
+      <input name="filter_favorite" value="{{ filter_favorite }}" type="hidden"/>
+    {% when None %}
+  {% endmatch %}
+  {% match state.filter_year %}
+    {% when Some with (filter_year) %}
+      <input name="filter_year" value="{{ filter_year }}" type="hidden"/>
+    {% when None %}
+  {% endmatch %}
+  {% match state.filter_month %}
+    {% when Some with (filter_month) %}
+      <input name="filter_month" value="{{ filter_month }}" type="hidden"/>
+    {% when None %}
+  {% endmatch %}
+</div>

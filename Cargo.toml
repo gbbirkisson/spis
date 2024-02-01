@@ -1,10 +1,72 @@
-[workspace]
-resolver = "2"
-members = ["spis-model", "spis-gui", "spis-server"]
-
-[workspace.package]
+[package]
+name = "spis"
+version = "0.6.0"
 edition = "2021"
 
 # https://docs.rs/color-eyre/latest/color_eyre/#improving-perf-on-debug-builds
 [profile.dev.package.backtrace]
 opt-level = 3
+
+[features]
+default = ["dev"]
+dev = ["dep:actix", "dep:actix-web-actors"]
+release = []
+
+[dependencies]
+# Basics
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "std"] }
+dotenv = "0.15"
+color-eyre = "0.6"
+config = "0.13"
+clap = { version = "4", features = ["derive"] }
+derive_more = "0.99.17"
+
+# Runtime
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync"] }
+async-cron-scheduler = "2"
+sqlx = { version = "0.7", features = [
+  "runtime-tokio-rustls",
+  "sqlite",
+  "macros",
+  "chrono",
+  "migrate",
+  "uuid",
+] }
+
+# Web
+actix-web = "4"
+tracing-actix-web = "0.7.9"
+askama = { version = "0.12.1", features = ["with-actix-web"] }
+askama_actix = "0.14.0"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_urlencoded = "0.7.1"
+
+# Processing
+walkdir = "2"
+rayon = "1"
+uuid = { version = "1", features = ["serde", "v4"] }
+chrono = { version = "0.4.32", features = ["serde"] }
+notify = "6.1.1"
+
+# Image processing
+image = { version = "0.24.8", features = ["jpeg", "webp-encoder"] }
+kamadak-exif = "0.5"
+
+# Video processing
+which = "6.0"
+subprocess = "0.2"
+md-5 = "0.10"
+
+# Bake GUI into bin
+include_dir = { version = "0.7.3", features = ["glob"] }
+
+# Dev websocket
+actix = { version = "0.13.1", optional = true }
+actix-web-actors = { version = "4.2.0", optional = true }
+
+[dev-dependencies]
+reqwest = { version = "0.11", features = ["json"] }
+tempfile = "3"

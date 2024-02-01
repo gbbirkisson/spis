@@ -1,0 +1,27 @@
+<li class="bar-filter-item">
+  {% match button %}
+    {% when BarButton::Favorite with (active) %}
+      <a href="#"
+        hx-get="/hx/bar/favorite"
+        hx-target="#hx-main"
+        class="bar-filter-link{% if active %}-selected{% endif %}"
+      ><i class="fa-solid fa-heart icon-white"></i></a>
+    {% when BarButton::Year with (active, year) %}
+      <a href="#"
+        hx-get="/hx/bar/year/{{ year }}"
+        hx-target="#hx-main"
+        class="bar-filter-link{% if active %}-selected{% endif %}">{{ year }}</a>
+    {% when BarButton::Month with (active, month_nr, month_text) %}
+      <a href="#"
+        hx-get="/hx/bar/month/{{ month_nr }}"
+        hx-target="#hx-main"
+        class="bar-filter-link{% if active %}-selected{% endif %}">{{ month_text }}</a>
+    {% when BarButton::Clear %}
+      <a href="#"
+        hx-get="/hx/bar/clear"
+        hx-target="#hx-main"
+        class="bar-filter-link"><i class="fa-solid fa-xmark"></i></a>
+    {% when BarButton::Empty %}
+      <i></i>
+  {% endmatch %}
+</li>

@@ -1,0 +1,37 @@
+{% let count = media.len() %}
+{% let cursor = media|cursor %}
+{% if count > 0 %}
+  {% for media in media %}
+    <li id="{{ media.uuid }}">
+      <a href=""
+        hx-get="/hx/preview/{{ media.uuid }}"
+        hx-trigger="click"
+        hx-target="#hx-media-preview"
+        hx-swap="outerHTML">
+        <img src="{{ media.thumbnail }}" class="media-thumbnail" loading="lazy">
+
+        {% if media.favorite %}
+        <div class="media-thumbnail-fav"><i class="fa-solid fa-heart icon-pink"></i></div>
+        {% endif %}
+
+        {% if media.video %}
+        <div class="media-thumbnail-vid"><i class="fa-solid fa-play icon-white"></i></div>
+        {% endif %}
+
+        {% if loop.index0 == count / 3 && cursor != "" %}
+            <div
+              hx-get="/hx/gallery/more?{{ cursor }}"
+              hx-trigger="revealed"
+              hx-target="#hx-media-thumbnail-loader-target"
+              hx-swap="outerHTML"
+              class="media-thumbnail-loader-trigger"
+            />
+        {% endif %}
+      </a>
+    </li>
+  {% endfor %}
+  <li
+    id="hx-media-thumbnail-loader-target"
+    class="media-thumbnail-loader-target"
+  />
+{% endif %}

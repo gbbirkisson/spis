@@ -1,0 +1,48 @@
+use actix_web::{dev::Server, web, App, HttpServer, Responder, ResponseError};
+use color_eyre::{
+    eyre::{eyre, Context},
+    Report, Result,
+};
+use sqlx::{Pool, Sqlite};
+use std::net::TcpListener;
+
+mod assets;
+#[cfg(feature = "dev")]
+mod dev;
+mod hx;
+
+pub enum Listener {
+    Tcp(TcpListener),
+    Socket(String),
+}
+
+pub fn run(listener: Listener, pool: Pool<Sqlite>) -> Result<Server> {
+    let pool = web::Data::new(pool);
+
+    let server = HttpServer::new(move || {
+        let mut app = App::new()
+            .service(web::redirect("/", "/hx"))
+            .service(hx::create_service("/hx"))
+            .service(assets::create_service("/assets"));
+
+        #[cfg(feature = "dev")]
+        {
+            app = app.route("/dev/ws", dev::create_socket());
+        }
+
+        app
+    });
+
+    let server = match listener {
+        Listener::Tcp(listener) => server.listen(listener)?,
+        Listener::Socket(file) => {
+            if cfg!(not(unix)) {
+                return Err(eyre!("You can only use unix sockets on unix!"));
+            }
+            server.bind_uds(file)?
+        }
+    }
+    .run();
+
+    Ok(server)
+}

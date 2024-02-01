@@ -1,0 +1,45 @@
+{% match media %}
+  {% when Some with (media) %}
+    <div id="hx-media-preview" class="media-preview">
+      <div class="media-preview-content" _="on click hide #hx-media-preview">
+        {% if media.video %}
+        <video class="img-preview" autoplay="" controls="">
+          <source type="video/mp4" src="{{ media.url }}">
+        </video>
+        {% else %}
+        <img class="img-preview" src="{{ media.url }}">
+        {% endif %}
+      </div>
+      <div class="media-action">
+        <a href="#">
+          <div class="media-action-button"><i class="fa-solid fa-chevron-left icon-white"></i></div>
+        </a>
+        <a href="#"
+          hx-delete="/hx/preview/{{ media.uuid }}"
+          hx-trigger="click"
+          hx-target="#hx-media-preview"
+          hx-swap="outerHTML">
+          <div class="media-action-button"><i class="fa-regular fa-trash-can icon-white"></i></div>
+        </a>
+        <a href="#" _="on click hide #hx-media-preview">
+          <div class="media-action-button"><i class="fa-solid fa-xmark icon-white"></i></div>
+        </a>
+        <a href="#"
+          hx-put="/hx/preview/{{ media.uuid }}/favorite"
+          hx-trigger="click"
+          hx-target="#hx-media-preview"
+          hx-swap="outerHTML">
+        {% if media.favorite %}
+          <div class="media-action-button"><i class="fa-solid fa-heart icon-pink"></i></div>
+        {% else %}
+          <div class="media-action-button"><i class="fa-regular fa-heart icon-white"></i></div>
+        {% endif %}
+        </a>
+        <a href="#">
+          <div class="media-action-button"><i class="fa-solid fa-chevron-right icon-white"></i></div>
+        </a>
+      </div>
+    </div>
+  {% when None %}
+    <div id="hx-media-preview"></div>
+{% endmatch %}
