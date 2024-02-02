@@ -20,7 +20,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "std"] }
 dotenv = "0.15"
 color-eyre = "0.6"
-config = "0.13"
+config = "0.14"
 clap = { version = "4", features = ["derive"] }
 derive_more = "0.99.17"
 
