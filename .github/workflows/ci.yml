@@ -38,7 +38,7 @@ jobs:
         run: make ${{ matrix.target }}
 
       - name: Upload test coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         if: matrix.target == 'test'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
