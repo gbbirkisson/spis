@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.6.1](https://github.com/gbbirkisson/spis/compare/spis-v0.6.0...spis-v0.6.1) (2024-02-06)
+
+
+### Bug Fixes
+
+* **deps:** update codecov/codecov-action action to v4 ([#177](https://github.com/gbbirkisson/spis/issues/177)) ([f649d25](https://github.com/gbbirkisson/spis/commit/f649d2537dafe279d754a9817f662d15e00b83b0))
+* **deps:** update rust crate which to v6 ([#173](https://github.com/gbbirkisson/spis/issues/173)) ([d3e1523](https://github.com/gbbirkisson/spis/commit/d3e1523240a1e35c5e70352ff3e5f666573c596d))
+* Update audit exceptions ([7f91064](https://github.com/gbbirkisson/spis/commit/7f91064385b0cdce9e4fab99cc9b8a02b95e1583))
+
 ## [0.6.0](https://github.com/gbbirkisson/spis/compare/spis-v0.5.7...spis-v0.6.0) (2024-01-13)
 
 
