@@ -206,7 +206,7 @@ This project uses [release-please](https://github.com/googleapis/release-please)
 ### Setup dependencies
 
 ```console
-$ make setup
+$ mise run setup
 ```
 
 ### Install pre-commit hooks
@@ -217,28 +217,14 @@ $ pre-commit install --hook-type commit-msg
 
 ### Get some test media
 
-I leave it up do you to put some images/videos in the `./dev/api/media` folder.
+I leave it up do you to put some images/videos in the `./data/media` folder.
 
 ### Running
 
 Run stack with:
 
 ```console
-$ make dev
+$ mise run dev:run
 ```
 
-Or alternatively open 3 terminals and run:
-
-```console
-$ make dev-nginx
-```
-
-```console
-$ make dev-server
-```
-
-```console
-$ make dev-gui
-```
-
-And then open http://localhost:7000 in your browser
+And then open http://localhost:8080 in your browser

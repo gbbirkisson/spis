@@ -3,8 +3,3 @@ channel = "1.75.0"
 components = ["rustfmt", "rust-src", "rust-std", "clippy"]
 targets = ["x86_64-unknown-linux-gnu"]
 profile = "minimal"
-
-# bin cargo-audit 0.17.6
-# bin cargo-tarpaulin 0.26.1
-# bin cross 0.2.5
-# bin sqlx-cli 0.7.0

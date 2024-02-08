@@ -1,5 +1,14 @@
 # Ignore everything
 *
 
+# Except these
+!assets
+!data/spis.db
 !docker
-!release
+!migrations
+!src
+!templates
+
+!Cargo.lock
+!Cargo.toml
+!spis.db
