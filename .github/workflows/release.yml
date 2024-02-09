@@ -43,7 +43,8 @@ jobs:
           args: "--locked --release --no-default-features -f release"
 
       - name: List target
-        run: "ls -la target"
+        run: |
+          ls -la target
 
       # - name: Upload artifacts to release
       #   uses: AButler/upload-release-assets@v3.0
