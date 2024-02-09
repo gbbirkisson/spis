@@ -102,7 +102,7 @@ depends = ["lint", "test"]
 ##### RELEASE #####
 
 [tasks.release]
-run = "cargo build --release --no-default-features -F release"
+run = "cargo build --locked --release --no-default-features -f release"
 depends = ["setup:db"]
 
 [tasks."docker:build"]

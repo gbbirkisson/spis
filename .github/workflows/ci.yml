@@ -5,14 +5,20 @@ on:
   workflow_call:
   pull_request:
     paths:
-      - 'spis-gui/**'
-      - 'spis-model/**'
-      - 'spis-server/**'
+      - 'assets/**'
+      - 'docker/**'
+      - 'migrations/**'
+      - 'src/**'
+      - 'templates/**'
+      - 'tests/**'
+      - '.env'
+      - 'build.rs'
       - 'Cargo.lock'
       - 'Cargo.toml'
       - 'rust-toolchain.toml'
   push:
-    branches: main
+    branches:
+      - main
 
 jobs:
   ci:
@@ -22,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [fmt, lint, audit, test]
+        target: [lint:clippy, lint:fmt, test]
 
     steps:
       - name: Checkout
@@ -35,7 +41,7 @@ jobs:
         uses: ./.github/actions/toolchain
 
       - name: Run ${{ matrix.target }}
-        run: make ${{ matrix.target }}
+        run: mise run ${{ matrix.target }}
 
       - name: Upload test coverage
         uses: codecov/codecov-action@v4
