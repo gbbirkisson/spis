@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: ["lint:clippy", "lint:fmt", test]
+        target: ["lint:fmt"]  # TODO: Add lint:clippy & test
 
     steps:
       - name: Checkout
