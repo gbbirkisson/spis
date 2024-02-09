@@ -2,7 +2,7 @@
 name: Release
 
 on:
-  pull_request: # TODO: REMOVE
+  pull_request:  # TODO: REMOVE
   release:
     types: [published]
 
@@ -10,7 +10,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   # VERSION: ${{ github.ref_name }}
-  VERSION: v0.7.0 # TODO
+  VERSION: v0.7.0  # TODO
 
 jobs:
   ci:
@@ -83,7 +83,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile
-          # push: true # TODO
+          # push: true  # TODO
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest,
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
