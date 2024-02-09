@@ -62,6 +62,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Needed to setup DB
+      - name: Install rust toolchain
+        uses: ./.github/actions/toolchain
+
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
         with:

@@ -52,3 +52,8 @@ runs:
         for f in sqlx cargo-tarpaulin; do
           cp -f "/home/runner/.cargo/bin/$f" "${{ inputs.bin-cache }}"
         done
+
+    - name: "Setup DB"
+      shell: bash
+      run: |
+        mise run setup:db
