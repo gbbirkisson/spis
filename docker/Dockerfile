@@ -15,7 +15,7 @@ WORKDIR $PROJECT_DIR
 # Build SPIS
 RUN --mount=type=cache,target=$PROJECT_DIR/target \
     --mount=type=cache,target=$CARGO_HOME/registry \
-    cargo build --locked --release --no-default-features -f release && \
+    cargo build --locked --release --no-default-features -F release && \
     cp $PROJECT_DIR/target/release/spis $SPIS_BIN
 
 ########################
