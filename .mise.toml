@@ -1,13 +1,14 @@
 ##### SETUP / CLEANUP #####
 
+[tasks."setup:folders"]
+run = ["mkdir -p data/media", "mkdir -p data/thumbnails"]
+outputs = ["data/media", "data/thumbnails"]
+
 [tasks."setup:db"]
 run = ["sqlx database create", "sqlx migrate run --source migrations"]
 sources = ["migrations/*.sql"]
 outputs = ["data/spis.db"]
-
-[tasks."setup:folders"]
-run = ["mkdir -p data/media", "mkdir -p data/thumbnails"]
-outputs = ["data/media", "data/thumbnails"]
+depends = ["setup:folders"]
 
 [tasks."setup:toolchain"]
 run = "rustup show"
