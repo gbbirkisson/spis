@@ -203,6 +203,8 @@ This project uses [release-please](https://github.com/googleapis/release-please)
 
 ## Development
 
+I use [mise](https://github.com/jdx/mise) to manage local building and testing.
+
 ### Setup dependencies
 
 ```console
@@ -224,7 +226,7 @@ I leave it up do you to put some images/videos in the `./data/media` folder.
 Run stack with:
 
 ```console
-$ mise run dev:run
+$ mise run dev
 ```
 
 And then open http://localhost:8080 in your browser

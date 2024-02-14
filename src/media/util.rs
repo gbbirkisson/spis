@@ -27,7 +27,7 @@ pub(crate) fn get_uuid(path: &Path) -> Result<uuid::Uuid> {
     tracing::debug!("Calculating uuid for: {:?}", path);
 
     let mut file = File::open(path).wrap_err("Failed to open file")?;
-    let mut buffer = [0; BUFFER_SIZE];
+    let mut buffer = Vec::with_capacity(BUFFER_SIZE);
     let mut hasher = Md5::new();
 
     loop {

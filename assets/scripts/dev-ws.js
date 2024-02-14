@@ -23,7 +23,7 @@ function connect() {
     // periodically until we succeed.
     setTimeout(function() {
       connect();
-    }, 200)
+    }, 1000)
   }
 }
 

@@ -43,15 +43,15 @@ struct HxGallery<'a> {
     state: &'a State,
 }
 
-pub(crate) async fn render(state: State) -> actix_web::Result<impl Responder> {
-    let mut buttons = vec![BarButton::Favorite(state.filter_favorite.unwrap_or(false))];
+pub(super) async fn render(state: State) -> actix_web::Result<impl Responder> {
+    let mut buttons = vec![BarButton::Favorite(state.favorite.unwrap_or(false))];
     let current_year = 2024;
-    if state.filter_year.is_none() {
+    if state.year.is_none() {
         for i in (current_year - 14..=current_year).rev() {
             buttons.push(BarButton::Year(false, format!("{i}")));
         }
         buttons.push(BarButton::Empty);
-    } else if let Some(year) = state.filter_year {
+    } else if let Some(year) = state.year {
         if year == current_year {
             buttons.push(BarButton::Empty);
             buttons.push(BarButton::Empty);
@@ -78,9 +78,9 @@ pub(crate) async fn render(state: State) -> actix_web::Result<impl Responder> {
         .rev()
         {
             buttons.push(BarButton::Month(
-                Some(month_nr) == state.filter_month.as_ref(),
+                Some(month_nr) == state.month.as_ref(),
                 *month_nr,
-                month_text.to_string(),
+                (*month_text).to_string(),
             ));
         }
 

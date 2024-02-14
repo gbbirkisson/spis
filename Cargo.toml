@@ -7,10 +7,13 @@ edition = "2021"
 [profile.dev.package.backtrace]
 opt-level = 3
 
+# https://corrode.dev/blog/tips-for-faster-rust-compile-times/
+[profile.dev.build-override]
+opt-level = 3
+
 [features]
-default = ["dev"]
+default = []
 dev = ["dep:actix", "dep:actix-web-actors"]
-release = []
 
 [dependencies]
 # Basics

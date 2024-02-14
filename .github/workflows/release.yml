@@ -43,7 +43,7 @@ jobs:
         uses: houseabsolute/actions-rust-cross@v0
         with:
           target: ${{ matrix.target }}
-          args: "--locked --release --no-default-features -F release"
+          args: "--locked --release"
           cross-version: v0.2.5
 
       - name: Move to release dir

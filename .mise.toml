@@ -54,25 +54,25 @@ EOF
 sed -i 's/Upgrade ;/Upgrade $http_upgrade;/g' /tmp/nginx.conf
 
 cat /tmp/nginx.conf
-nginx -c /tmp/nginx.conf
+nginx -c /tmp/nginx.conf > /dev/null
 """
 
 [tasks."dev:spis"]
-run = "watchexec --stop-timeout=0 -r -e rs,toml,html,css -- cargo run"
+run = "watchexec --stop-timeout=0 -r -e rs,toml,html,css -- cargo run -F dev"
 depends = ["setup:db", "setup:folders"]
 
 [tasks."dev:process"]
 run = "cargo run -- -t"
 depends = ["setup:db", "setup:folders"]
 
-[tasks."dev:run"]
+[tasks."dev"]
 depends = ["dev:nginx", "dev:spis"]
 
 ##### CI #####
 
 [tasks."lint:clippy"]
 run = """
-cargo clippy -- -D warnings \
+cargo clippy -F dev -- -D warnings \
   -W clippy::pedantic \
   -W clippy::nursery \
   -W clippy::unwrap_used \
@@ -80,7 +80,8 @@ cargo clippy -- -D warnings \
   -A clippy::missing-errors-doc \
   -A clippy::must-use-candidate \
   -A clippy::missing-errors-doc \
-  -A clippy::needless-raw-string-hashes
+  -A clippy::needless-raw-string-hashes \
+  -A clippy::future-not-send
 """
 depends = ["setup:db"]
 
@@ -108,7 +109,7 @@ sources = ["src/**", "templates/**", "assets/**", "migrations/**"]
 outputs = ["release/spis-x86_64-unknown-linux-gnu"]
 run = """
 mkdir -p release
-cargo build --locked --release --no-default-features -F release
+cargo build --locked --release
 cp target/release/spis release/spis-x86_64-unknown-linux-gnu
 """
 

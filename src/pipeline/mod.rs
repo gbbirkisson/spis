@@ -28,10 +28,10 @@ pub type Nothing = ();
 pub type JobTrigger = ();
 pub type File = (Option<Uuid>, PathBuf);
 
-#[allow(clippy::missing_errors_doc)]
+#[allow(clippy::missing_errors_doc, clippy::missing_panics_doc)]
 pub fn setup_filewatcher(file_sender: Sender<File>) -> Result<RecommendedWatcher> {
     // Setup debouncer channel
-    let (debouncer_sender, mut debouncer_reciever): (
+    let (debouncer_sender, mut debouncer_receiver): (
         Sender<Option<PathBuf>>,
         Receiver<Option<PathBuf>>,
     ) = channel(1);
@@ -51,7 +51,7 @@ pub fn setup_filewatcher(file_sender: Sender<File>) -> Result<RecommendedWatcher
     tokio::spawn(async move {
         let mut debounced_values: HashMap<PathBuf, DateTime<Utc>> = HashMap::new();
 
-        while let Some(optional_path) = debouncer_reciever.recv().await {
+        while let Some(optional_path) = debouncer_receiver.recv().await {
             if let Some(path) = optional_path {
                 debounced_values.insert(path, Utc::now());
             } else {
@@ -120,16 +120,16 @@ pub fn setup_filewalker(
 ) -> Result<Sender<JobTrigger>> {
     tracing::debug!("Setup file walker");
 
-    let (job_sender, mut job_reciever) = tokio::sync::mpsc::channel(1);
+    let (job_sender, mut job_receiver) = tokio::sync::mpsc::channel(1);
 
     tokio::spawn(async move {
-        while job_reciever.recv().await.is_some() {
+        while job_receiver.recv().await.is_some() {
             let time_start = Utc::now();
             tracing::info!("Media processing started");
 
             tracing::debug!("Mark entire database as unwalked");
             let db_mark_missing = match db::media_mark_unwalked(&pool).await {
-                Ok(_) => true,
+                Ok(()) => true,
                 Err(error) => {
                     tracing::error!("Failed marking media as unwalked: {:?}", error);
                     false
@@ -145,7 +145,7 @@ pub fn setup_filewalker(
             };
 
             tracing::debug!("Setup walk thread");
-            let (walk_finished_sender, walk_finished_reciever) = tokio::sync::oneshot::channel();
+            let (walk_finished_sender, walk_finished_receiver) = tokio::sync::oneshot::channel();
 
             let file_sender = file_sender.clone();
             let media_dir = media_dir.clone();
@@ -159,7 +159,7 @@ pub fn setup_filewalker(
             });
 
             tracing::debug!("Wait for walk to finish");
-            if let Err(error) = walk_finished_reciever.await {
+            if let Err(error) = walk_finished_receiver.await {
                 tracing::error!("Failed to trigger processing finish: {:?}", error);
             };
 

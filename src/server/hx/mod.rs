@@ -20,9 +20,9 @@ struct Media {
 
 #[derive(Deserialize, Default, Debug)]
 struct State {
-    filter_favorite: Option<bool>,
-    filter_year: Option<usize>,
-    filter_month: Option<u8>,
+    favorite: Option<bool>,
+    year: Option<usize>,
+    month: Option<u8>,
 }
 
 #[derive(Deserialize, Serialize)]
