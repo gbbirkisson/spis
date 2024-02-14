@@ -107,9 +107,14 @@ jobs:
           context: .
           file: docker/Dockerfile
           push: false  # TODO: Set to true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
           platforms: linux/amd64,linux/arm64,linux/arm/v7
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
+      # TODO: Uncomment
       # - name: Upload artifacts to release
       #   uses: AButler/upload-release-assets@v3.0
       #   with:

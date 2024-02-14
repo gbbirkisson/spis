@@ -2,13 +2,5 @@
 *
 
 # Except these
-!assets
-!data/spis.db
 !docker
-!migrations
-!src
-!templates
-
-!Cargo.lock
-!Cargo.toml
-!spis.db
+!release

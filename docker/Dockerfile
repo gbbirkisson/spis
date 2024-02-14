@@ -1,41 +1,25 @@
-########################
-# Step 1:  Build SPIS  #
-########################
-FROM rust:1.75.0-bookworm as builder
+FROM nginx:1.25.3 as builder
 
-# Setup environment
-ENV PROJECT_DIR=/project
-ENV DATABASE_URL=sqlite:$PROJECT_DIR/data/spis.db
-ENV SPIS_BIN=/spis
+ENV \
+    RELEASE_DIR=/tmp/release \
+    BIN_LOCATION=/usr/bin/spis
 
-# Copy in source
-COPY . $PROJECT_DIR
-WORKDIR $PROJECT_DIR
+COPY release ${RELEASE_DIR}
 
-# Build SPIS
-RUN --mount=type=cache,target=$PROJECT_DIR/target \
-    --mount=type=cache,target=$CARGO_HOME/registry \
-    cargo build --locked --release --no-default-features -F release && \
-    cp $PROJECT_DIR/target/release/spis $SPIS_BIN
+COPY docker/pick-release.sh /pick-release.sh
+RUN /pick-release.sh
 
-########################
-# Step 2: Create Image #
-########################
-FROM nginx:1.25.3-bookworm
+FROM debian:bookworm-slim
 
-# Add extra binaries
-RUN apt-get update && \
-    apt-get install -y \
-      supervisor \
-      ffmpeg \
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    supervisor \
+    nginx \
+    gettext-base \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy custom config
-COPY docker/40-user-fix.sh /docker-entrypoint.d/40-user-fix.sh
-COPY docker/nginx.conf /etc/nginx/templates/default.conf.template
-COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
-
-# Set SPIS default variables
+# Set spis variables
 ENV \
     NGINX_PORT=8080 \
     RUST_LOG=error,spis=info \
@@ -45,11 +29,20 @@ ENV \
     SPIS_API_THUMBNAIL_PATH=/assets/thumbnails \
     SPIS_SERVER_SOCKET=/var/run/spis.sock
 
-# Copy binary
-COPY --from=builder /spis /usr/bin/spis
+# Copy default nginx configuration
+COPY --from=builder /etc/nginx /etc/nginx
+COPY --from=builder /docker-entrypoint.sh /docker-entrypoint.sh
+COPY --from=builder /docker-entrypoint.d /docker-entrypoint.d
 
-# Validate binary and create directories
-RUN /usr/bin/spis --version && \
+# Copy in custom configuration
+COPY docker/40-user-fix.sh /docker-entrypoint.d/40-user-fix.sh
+COPY docker/nginx.conf /etc/nginx/templates/default.conf.template
+COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
+
+# Setup SPIS and smoketest
+COPY --from=builder /usr/bin/spis /usr/bin/spis
+RUN chmod +x /usr/bin/spis && \
+    /usr/bin/spis --version && \
     mkdir -p ${SPIS_MEDIA_DIR} ${SPIS_DATA_DIR}
 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]

@@ -103,12 +103,18 @@ depends = ["lint", "test"]
 ##### RELEASE #####
 
 [tasks.release]
-run = "cargo build --locked --release --no-default-features -F release"
 depends = ["setup:db"]
+sources = ["src/**", "templates/**", "assets/**", "migrations/**"]
+outputs = ["release/spis-x86_64-unknown-linux-gnu"]
+run = """
+mkdir -p release
+cargo build --locked --release --no-default-features -F release
+cp target/release/spis release/spis-x86_64-unknown-linux-gnu
+"""
 
 [tasks."docker:build"]
 run = "docker build -t spis-local -f docker/Dockerfile ."
-depends = ["setup:db"]
+depends = ["release"]
 
 [tasks."docker:run"]
 raw = true

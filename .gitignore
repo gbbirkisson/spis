@@ -1,5 +1,6 @@
 data
 target
+release
 
 cobertura.xml
 spis.db
