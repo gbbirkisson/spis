@@ -48,11 +48,16 @@ jobs:
           args: "--locked --release --no-default-features -F release"
           cross-version: v0.2.5
 
+      - name: Move to release dir
+        run: |
+          mkdir release
+          mv target/${{ matrix.target }}/release/spis release/spis-${{ matrix.target }}
+
       - name: Store artifact
         uses: actions/upload-artifact@v4
         with:
           name: spis-${{ matrix.target }}
-          path: target/${{ matrix.target }}/release/spis
+          path: release/spis-${{ matrix.target }}
 
   release-bins:
     name: Release binaries
@@ -67,27 +72,16 @@ jobs:
         run: |
           mkdir release
 
-      - name: Get x86_64 server artifact
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: spis-x86_64-unknown-linux-gnu
           path: release
-
-      - name: Get armv7 server artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: spis-armv7-unknown-linux-gnueabihf
-          path: release
-
-      - name: Get aarch64 server artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: spis-aarch64-unknown-linux-gnu
-          path: release
+          pattern: spis-*
+          merge-multiple: true
 
       - name: Temp
         run: |
-          ls release
+          ls -l release
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
