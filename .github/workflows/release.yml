@@ -2,15 +2,13 @@
 name: Release
 
 on:
-  pull_request:  # TODO: REMOVE
   release:
     types: [published]
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  # VERSION: ${{ github.ref_name }}
-  VERSION: v0.7.0  # TODO
+  VERSION: ${{ github.ref_name }}
 
 jobs:
   ci:
@@ -68,10 +66,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # - name: Create release dir
-      #   run: |
-      #     mkdir release
-
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -100,7 +94,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile
-          push: false  # TODO: Set to true
+          push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
@@ -108,10 +102,9 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # TODO: Uncomment
-      # - name: Upload artifacts to release
-      #   uses: AButler/upload-release-assets@v3.0
-      #   with:
-      #     files: 'release/*'
-      #     repo-token: ${{ secrets.GITHUB_TOKEN }}
-      #     release-tag: ${{ env.VERSION }}
+      - name: Upload artifacts to release
+        uses: AButler/upload-release-assets@v3.0
+        with:
+          files: 'release/*'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          release-tag: ${{ env.VERSION }}

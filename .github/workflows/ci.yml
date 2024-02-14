@@ -3,19 +3,7 @@ name: CI
 
 on:
   workflow_call:
-  # pull_request:
-  #   paths:
-  #     - 'assets/**'
-  #     - 'docker/**'
-  #     - 'migrations/**'
-  #     - 'src/**'
-  #     - 'templates/**'
-  #     - 'tests/**'
-  #     - '.env'
-  #     - 'build.rs'
-  #     - 'Cargo.lock'
-  #     - 'Cargo.toml'
-  #     - 'rust-toolchain.toml'
+  pull_request:
   push:
     branches:
       - main
@@ -28,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: ["lint:fmt"]  # TODO: Add lint:clippy & test
+        target: ["lint:fmt", "lint:clippy", "test"]
 
     steps:
       - name: Checkout
