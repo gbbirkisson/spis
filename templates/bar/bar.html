@@ -5,18 +5,18 @@
     {% endfor %}
   </ul>
   {% match state.favorite %}
-    {% when Some with (filter_favorite) %}
-      <input name="filter_favorite" value="{{ filter_favorite }}" type="hidden"/>
+    {% when Some with (favorite) %}
+      <input name="favorite" value="{{ favorite }}" type="hidden"/>
     {% when None %}
   {% endmatch %}
   {% match state.year %}
-    {% when Some with (filter_year) %}
-      <input name="filter_year" value="{{ filter_year }}" type="hidden"/>
+    {% when Some with (year) %}
+      <input name="year" value="{{ year }}" type="hidden"/>
     {% when None %}
   {% endmatch %}
   {% match state.month %}
-    {% when Some with (filter_month) %}
-      <input name="filter_month" value="{{ filter_month }}" type="hidden"/>
+    {% when Some with (month) %}
+      <input name="month" value="{{ month }}" type="hidden"/>
     {% when None %}
   {% endmatch %}
 </div>

@@ -1,10 +1,15 @@
 use super::Cursor;
 use super::Media;
+use super::ServerError;
 use super::State;
+use super::TemplatedResponse;
 use actix_web::get;
+use actix_web::web::Data;
 use actix_web::web::Query;
-use actix_web::Responder;
-use askama_actix::{Template, TemplateToResponse};
+use actix_web::HttpResponse;
+use askama::Template;
+use sqlx::Pool;
+use sqlx::Sqlite;
 
 const PAGE_SIZE: usize = 50;
 
@@ -43,7 +48,7 @@ struct HxGallery<'a> {
     state: &'a State,
 }
 
-pub(super) async fn render(state: State) -> actix_web::Result<impl Responder> {
+pub(super) async fn render(pool: &Pool<Sqlite>, state: State) -> Result<HttpResponse, ServerError> {
     let mut buttons = vec![BarButton::Favorite(state.favorite.unwrap_or(false))];
     let current_year = 2024;
     if state.year.is_none() {
@@ -101,17 +106,17 @@ pub(super) async fn render(state: State) -> actix_web::Result<impl Responder> {
         })
         .collect();
 
-    Ok(HxGallery {
+    HxGallery {
         bar_buttons: &buttons,
         media: &media,
         state: &state,
     }
-    .to_response())
+    .render_response()
 }
 
 #[get("")]
-async fn root(state: Query<State>) -> actix_web::Result<impl Responder> {
-    render(state.into_inner()).await
+async fn root(pool: Data<Pool<Sqlite>>, state: Query<State>) -> Result<HttpResponse, ServerError> {
+    render(&pool, state.into_inner()).await
 }
 
 #[derive(Template)]
@@ -121,7 +126,7 @@ struct HxMore<'a> {
 }
 
 #[get("/more")]
-async fn more(_state: Query<State>, _cursor: Query<Cursor>) -> impl Responder {
+async fn more(_state: Query<State>, _cursor: Query<Cursor>) -> Result<HttpResponse, ServerError> {
     let media = (0..PAGE_SIZE)
         .map(|_| Media {
             uuid: "123123".into(),
@@ -135,5 +140,5 @@ async fn more(_state: Query<State>, _cursor: Query<Cursor>) -> impl Responder {
         })
         .collect();
 
-    HxMore { media: &media }.to_response()
+    HxMore { media: &media }.render_response()
 }

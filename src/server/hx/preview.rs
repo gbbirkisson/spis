@@ -1,7 +1,15 @@
+use crate::db;
+
 use super::Media;
+use super::ServerError;
+use super::TemplatedResponse;
+use actix_web::web;
+use actix_web::web::Data;
+use actix_web::HttpResponse;
 use actix_web::{delete, get, put};
-use actix_web::{web, Responder};
-use askama_actix::{Template, TemplateToResponse};
+use askama::Template;
+use sqlx::{Pool, Sqlite};
+use uuid::Uuid;
 
 #[derive(Template)]
 #[template(path = "preview/preview.html")]
@@ -10,9 +18,10 @@ struct HxRoot<'a> {
 }
 
 #[get("/{idx}")]
-async fn root(path: web::Path<String>) -> impl Responder {
-    let _idx = path.into_inner();
-
+async fn root(
+    pool: Data<Pool<Sqlite>>,
+    uuid: web::Path<Uuid>,
+) -> Result<HttpResponse, ServerError> {
     let media = Media {
         uuid: "123123".into(),
         url: "http://stufur:1337/assets/media/tota_myndir/2018/20180723_183916.jpg".into(),
@@ -26,12 +35,17 @@ async fn root(path: web::Path<String>) -> impl Responder {
     HxRoot {
         media: Some(&media),
     }
-    .to_response()
+    .render_response()
 }
 
 #[put("/{idx}/favorite")]
-async fn favorite(path: web::Path<String>) -> impl Responder {
-    let _idx = path.into_inner();
+async fn favorite(
+    pool: Data<Pool<Sqlite>>,
+    uuid: web::Path<Uuid>,
+) -> Result<HttpResponse, ServerError> {
+    db::media_favorite(&pool, &uuid, true)
+        .await
+        .map_err(ServerError::DBError)?;
 
     let media = Media {
         uuid: "123123".into(),
@@ -46,12 +60,16 @@ async fn favorite(path: web::Path<String>) -> impl Responder {
     HxRoot {
         media: Some(&media),
     }
-    .to_response()
+    .render_response()
 }
 
 #[delete("/{idx}")]
-async fn archive(path: web::Path<String>) -> impl Responder {
-    let _idx = path.into_inner();
-
-    HxRoot { media: None }.to_response()
+async fn archive(
+    pool: Data<Pool<Sqlite>>,
+    uuid: web::Path<Uuid>,
+) -> Result<HttpResponse, ServerError> {
+    db::media_archive(&pool, &uuid, true)
+        .await
+        .map_err(ServerError::DBError)?;
+    HxRoot { media: None }.render_response()
 }

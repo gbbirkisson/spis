@@ -1,18 +1,26 @@
 use super::gallery::render;
+use super::ServerError;
 use super::State;
-use actix_web::get;
-use actix_web::web::{Path, Query};
-use actix_web::Responder;
+use actix_web::web::{Data, Path, Query};
+use actix_web::{get, HttpResponse};
+use sqlx::{Pool, Sqlite};
 
 #[get("/favorite")]
-async fn favorite(state: Query<State>) -> actix_web::Result<impl Responder> {
+async fn favorite(
+    pool: Data<Pool<Sqlite>>,
+    state: Query<State>,
+) -> Result<HttpResponse, ServerError> {
     let mut state = state.into_inner();
     state.favorite = state.favorite.or(Some(false)).map(|b| !b);
-    render(state).await
+    render(&pool, state).await
 }
 
 #[get("/year/{year}")]
-async fn year(state: Query<State>, path: Path<usize>) -> actix_web::Result<impl Responder> {
+async fn year(
+    pool: Data<Pool<Sqlite>>,
+    state: Query<State>,
+    path: Path<usize>,
+) -> Result<HttpResponse, ServerError> {
     let mut state = state.into_inner();
     let year = path.into_inner();
     if state.year == Some(year) {
@@ -21,11 +29,15 @@ async fn year(state: Query<State>, path: Path<usize>) -> actix_web::Result<impl 
         state.year = Some(year);
     }
     state.month = None;
-    render(state).await
+    render(&pool, state).await
 }
 
 #[get("/month/{month}")]
-async fn month(state: Query<State>, path: Path<u8>) -> actix_web::Result<impl Responder> {
+async fn month(
+    pool: Data<Pool<Sqlite>>,
+    state: Query<State>,
+    path: Path<u8>,
+) -> Result<HttpResponse, ServerError> {
     let mut state = state.into_inner();
     let month = path.into_inner();
     assert!(state.year.is_some());
@@ -34,10 +46,10 @@ async fn month(state: Query<State>, path: Path<u8>) -> actix_web::Result<impl Re
     } else {
         state.month = Some(month);
     }
-    render(state).await
+    render(&pool, state).await
 }
 
 #[get("/bar/clear")]
-async fn clear() -> actix_web::Result<impl Responder> {
-    render(State::default()).await
+async fn clear(pool: Data<Pool<Sqlite>>) -> Result<HttpResponse, ServerError> {
+    render(&pool, State::default()).await
 }
