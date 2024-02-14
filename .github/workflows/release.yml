@@ -85,6 +85,10 @@ jobs:
           name: spis-aarch64-unknown-linux-gnu
           path: release
 
+      - name: Temp
+        run: |
+          ls release
+
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
         with:
