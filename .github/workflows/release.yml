@@ -46,7 +46,7 @@ jobs:
         with:
           target: ${{ matrix.target }}
           args: "--locked --release --no-default-features -F release"
-          cross-version: 0.2.5
+          cross-version: v0.2.5
 
       - name: Store artifact
         uses: actions/upload-artifact@v4
@@ -57,7 +57,7 @@ jobs:
   release-bins:
     name: Release binaries
     runs-on: ubuntu-latest
-    needs: ci
+    needs: build-bins
 
     steps:
       - name: Checkout
