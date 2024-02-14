@@ -68,9 +68,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create release dir
-        run: |
-          mkdir release
+      # - name: Create release dir
+      #   run: |
+      #     mkdir release
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -78,10 +78,6 @@ jobs:
           path: release
           pattern: spis-*
           merge-multiple: true
-
-      - name: Temp
-        run: |
-          ls -l release
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
