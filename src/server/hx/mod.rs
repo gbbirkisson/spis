@@ -1,19 +1,18 @@
-use actix_web::http::header::HeaderValue;
-use actix_web::http::StatusCode;
+use actix_web::get;
 use actix_web::web::scope;
-use actix_web::{get, ResponseError};
-use actix_web::{HttpResponse, HttpResponseBuilder};
 use askama::Template;
 use chrono::{DateTime, Utc};
+use render::{Response, TemplatedResponse};
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
+use uuid::Uuid;
 
 mod bar;
 mod gallery;
 mod preview;
+mod render;
 
 struct Media {
-    uuid: String,
+    uuid: Uuid,
     url: String,
     thumbnail: String,
     favorite: bool,
@@ -33,31 +32,6 @@ struct Cursor {
     cursor: DateTime<Utc>,
 }
 
-#[derive(Error, Debug)]
-enum ServerError {
-    #[error("templating failed: {0}")]
-    TemplateError(color_eyre::eyre::Error),
-    #[error("db operation failed: {0}")]
-    DBError(color_eyre::eyre::Error),
-}
-
-impl ResponseError for ServerError {}
-
-trait TemplatedResponse {
-    fn render_response(&self) -> Result<HttpResponse, ServerError>;
-}
-
-impl<T: askama::Template> TemplatedResponse for T {
-    fn render_response(&self) -> Result<HttpResponse, ServerError> {
-        Ok(HttpResponseBuilder::new(StatusCode::OK)
-            .content_type(HeaderValue::from_static(T::MIME_TYPE))
-            .body(
-                self.render()
-                    .map_err(|e| ServerError::TemplateError(e.into()))?,
-            ))
-    }
-}
-
 fn dev_enabled() -> bool {
     #[cfg(feature = "dev")]
     let dev = true;
@@ -71,7 +45,7 @@ fn dev_enabled() -> bool {
 struct HxIndex {}
 
 #[get("")]
-async fn index() -> Result<HttpResponse, ServerError> {
+async fn index() -> Response {
     HxIndex {}.render_response()
 }
 

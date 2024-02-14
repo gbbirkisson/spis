@@ -1,12 +1,12 @@
+use std::str::FromStr;
+
+use super::render::{Response, TemplatedResponse};
 use super::Cursor;
 use super::Media;
-use super::ServerError;
 use super::State;
-use super::TemplatedResponse;
 use actix_web::get;
 use actix_web::web::Data;
 use actix_web::web::Query;
-use actix_web::HttpResponse;
 use askama::Template;
 use sqlx::Pool;
 use sqlx::Sqlite;
@@ -48,7 +48,7 @@ struct HxGallery<'a> {
     state: &'a State,
 }
 
-pub(super) async fn render(pool: &Pool<Sqlite>, state: State) -> Result<HttpResponse, ServerError> {
+pub(super) async fn render(pool: &Pool<Sqlite>, state: State) -> Response {
     let mut buttons = vec![BarButton::Favorite(state.favorite.unwrap_or(false))];
     let current_year = 2024;
     if state.year.is_none() {
@@ -95,7 +95,7 @@ pub(super) async fn render(pool: &Pool<Sqlite>, state: State) -> Result<HttpResp
 
     let media = (0..PAGE_SIZE)
         .map(|_| Media {
-            uuid: "123123".into(),
+            uuid: uuid::Uuid::from_str("9be1c561-5245-42a3-af22-b0c77136665f").unwrap(),
             url: "http://stufur:1337/assets/media/tota_myndir/2018/20180723_183916.jpg".into(),
             thumbnail:
                 "http://stufur:1337/assets/thumbnails/1601707f-b75e-3640-91e4-0c4331ec7f6e.webp"
@@ -115,7 +115,7 @@ pub(super) async fn render(pool: &Pool<Sqlite>, state: State) -> Result<HttpResp
 }
 
 #[get("")]
-async fn root(pool: Data<Pool<Sqlite>>, state: Query<State>) -> Result<HttpResponse, ServerError> {
+async fn root(pool: Data<Pool<Sqlite>>, state: Query<State>) -> Response {
     render(&pool, state.into_inner()).await
 }
 
@@ -126,10 +126,10 @@ struct HxMore<'a> {
 }
 
 #[get("/more")]
-async fn more(_state: Query<State>, _cursor: Query<Cursor>) -> Result<HttpResponse, ServerError> {
+async fn more(_state: Query<State>, _cursor: Query<Cursor>) -> Response {
     let media = (0..PAGE_SIZE)
         .map(|_| Media {
-            uuid: "123123".into(),
+            uuid: uuid::Uuid::from_str("9be1c561-5245-42a3-af22-b0c77136665f").unwrap(),
             url: "http://stufur:1337/assets/media/tota_myndir/2018/20180723_183916.jpg".into(),
             thumbnail:
                 "http://stufur:1337/assets/thumbnails/1601707f-b75e-3640-91e4-0c4331ec7f6e.webp"
