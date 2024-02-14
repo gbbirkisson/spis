@@ -45,6 +45,8 @@ jobs:
       - name: List target
         run: |
           ls -la target
+          ls -la target/release
+          ls -la target/${{ matrix.target }}
 
       # - name: Upload artifacts to release
       #   uses: AButler/upload-release-assets@v3.0
