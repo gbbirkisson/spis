@@ -1,4 +1,4 @@
-<img align="right" width="128" height="128" src="spis-gui/assets/favicon.png">
+<img align="right" width="128" height="128" src="assets/favicon.png">
 
 <h1>SPIS</h1>
 
@@ -58,8 +58,8 @@ If this project is just what you needed and/or has been helpful to you, please c
 This is how the GUI looks on mobile!
 
 <p float="left">
-<img src="assets/screen1.jpg">
-<img src="assets/screen2.jpg">
+<img src="examples/screen1.jpg">
+<img src="examples/screen2.jpg">
 </p>
 
 ## Setup
@@ -78,7 +78,7 @@ Variable Name | Required | Default | Description
 `SPIS_API_THUMBNAIL_PATH` | `No` | `/assets/thumbnails` | On what path will the webserver (`nginx`) serve thumbnails __*__
 `SPIS_SERVER_SOCKET` | `No` | `/var/run/spis.sock` | Path of the socket `SPIS` will listen to __**__
 `SPIS_SERVER_ADDRESS` | `No` | | Address `SPIS` will listen to rather than socket, i.e. `0.0.0.0:8000` __**__
-`RUST_LOG` | `No` | | Loglevels of the application, i.e. `error,spis_server=info`
+`RUST_LOG` | `No` | | Loglevels of the application, i.e. `error,spis=info`
 
 __*__ These are the paths that the webserver (`nginx`) serves media and thumbnails on. For a details on how this works, look at the [diagram](#diagram).
 
@@ -203,10 +203,13 @@ This project uses [release-please](https://github.com/googleapis/release-please)
 
 ## Development
 
+I use [mise](https://github.com/jdx/mise) to manage local building and testing. I also use
+[direnv](https://direnv.net/) to setup the development environment.
+
 ### Setup dependencies
 
 ```console
-$ make setup
+$ mise run setup
 ```
 
 ### Install pre-commit hooks
@@ -217,28 +220,14 @@ $ pre-commit install --hook-type commit-msg
 
 ### Get some test media
 
-I leave it up do you to put some images/videos in the `./dev/api/media` folder.
+I leave it up do you to put some images/videos in the `./data/media` folder.
 
 ### Running
 
 Run stack with:
 
 ```console
-$ make dev
+$ mise run dev
 ```
 
-Or alternatively open 3 terminals and run:
-
-```console
-$ make dev-nginx
-```
-
-```console
-$ make dev-server
-```
-
-```console
-$ make dev-gui
-```
-
-And then open http://localhost:7000 in your browser
+And then open http://localhost:8080 in your browser

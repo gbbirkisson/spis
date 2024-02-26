@@ -1,7 +1,6 @@
-.vscode
-dev/api
-dist
-release
+data
 target
+release
 
 cobertura.xml
+spis.db

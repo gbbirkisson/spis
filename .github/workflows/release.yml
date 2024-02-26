@@ -15,40 +15,17 @@ jobs:
     name: Run CI
     uses: ./.github/workflows/ci.yml
 
-  build-gui:
-    name: Build GUI
+  build-bins:
+    name: Build binary ${{ matrix.target }}
     runs-on: ubuntu-latest
     needs: ci
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install rust toolchain
-        uses: ./.github/actions/toolchain
-
-      - name: Build gui
-        run: make release-gui
-
-      - name: Store GUI artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: gui-artifacts
-          path: spis-gui/dist
-
-  build-server:
-    name: Build ${{ matrix.target }}
-    runs-on: ubuntu-latest
-    needs:
-      - build-gui
-
     strategy:
-      fail-fast: true
       matrix:
         target:
-          - spis-server-x86_64-unknown-linux-gnu
-          - spis-server-armv7-unknown-linux-gnueabihf
-          - spis-server-aarch64-unknown-linux-gnu
+          - x86_64-unknown-linux-gnu
+          - armv7-unknown-linux-gnueabihf
+          - aarch64-unknown-linux-gnu
 
     steps:
       - name: Checkout
@@ -57,52 +34,44 @@ jobs:
       - name: Install rust toolchain
         uses: ./.github/actions/toolchain
 
-      - name: Get GUI artifacts
-        uses: actions/download-artifact@v4
+      - name: Docker pulls images.
+        uses: ScribeMD/docker-cache@0.3.7
         with:
-          name: gui-artifacts
-          path: spis-gui/dist
+          key: docker-${{ runner.os }}
 
-      - name: Compile server
+      - name: Build binary
+        uses: houseabsolute/actions-rust-cross@v0
+        with:
+          target: ${{ matrix.target }}
+          args: "--locked --release"
+          cross-version: v0.2.5
+
+      - name: Move to release dir
         run: |
-          make release/${{ matrix.target }}
+          mkdir release
+          mv target/${{ matrix.target }}/release/spis release/spis-${{ matrix.target }}
 
-      - name: Store server artifact
+      - name: Store artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.target }}
-          path: release/${{ matrix.target }}
+          name: spis-${{ matrix.target }}
+          path: release/spis-${{ matrix.target }}
 
-  release-assets:
-    name: Create release assets
+  release-bins:
+    name: Release binaries
     runs-on: ubuntu-latest
-    needs: build-server
+    needs: build-bins
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create release dir
-        run: |
-          mkdir release
-
-      - name: Get x86_64 server artifact
+      - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: spis-server-x86_64-unknown-linux-gnu
           path: release
-
-      - name: Get armv7 server artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: spis-server-armv7-unknown-linux-gnueabihf
-          path: release
-
-      - name: Get aarch64 server artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: spis-server-aarch64-unknown-linux-gnu
-          path: release
+          pattern: spis-*
+          merge-multiple: true
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
@@ -120,17 +89,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set Docker Tag
-        run: echo "DOCKER_TAG=$(echo $VERSION | awk -F- '{print $2}')" >> $GITHUB_ENV
-
       - name: Docker build and push
         uses: docker/build-push-action@v5
         with:
           context: .
           file: docker/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DOCKER_TAG }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.VERSION }}
           platforms: linux/amd64,linux/arm64,linux/arm/v7
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Upload artifacts to release
         uses: AButler/upload-release-assets@v3.0

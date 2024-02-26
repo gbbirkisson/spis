@@ -2,7 +2,7 @@ FROM nginx:1.25.3 as builder
 
 ENV \
     RELEASE_DIR=/tmp/release \
-    BIN_LOCATION=/usr/bin/spis-server
+    BIN_LOCATION=/usr/bin/spis
 
 COPY release ${RELEASE_DIR}
 
@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y \
 # Set spis variables
 ENV \
     NGINX_PORT=8080 \
-    RUST_LOG=error,spis_server=info \
+    RUST_LOG=error,spis=info \
     SPIS_MEDIA_DIR=/var/lib/spis/media \
     SPIS_DATA_DIR=/var/lib/spis/data \
     SPIS_API_MEDIA_PATH=/assets/media \
@@ -40,9 +40,9 @@ COPY docker/nginx.conf /etc/nginx/templates/default.conf.template
 COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
 
 # Setup SPIS and smoketest
-COPY --from=builder /usr/bin/spis-server /usr/bin/spis-server
-RUN chmod +x /usr/bin/spis-server && \
-    /usr/bin/spis-server --version && \
+COPY --from=builder /usr/bin/spis /usr/bin/spis
+RUN chmod +x /usr/bin/spis && \
+    /usr/bin/spis --version && \
     mkdir -p ${SPIS_MEDIA_DIR} ${SPIS_DATA_DIR}
 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]

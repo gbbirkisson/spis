@@ -2,41 +2,10 @@
   "bootstrap-sha": "80fbba33a216d3e04aac840576c49ee13e9fae4e",
   "include-v-in-tag": true,
   "extra-label": "release",
-  "plugins": [
-    {
-      "type": "cargo-workspace",
-      "merge": false
-    },
-    {
-      "type": "linked-versions",
-      "groupName": "spis",
-      "components": [
-        "spis",
-        "gui",
-        "model",
-        "server"
-      ]
-    }
-  ],
   "packages": {
     ".": {
       "component": "spis",
-      "release-type": "simple"
-    },
-    "spis-gui": {
-      "component": "gui",
-      "release-type": "rust",
-      "draft": true
-    },
-    "spis-model": {
-      "component": "model",
-      "release-type": "rust",
-      "draft": true
-    },
-    "spis-server": {
-      "component": "server",
-      "release-type": "rust",
-      "draft": true
+      "release-type": "rust"
     }
   }
 }
