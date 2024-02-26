@@ -58,7 +58,7 @@ nginx -c /tmp/nginx.conf > /dev/null
 """
 
 [tasks."dev:spis"]
-run = "watchexec --stop-timeout=0 -r -e rs,toml,html,css -- cargo run -F dev"
+run = "watchexec --stop-timeout=0 -r -e rs,toml,html,css -- cargo run --color always -F dev"
 depends = ["setup:db", "setup:folders"]
 
 [tasks."dev:process"]

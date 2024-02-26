@@ -203,7 +203,8 @@ This project uses [release-please](https://github.com/googleapis/release-please)
 
 ## Development
 
-I use [mise](https://github.com/jdx/mise) to manage local building and testing.
+I use [mise](https://github.com/jdx/mise) to manage local building and testing. I also use
+[direnv](https://direnv.net/) to setup the development environment.
 
 ### Setup dependencies
 

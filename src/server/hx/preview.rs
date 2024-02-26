@@ -18,7 +18,7 @@ struct HxRoot<'a> {
 }
 
 #[get("/{idx}")]
-async fn root(pool: Data<Pool<Sqlite>>, uuid: web::Path<Uuid>) -> Response {
+async fn root(_pool: Data<Pool<Sqlite>>, _uuid: web::Path<Uuid>) -> Response {
     let media = Media {
         uuid: Uuid::from_str("9be1c561-5245-42a3-af22-b0c77136665f").unwrap(),
         url: "http://stufur:1337/assets/media/tota_myndir/2018/20180723_183916.jpg".into(),

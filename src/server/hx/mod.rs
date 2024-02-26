@@ -6,6 +6,8 @@ use render::{Response, TemplatedResponse};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::{db::MediaRow, PathFinder};
+
 mod bar;
 mod gallery;
 mod preview;
@@ -18,6 +20,19 @@ struct Media {
     favorite: bool,
     video: bool,
     taken_at: DateTime<Utc>,
+}
+
+impl From<(MediaRow, &PathFinder)> for Media {
+    fn from(value: (MediaRow, &PathFinder)) -> Self {
+        Self {
+            uuid: value.0.id,
+            url: value.1.media(&value.0.path),
+            thumbnail: value.1.thumbnail(&value.0.id),
+            favorite: value.0.favorite,
+            video: value.0.media_type == 1,
+            taken_at: value.0.taken_at,
+        }
+    }
 }
 
 #[derive(Deserialize, Default, Debug)]

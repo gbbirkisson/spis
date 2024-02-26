@@ -1,5 +1,7 @@
-use std::str::FromStr;
+use crate::db;
+use crate::PathFinder;
 
+use super::render::ServerError;
 use super::render::{Response, TemplatedResponse};
 use super::Cursor;
 use super::Media;
@@ -11,7 +13,7 @@ use askama::Template;
 use sqlx::Pool;
 use sqlx::Sqlite;
 
-const PAGE_SIZE: usize = 50;
+const PAGE_SIZE: usize = 20;
 
 mod filters {
     use core::fmt;
@@ -48,7 +50,7 @@ struct HxGallery<'a> {
     state: &'a State,
 }
 
-pub(super) async fn render(pool: &Pool<Sqlite>, state: State) -> Response {
+pub(super) async fn render(pool: &Pool<Sqlite>, pathfinder: &PathFinder, state: State) -> Response {
     let mut buttons = vec![BarButton::Favorite(state.favorite.unwrap_or(false))];
     let current_year = 2024;
     if state.year.is_none() {
@@ -93,18 +95,19 @@ pub(super) async fn render(pool: &Pool<Sqlite>, state: State) -> Response {
         buttons.push(BarButton::Clear);
     }
 
-    let media = (0..PAGE_SIZE)
-        .map(|_| Media {
-            uuid: uuid::Uuid::from_str("9be1c561-5245-42a3-af22-b0c77136665f").unwrap(),
-            url: "http://stufur:1337/assets/media/tota_myndir/2018/20180723_183916.jpg".into(),
-            thumbnail:
-                "http://stufur:1337/assets/thumbnails/1601707f-b75e-3640-91e4-0c4331ec7f6e.webp"
-                    .into(),
-            favorite: true,
-            video: false,
-            taken_at: chrono::offset::Utc::now(),
-        })
-        .collect();
+    let media = db::media_get(
+        &pool,
+        PAGE_SIZE.try_into().expect("PAGE_SIZE conversion failed"),
+        false,
+        state.favorite,
+        None, // TODO
+        None, // TODO
+    )
+    .await
+    .map_err(ServerError::DBError)?
+    .into_iter()
+    .map(|row| (row, pathfinder).into())
+    .collect();
 
     HxGallery {
         bar_buttons: &buttons,
@@ -115,8 +118,12 @@ pub(super) async fn render(pool: &Pool<Sqlite>, state: State) -> Response {
 }
 
 #[get("")]
-async fn root(pool: Data<Pool<Sqlite>>, state: Query<State>) -> Response {
-    render(&pool, state.into_inner()).await
+async fn root(
+    pool: Data<Pool<Sqlite>>,
+    pathfinder: Data<PathFinder>,
+    state: Query<State>,
+) -> Response {
+    render(&pool, &pathfinder, state.into_inner()).await
 }
 
 #[derive(Template)]
@@ -126,19 +133,25 @@ struct HxMore<'a> {
 }
 
 #[get("/more")]
-async fn more(_state: Query<State>, _cursor: Query<Cursor>) -> Response {
-    let media = (0..PAGE_SIZE)
-        .map(|_| Media {
-            uuid: uuid::Uuid::from_str("9be1c561-5245-42a3-af22-b0c77136665f").unwrap(),
-            url: "http://stufur:1337/assets/media/tota_myndir/2018/20180723_183916.jpg".into(),
-            thumbnail:
-                "http://stufur:1337/assets/thumbnails/1601707f-b75e-3640-91e4-0c4331ec7f6e.webp"
-                    .into(),
-            favorite: true,
-            video: false,
-            taken_at: chrono::offset::Utc::now(),
-        })
-        .collect();
+async fn more(
+    pool: Data<Pool<Sqlite>>,
+    pathfinder: Data<PathFinder>,
+    state: Query<State>,
+    cursor: Query<Cursor>,
+) -> Response {
+    let media = db::media_get(
+        &pool,
+        PAGE_SIZE.try_into().expect("PAGE_SIZE conversion failed"),
+        false,
+        state.favorite,
+        None, // TODO
+        Some(cursor.cursor),
+    )
+    .await
+    .map_err(ServerError::DBError)?
+    .into_iter()
+    .map(|row| (row, pathfinder.as_ref()).into())
+    .collect();
 
     HxMore { media: &media }.render_response()
 }
