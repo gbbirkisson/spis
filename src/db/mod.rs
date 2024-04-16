@@ -1,10 +1,11 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
 use crate::media::{ProcessedMedia, ProcessedMediaType};
 use chrono::{DateTime, Utc};
 use color_eyre::{eyre::Context, Result};
-// use spis_model::MediaType;
-use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
+use sqlx::{
+    migrate::MigrateDatabase, query::QueryAs, sqlite::SqliteArguments, Pool, Sqlite, SqlitePool,
+};
 
 pub trait MediaTypeConverter<T> {
     fn convert(&self) -> T;
@@ -18,16 +19,6 @@ impl MediaTypeConverter<i32> for ProcessedMediaType {
         }
     }
 }
-
-// impl MediaTypeConverter<MediaType> for i32 {
-//     fn convert(&self) -> MediaType {
-//         match self {
-//             0 => MediaType::Image,
-//             1 => MediaType::Video,
-//             _ => unreachable!(),
-//         }
-//     }
-// }
 
 #[allow(clippy::missing_errors_doc, clippy::module_name_repetitions)]
 pub async fn setup_db(db_file: &str) -> Result<Pool<Sqlite>> {
@@ -176,7 +167,7 @@ pub async fn media_favorite(pool: &SqlitePool, uuid: &uuid::Uuid, archive: bool)
     Ok(res.rows_affected() > 0)
 }
 
-#[derive(sqlx::FromRow)]
+#[derive(sqlx::FromRow, Debug)]
 pub struct MediaRow {
     pub id: uuid::Uuid,
     pub path: String,
@@ -186,50 +177,140 @@ pub struct MediaRow {
     pub favorite: bool,
 }
 
+pub enum Order {
+    Asc,
+    Desc,
+}
+
+impl Display for Order {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Asc => f.write_str("ORDER BY taken_at ASC")?,
+            Self::Desc => f.write_str("ORDER BY taken_at DESC")?,
+        }
+        Ok(())
+    }
+}
+
+pub struct Filter {
+    pub archived: bool,
+    pub favorite: Option<bool>,
+    pub taken_after: Option<DateTime<Utc>>,
+    pub taken_before: Option<DateTime<Utc>>,
+}
+
+impl Display for Filter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("WHERE NOT missing AND archived = ?")?;
+
+        if self.favorite.is_some() {
+            f.write_str(" AND favorite = ?")?;
+        }
+
+        if self.taken_after.is_some() {
+            f.write_str(" AND taken_at > ?")?;
+        }
+
+        if self.taken_before.is_some() {
+            f.write_str(" AND taken_at < ?")?;
+        }
+
+        Ok(())
+    }
+}
+
+impl Filter {
+    fn bind<'a>(
+        &self,
+        query: QueryAs<'a, Sqlite, MediaRow, SqliteArguments<'a>>,
+    ) -> QueryAs<'a, Sqlite, MediaRow, SqliteArguments<'a>> {
+        let mut query = query.bind(self.archived);
+
+        if let Some(favorite) = self.favorite {
+            query = query.bind(favorite);
+        }
+
+        if let Some(taken_after) = self.taken_after {
+            query = query.bind(taken_after);
+        }
+
+        if let Some(taken_before) = self.taken_before {
+            query = query.bind(taken_before);
+        }
+
+        query
+    }
+}
+
 #[allow(clippy::missing_errors_doc)]
+pub async fn media_list(
+    pool: &SqlitePool,
+    filter: Filter,
+    order: Order,
+    limit: i32,
+) -> Result<Vec<MediaRow>> {
+    let query = format!(
+        r"
+SELECT id, path, taken_at, type as media_type, archived, favorite FROM media
+{filter}
+{order}
+LIMIT ?
+"
+    );
+    let mut query = sqlx::query_as::<Sqlite, MediaRow>(&query);
+    query = filter.bind(query);
+    query = query.bind(limit);
+    query.fetch_all(pool).await.wrap_err("Failed to fetch rows")
+}
+
+#[allow(clippy::missing_errors_doc, clippy::missing_panics_doc)]
 pub async fn media_get(
     pool: &SqlitePool,
-    limit: i32,
-    archived: bool,
-    favorite: Option<bool>,
-    taken_after: Option<DateTime<Utc>>,
-    taken_before: Option<DateTime<Utc>>,
-) -> Result<Vec<MediaRow>> {
-    let mut query = String::new();
-
-    query.push_str("SELECT id, path, taken_at, type as media_type, archived, favorite FROM media");
-    query.push_str(" WHERE NOT missing AND archived = ?");
-
-    if favorite.is_some() {
-        query.push_str(" AND favorite = ?");
+    filter: Filter,
+    order: Order,
+    uuid: &uuid::Uuid,
+) -> Result<(Option<MediaRow>, Option<MediaRow>, Option<MediaRow>)> {
+    let query = format!(
+        r"
+WITH NR_MED AS (
+    SELECT *, ROW_NUMBER() OVER ({order}) AS RN FROM media
+    {filter}
+)
+SELECT id, path, taken_at, type as media_type, archived, favorite FROM NR_MED
+WHERE RN IN (
+	SELECT RN+i
+    FROM NR_MED
+    CROSS JOIN (SELECT -1 AS i UNION ALL SELECT 0 UNION ALL SELECT 1) n
+    WHERE id = ?
+)
+"
+    );
+    let mut query = sqlx::query_as::<Sqlite, MediaRow>(&query);
+    query = filter.bind(query);
+    query = query.bind(uuid);
+    let res = query
+        .fetch_all(pool)
+        .await
+        .wrap_err("Failed to fetch rows")?;
+    match res.len() {
+        1 => {
+            let mut res = res.into_iter();
+            Ok((None, res.next(), None))
+        }
+        2 => {
+            let mut res = res.into_iter();
+            let a = res.next().expect("First media should be there");
+            let b = res.next().expect("Second media should be there");
+            if a.id == *uuid {
+                Ok((None, Some(a), Some(b)))
+            } else {
+                Ok((Some(a), Some(b), None))
+            }
+        }
+        3 => {
+            let mut res = res.into_iter();
+            Ok((res.next(), res.next(), res.next()))
+        }
+        _ => Err(color_eyre::eyre::eyre!("Media query returned bad result")),
     }
-
-    if taken_after.is_some() {
-        query.push_str(" AND taken_at > ?");
-    }
-
-    if taken_before.is_some() {
-        query.push_str(" AND taken_at < ?");
-    }
-
-    query.push_str(" ORDER BY taken_at DESC");
-    query.push_str(" LIMIT ?");
-
-    let mut query = sqlx::query_as::<Sqlite, MediaRow>(&query).bind(archived);
-
-    if let Some(favorite) = favorite {
-        query = query.bind(favorite);
-    }
-
-    if let Some(taken_after) = taken_after {
-        query = query.bind(taken_after);
-    }
-
-    if let Some(taken_before) = taken_before {
-        query = query.bind(taken_before);
-    }
-
-    query = query.bind(limit);
-
-    query.fetch_all(pool).await.wrap_err("Failed to fetch rows")
 }

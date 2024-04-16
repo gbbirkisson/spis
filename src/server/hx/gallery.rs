@@ -95,13 +95,16 @@ pub(super) async fn render(pool: &Pool<Sqlite>, pathfinder: &PathFinder, state: 
         buttons.push(BarButton::Clear);
     }
 
-    let media = db::media_get(
-        &pool,
+    let media = db::media_list(
+        pool,
+        db::Filter {
+            archived: false,
+            favorite: state.favorite,
+            taken_after: None,  // TODO:
+            taken_before: None, // TODO:
+        },
+        db::Order::Desc,
         PAGE_SIZE.try_into().expect("PAGE_SIZE conversion failed"),
-        false,
-        state.favorite,
-        None, // TODO
-        None, // TODO
     )
     .await
     .map_err(ServerError::DBError)?
@@ -139,13 +142,16 @@ async fn more(
     state: Query<State>,
     cursor: Query<Cursor>,
 ) -> Response {
-    let media = db::media_get(
+    let media = db::media_list(
         &pool,
+        db::Filter {
+            archived: false,
+            favorite: state.favorite,
+            taken_after: None, // TODO:
+            taken_before: Some(cursor.cursor),
+        },
+        db::Order::Desc,
         PAGE_SIZE.try_into().expect("PAGE_SIZE conversion failed"),
-        false,
-        state.favorite,
-        None, // TODO
-        Some(cursor.cursor),
     )
     .await
     .map_err(ServerError::DBError)?

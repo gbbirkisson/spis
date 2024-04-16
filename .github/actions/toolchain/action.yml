@@ -14,7 +14,7 @@ runs:
     - name: Setup mise
       uses: jdx/mise-action@v2
       with:
-        # version: TODO
+        # version: TODO:
         install: true
         cache: true
         experimental: true
@@ -45,8 +45,8 @@ runs:
         mise run setup:toolchain
 
         # Install dependencies
-        cargo install sqlx-cli@0.7.1 # TODO
-        cargo install cargo-tarpaulin@0.27.3 # TODO
+        cargo install sqlx-cli@0.7.1 # TODO:
+        cargo install cargo-tarpaulin@0.27.3 # TODO:
 
         # Cache these binaries
         for f in sqlx cargo-tarpaulin; do
