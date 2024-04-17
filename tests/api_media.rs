@@ -1,7 +1,7 @@
 use spis::{
     db::{self},
     media::{ProcessedMedia, ProcessedMediaData, ProcessedMediaType},
-    server::Listener,
+    server::{Config, Listener},
     PathFinder,
 };
 use std::net::TcpListener;
@@ -48,8 +48,12 @@ async fn spawn_server() -> String {
     let pathfinder = PathFinder::new("", "", "", "");
 
     // Spawn server
-    let server = spis::server::run(Listener::Tcp(listener), pool, pathfinder)
-        .expect("Failed to bind address");
+    let config = Config {
+        archive_allow: true,
+        pathfinder,
+    };
+    let server =
+        spis::server::run(Listener::Tcp(listener), pool, config).expect("Failed to bind address");
     let _ = tokio::spawn(server);
 
     // Return endpoint

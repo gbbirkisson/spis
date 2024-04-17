@@ -15,9 +15,15 @@ pub enum Listener {
     Socket(String),
 }
 
-pub fn run(listener: Listener, pool: Pool<Sqlite>, pathfinder: PathFinder) -> Result<Server> {
+pub struct Config {
+    pub archive_allow: bool,
+    pub favorite_allow: bool,
+    pub pathfinder: PathFinder,
+}
+
+pub fn run(listener: Listener, pool: Pool<Sqlite>, config: Config) -> Result<Server> {
     let pool = web::Data::new(pool);
-    let pathfinder = web::Data::new(pathfinder);
+    let config = web::Data::new(config);
 
     let server = HttpServer::new(move || {
         let mut app = App::new()
@@ -30,7 +36,7 @@ pub fn run(listener: Listener, pool: Pool<Sqlite>, pathfinder: PathFinder) -> Re
             app = app.route("/dev/ws", dev::create_socket());
         }
 
-        app.app_data(pool.clone()).app_data(pathfinder.clone())
+        app.app_data(pool.clone()).app_data(config.clone())
     });
 
     let server = match listener {

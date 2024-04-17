@@ -60,6 +60,8 @@ pub struct SpisCfg {
     api_thumbnail_path: String,
     server_address: Option<String>,
     server_socket: Option<String>,
+    feature_archive: bool,
+    feature_favorite: bool,
 }
 
 impl SpisCfg {
@@ -73,6 +75,8 @@ impl SpisCfg {
             .set_default("api_media_path", "/assets/media")?
             .set_default("api_thumbnail_path", "/assets/thumbnails")?
             .set_default("server_socket", "/var/run/spis.sock")?
+            .set_default("feature_archive", false)?
+            .set_default("feature_favorite", false)?
             .build()
             .wrap_err("Failed to build config")?;
 
@@ -142,5 +146,15 @@ impl SpisCfg {
     #[allow(clippy::missing_const_for_fn, clippy::must_use_candidate)]
     pub fn processing_run_on_start(&self) -> bool {
         self.processing_run_on_start
+    }
+
+    #[allow(clippy::missing_const_for_fn, clippy::must_use_candidate)]
+    pub fn feature_archive(&self) -> bool {
+        self.feature_archive
+    }
+
+    #[allow(clippy::missing_const_for_fn, clippy::must_use_candidate)]
+    pub fn feature_favorite(&self) -> bool {
+        self.feature_favorite
     }
 }

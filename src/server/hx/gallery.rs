@@ -1,4 +1,5 @@
 use crate::db;
+use crate::server::Config;
 use crate::PathFinder;
 
 use super::render::ServerError;
@@ -97,12 +98,7 @@ pub(super) async fn render(pool: &Pool<Sqlite>, pathfinder: &PathFinder, state: 
 
     let media = db::media_list(
         pool,
-        db::Filter {
-            archived: false,
-            favorite: state.favorite,
-            taken_after: None,  // TODO:
-            taken_before: None, // TODO:
-        },
+        &state,
         db::Order::Desc,
         PAGE_SIZE.try_into().expect("PAGE_SIZE conversion failed"),
     )
@@ -121,12 +117,8 @@ pub(super) async fn render(pool: &Pool<Sqlite>, pathfinder: &PathFinder, state: 
 }
 
 #[get("")]
-async fn root(
-    pool: Data<Pool<Sqlite>>,
-    pathfinder: Data<PathFinder>,
-    state: Query<State>,
-) -> Response {
-    render(&pool, &pathfinder, state.into_inner()).await
+async fn root(pool: Data<Pool<Sqlite>>, config: Data<Config>, state: Query<State>) -> Response {
+    render(&pool, &config.pathfinder, state.into_inner()).await
 }
 
 #[derive(Template)]
@@ -138,25 +130,20 @@ struct HxMore<'a> {
 #[get("/more")]
 async fn more(
     pool: Data<Pool<Sqlite>>,
-    pathfinder: Data<PathFinder>,
+    config: Data<Config>,
     state: Query<State>,
     cursor: Query<Cursor>,
 ) -> Response {
     let media = db::media_list(
         &pool,
-        db::Filter {
-            archived: false,
-            favorite: state.favorite,
-            taken_after: None, // TODO:
-            taken_before: Some(cursor.cursor),
-        },
+        (&*state, &*cursor),
         db::Order::Desc,
         PAGE_SIZE.try_into().expect("PAGE_SIZE conversion failed"),
     )
     .await
     .map_err(ServerError::DBError)?
     .into_iter()
-    .map(|row| (row, pathfinder.as_ref()).into())
+    .map(|row| (row, &config.pathfinder).into())
     .collect();
 
     HxMore { media: &media }.render_response()

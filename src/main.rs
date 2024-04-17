@@ -4,7 +4,7 @@ use notify::Watcher;
 use spis::{
     db,
     pipeline::{self, JOB_TRIGGER},
-    server::{self, Listener},
+    server::{self, Config, Listener},
     SpisCfg, SpisServerListener,
 };
 use std::{net::TcpListener, path::PathBuf};
@@ -116,8 +116,12 @@ async fn main() -> Result<()> {
         }
     };
 
-    let pathfinder = config.pathfinder();
-    let server = server::run(listener, pool, pathfinder).expect("Failed to create server");
+    let config = Config {
+        archive_allow: config.feature_archive(),
+        favorite_allow: config.feature_favorite(),
+        pathfinder: config.pathfinder(),
+    };
+    let server = server::run(listener, pool, config).expect("Failed to create server");
     server.await?;
 
     Ok(())

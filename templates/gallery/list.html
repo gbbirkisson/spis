@@ -3,16 +3,15 @@
 {% if count > 0 %}
   {% for media in media %}
     <li id="{{ media.uuid }}">
-      <a href=""
+      <a href="#"
         hx-get="/hx/preview/{{ media.uuid }}"
         hx-trigger="click"
         hx-target="#hx-media-preview"
         hx-swap="outerHTML">
         <img src="{{ media.thumbnail }}" class="media-thumbnail" loading="lazy">
 
-        {% if media.favorite %}
-        <div class="media-thumbnail-fav"><i class="fa-solid fa-heart icon-pink"></i></div>
-        {% endif %}
+        <!-- TODO: REMOVE WHEN FAVORITE IS DISABLED -->
+        <div id="fav-{{ media.uuid }}" class="media-thumbnail-fav {% if media.favorite %}visible{% else %}hidden{% endif %}"><i class="fa-solid fa-heart icon-pink"></i></div>
 
         {% if media.video %}
         <div class="media-thumbnail-vid"><i class="fa-solid fa-play icon-white"></i></div>

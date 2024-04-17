@@ -1,26 +1,22 @@
 use super::gallery::render;
 use super::render::Response;
 use super::State;
-use crate::PathFinder;
+use crate::server::Config;
 use actix_web::get;
 use actix_web::web::{Data, Path, Query};
 use sqlx::{Pool, Sqlite};
 
 #[get("/favorite")]
-async fn favorite(
-    pool: Data<Pool<Sqlite>>,
-    pathfinder: Data<PathFinder>,
-    state: Query<State>,
-) -> Response {
+async fn favorite(pool: Data<Pool<Sqlite>>, config: Data<Config>, state: Query<State>) -> Response {
     let mut state = state.into_inner();
     state.favorite = state.favorite.or(Some(false)).map(|b| !b);
-    render(&pool, &pathfinder, state).await
+    render(&pool, &config.pathfinder, state).await
 }
 
 #[get("/year/{year}")]
 async fn year(
     pool: Data<Pool<Sqlite>>,
-    pathfinder: Data<PathFinder>,
+    config: Data<Config>,
     state: Query<State>,
     path: Path<usize>,
 ) -> Response {
@@ -32,13 +28,13 @@ async fn year(
         state.year = Some(year);
     }
     state.month = None;
-    render(&pool, &pathfinder, state).await
+    render(&pool, &config.pathfinder, state).await
 }
 
 #[get("/month/{month}")]
 async fn month(
     pool: Data<Pool<Sqlite>>,
-    pathfinder: Data<PathFinder>,
+    config: Data<Config>,
     state: Query<State>,
     path: Path<u8>,
 ) -> Response {
@@ -50,10 +46,10 @@ async fn month(
     } else {
         state.month = Some(month);
     }
-    render(&pool, &pathfinder, state).await
+    render(&pool, &config.pathfinder, state).await
 }
 
 #[get("/bar/clear")]
-async fn clear(pool: Data<Pool<Sqlite>>, pathfinder: Data<PathFinder>) -> Response {
-    render(&pool, &pathfinder, State::default()).await
+async fn clear(pool: Data<Pool<Sqlite>>, config: Data<Config>) -> Response {
+    render(&pool, &config.pathfinder, State::default()).await
 }

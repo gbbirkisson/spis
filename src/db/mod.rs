@@ -245,10 +245,13 @@ impl Filter {
 #[allow(clippy::missing_errors_doc)]
 pub async fn media_list(
     pool: &SqlitePool,
-    filter: Filter,
-    order: Order,
+    filter: impl Into<Filter>,
+    order: impl Into<Order>,
     limit: i32,
 ) -> Result<Vec<MediaRow>> {
+    let filter = filter.into();
+    let order = order.into();
+
     let query = format!(
         r"
 SELECT id, path, taken_at, type as media_type, archived, favorite FROM media
@@ -266,10 +269,13 @@ LIMIT ?
 #[allow(clippy::missing_errors_doc, clippy::missing_panics_doc)]
 pub async fn media_get(
     pool: &SqlitePool,
-    filter: Filter,
-    order: Order,
+    filter: impl Into<Filter>,
+    order: impl Into<Order>,
     uuid: &uuid::Uuid,
 ) -> Result<(Option<MediaRow>, Option<MediaRow>, Option<MediaRow>)> {
+    let filter = filter.into();
+    let order = order.into();
+
     let query = format!(
         r"
 WITH NR_MED AS (
