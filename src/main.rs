@@ -38,14 +38,14 @@ async fn main() -> Result<()> {
     std::fs::create_dir_all(config.thumbnail_dir())?;
 
     if !args.test_media.is_empty() {
-        let (file_sender, mut media_reciever) =
+        let (file_sender, mut media_receiver) =
             pipeline::setup_media_processing(config.thumbnail_dir(), true)
                 .wrap_err("Failed to setup media processing")?;
 
-        let (done_sender, done_reciever) = tokio::sync::oneshot::channel();
+        let (done_sender, done_receiver) = tokio::sync::oneshot::channel();
 
         tokio::spawn(async move {
-            while let Some(media) = media_reciever.recv().await {
+            while let Some(media) = media_receiver.recv().await {
                 println!(
                     "{:?} {:?}",
                     media.path,
@@ -62,7 +62,7 @@ async fn main() -> Result<()> {
             drop(file_sender);
         });
 
-        done_reciever.await.expect("recieve failed");
+        done_receiver.await.expect("recieve failed");
 
         return Ok(());
     }
@@ -77,7 +77,7 @@ async fn main() -> Result<()> {
         .wrap_err("Failed to initialize DB")?;
 
     tracing::info!("Setting up media processing");
-    let (file_sender, media_reciever) =
+    let (file_sender, media_receiver) =
         pipeline::setup_media_processing(config.thumbnail_dir(), false)
             .wrap_err("Failed to setup media processing")?;
 
@@ -93,7 +93,7 @@ async fn main() -> Result<()> {
         pipeline::setup_filewalker(pool.clone(), config.media_dir(), file_sender.clone())
             .wrap_err("Failed to setup file walker")?;
 
-    pipeline::setup_db_store(pool.clone(), media_reciever).wrap_err("Failed to setup db store")?;
+    pipeline::setup_db_store(pool.clone(), media_receiver).wrap_err("Failed to setup db store")?;
 
     if config.processing_run_on_start() {
         job_sender

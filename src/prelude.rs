@@ -7,24 +7,24 @@ use tokio::sync::mpsc::Receiver;
 
 pub struct W<T>(pub T);
 
-pub struct RecieverIterator<T> {
-    reciever: Receiver<T>,
+pub struct ReceiverIterator<T> {
+    receiver: Receiver<T>,
 }
 
-impl<T> Iterator for RecieverIterator<T> {
+impl<T> Iterator for ReceiverIterator<T> {
     type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.reciever.blocking_recv()
+        self.receiver.blocking_recv()
     }
 }
 
 impl<T> IntoIterator for W<Receiver<T>> {
     type Item = T;
-    type IntoIter = RecieverIterator<T>;
+    type IntoIter = ReceiverIterator<T>;
 
     fn into_iter(self) -> Self::IntoIter {
-        Self::IntoIter { reciever: self.0 }
+        Self::IntoIter { receiver: self.0 }
     }
 }
 

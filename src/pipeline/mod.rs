@@ -260,15 +260,15 @@ pub fn setup_media_processing(
 ) -> Result<(Sender<File>, Receiver<ProcessedMedia>)> {
     tracing::debug!("Setup media processing");
 
-    let (file_sender, file_reciever): (Sender<File>, Receiver<File>) =
+    let (file_sender, file_receiver): (Sender<File>, Receiver<File>) =
         tokio::sync::mpsc::channel(rayon::current_num_threads());
-    let (media_sender, media_reciever) = tokio::sync::mpsc::channel(rayon::current_num_threads());
+    let (media_sender, media_receiver) = tokio::sync::mpsc::channel(rayon::current_num_threads());
 
     let media_processor = MediaProcessor::new(thumb_dir, force_processing);
 
     tokio::task::spawn_blocking(move || {
         // TODO: Will collecting to a HashSet cause a memory leak?
-        let _res: HashSet<Nothing> = W(file_reciever)
+        let _res: HashSet<Nothing> = W(file_receiver)
             .into_iter()
             .par_bridge()
             .filter(|(_, path)| {
@@ -309,18 +309,18 @@ pub fn setup_media_processing(
     });
 
     tracing::debug!("Setup media processing done");
-    Ok((file_sender, media_reciever))
+    Ok((file_sender, media_receiver))
 }
 
 #[allow(clippy::missing_errors_doc)]
-pub fn setup_db_store(pool: Pool<Sqlite>, media_reciever: Receiver<ProcessedMedia>) -> Result<()> {
+pub fn setup_db_store(pool: Pool<Sqlite>, media_receiver: Receiver<ProcessedMedia>) -> Result<()> {
     tracing::debug!("Setup db store");
 
     tokio::spawn(async move {
         tracing::info!("Starting db processing component");
 
-        let mut media_reciever = media_reciever;
-        while let Some(media) = media_reciever.recv().await {
+        let mut media_receiver = media_receiver;
+        while let Some(media) = media_receiver.recv().await {
             if let Err(error) = db::media_insert(&pool, media).await {
                 tracing::error!("Failed inserting media to db: {:?}", error);
             }
