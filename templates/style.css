@@ -93,6 +93,10 @@ li {
   color: red;
 }
 
+.link {
+  cursor: pointer;
+}
+
 .media-thumbnail-vid {
   position: absolute;
   top: 50%;
@@ -172,7 +176,7 @@ li {
   background-color: #111111;
 }
 
-.bar-filter-item > a {
+.bar-filter-item > .link {
   border-radius: 10px;
 
   display: block;
@@ -189,7 +193,7 @@ li {
   justify-content: center;
 }
 
-.bar-filter-item > a:hover {
+.bar-filter-item > .link:hover {
   background-color: #111111;
   border-radius: 10px;
 }
