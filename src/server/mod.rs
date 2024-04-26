@@ -16,9 +16,13 @@ pub enum Listener {
 }
 
 pub struct Config {
+    pub pathfinder: PathFinder,
+    pub features: Features,
+}
+
+pub struct Features {
     pub archive_allow: bool,
     pub favorite_allow: bool,
-    pub pathfinder: PathFinder,
 }
 
 pub fn run(listener: Listener, pool: Pool<Sqlite>, config: Config) -> Result<Server> {

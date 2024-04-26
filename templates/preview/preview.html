@@ -26,7 +26,7 @@
         {% endmatch %}
 
         <!-- Archive button -->
-        {% if archive_allow %}
+        {% if features.archive_allow %}
         <div class="link" id="del-{{ media.uuid }}"
           {% if archive_confirm %}
           _='on htmx:afterRequest remove #{"{{ media.uuid }}"}'
@@ -47,7 +47,7 @@
         </div>
 
         <!-- Favorite button -->
-        {% if favorite_allow %}
+        {% if features.favorite_allow %}
         <div class="link"
           _="on htmx:afterRequest toggle between .hidden and .visible on #fav-{{ media.uuid }}"
           hx-put="/hx/preview/{{ media.uuid }}/favorite/{{ !media.favorite }}"

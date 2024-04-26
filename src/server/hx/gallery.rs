@@ -1,6 +1,5 @@
 use crate::db;
-use crate::server::Config;
-use crate::PathFinder;
+use crate::server::{Config, Features};
 
 use super::render::ServerError;
 use super::render::{Response, TemplatedResponse};
@@ -47,11 +46,12 @@ enum BarButton {
 #[template(path = "gallery/gallery.html")]
 struct HxGallery<'a> {
     bar_buttons: &'a Vec<BarButton>,
+    features: &'a Features,
     media: &'a Vec<Media>,
     state: &'a State,
 }
 
-pub(super) async fn render(pool: &Pool<Sqlite>, pathfinder: &PathFinder, state: State) -> Response {
+pub(super) async fn render(pool: &Pool<Sqlite>, config: &Config, state: State) -> Response {
     let mut buttons = vec![BarButton::Favorite(state.favorite.unwrap_or(false))];
     let current_year = 2024;
     if state.year.is_none() {
@@ -105,11 +105,12 @@ pub(super) async fn render(pool: &Pool<Sqlite>, pathfinder: &PathFinder, state: 
     .await
     .map_err(ServerError::DBError)?
     .into_iter()
-    .map(|row| (row, pathfinder).into())
+    .map(|row| (row, &config.pathfinder).into())
     .collect();
 
     HxGallery {
         bar_buttons: &buttons,
+        features: &config.features,
         media: &media,
         state: &state,
     }
@@ -118,12 +119,13 @@ pub(super) async fn render(pool: &Pool<Sqlite>, pathfinder: &PathFinder, state: 
 
 #[get("")]
 async fn root(pool: Data<Pool<Sqlite>>, config: Data<Config>, state: Query<State>) -> Response {
-    render(&pool, &config.pathfinder, state.into_inner()).await
+    render(&pool, &config, state.into_inner()).await
 }
 
 #[derive(Template)]
 #[template(path = "gallery/list.html")]
 struct HxMore<'a> {
+    features: &'a Features,
     media: &'a Vec<Media>,
 }
 
@@ -146,5 +148,9 @@ async fn more(
     .map(|row| (row, &config.pathfinder).into())
     .collect();
 
-    HxMore { media: &media }.render_response()
+    HxMore {
+        features: &config.features,
+        media: &media,
+    }
+    .render_response()
 }

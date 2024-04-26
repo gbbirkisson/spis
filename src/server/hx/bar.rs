@@ -10,7 +10,7 @@ use sqlx::{Pool, Sqlite};
 async fn favorite(pool: Data<Pool<Sqlite>>, config: Data<Config>, state: Query<State>) -> Response {
     let mut state = state.into_inner();
     state.favorite = state.favorite.or(Some(false)).map(|b| !b);
-    render(&pool, &config.pathfinder, state).await
+    render(&pool, &config, state).await
 }
 
 #[get("/year/{year}")]
@@ -28,7 +28,7 @@ async fn year(
         state.year = Some(year);
     }
     state.month = None;
-    render(&pool, &config.pathfinder, state).await
+    render(&pool, &config, state).await
 }
 
 #[get("/month/{month}")]
@@ -46,10 +46,10 @@ async fn month(
     } else {
         state.month = Some(month);
     }
-    render(&pool, &config.pathfinder, state).await
+    render(&pool, &config, state).await
 }
 
 #[get("/bar/clear")]
 async fn clear(pool: Data<Pool<Sqlite>>, config: Data<Config>) -> Response {
-    render(&pool, &config.pathfinder, State::default()).await
+    render(&pool, &config, State::default()).await
 }

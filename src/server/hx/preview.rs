@@ -1,5 +1,5 @@
 use crate::db;
-use crate::server::Config;
+use crate::server::{Config, Features};
 
 use super::render::{Response, ServerError, TemplatedResponse};
 use super::Media;
@@ -13,10 +13,9 @@ use uuid::Uuid;
 
 #[derive(Template)]
 #[template(path = "preview/preview.html")]
-struct HxRoot {
+struct HxRoot<'a> {
     archive_confirm: bool,
-    archive_allow: bool,
-    favorite_allow: bool,
+    features: &'a Features,
     prev: Option<Media>,
     media: Option<Media>,
     next: Option<Media>,
@@ -35,8 +34,7 @@ async fn root(
 
     HxRoot {
         archive_confirm: false,
-        archive_allow: config.archive_allow,
-        favorite_allow: config.favorite_allow,
+        features: &config.features,
         prev: res.0.map(|m| (m, &config.pathfinder).into()),
         media: res.1.map(|m| (m, &config.pathfinder).into()),
         next: res.2.map(|m| (m, &config.pathfinder).into()),
@@ -63,8 +61,7 @@ async fn favorite(
 
     HxRoot {
         archive_confirm: false,
-        archive_allow: config.archive_allow,
-        favorite_allow: config.favorite_allow,
+        features: &config.features,
         prev: res.0.map(|m| (m, &config.pathfinder).into()),
         media: res.1.map(|m| (m, &config.pathfinder).into()),
         next: res.2.map(|m| (m, &config.pathfinder).into()),
@@ -85,8 +82,7 @@ async fn archive(
 
     HxRoot {
         archive_confirm: true,
-        archive_allow: config.archive_allow,
-        favorite_allow: config.favorite_allow,
+        features: &config.features,
         prev: res.0.map(|m| (m, &config.pathfinder).into()),
         media: res.1.map(|m| (m, &config.pathfinder).into()),
         next: res.2.map(|m| (m, &config.pathfinder).into()),
@@ -106,8 +102,7 @@ async fn archive_confirm(
 
     HxRoot {
         archive_confirm: false,
-        archive_allow: config.archive_allow,
-        favorite_allow: config.favorite_allow,
+        features: &config.features,
         prev: None,
         media: None,
         next: None,

@@ -117,8 +117,10 @@ async fn main() -> Result<()> {
     };
 
     let config = Config {
-        archive_allow: config.feature_archive(),
-        favorite_allow: config.feature_favorite(),
+        features: server::Features {
+            archive_allow: config.feature_archive(),
+            favorite_allow: config.feature_favorite(),
+        },
         pathfinder: config.pathfinder(),
     };
     let server = server::run(listener, pool, config).expect("Failed to create server");

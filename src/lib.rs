@@ -75,8 +75,8 @@ impl SpisCfg {
             .set_default("api_media_path", "/assets/media")?
             .set_default("api_thumbnail_path", "/assets/thumbnails")?
             .set_default("server_socket", "/var/run/spis.sock")?
-            .set_default("feature_archive", false)?
-            .set_default("feature_favorite", false)?
+            .set_default("feature_archive", true)?
+            .set_default("feature_favorite", true)?
             .build()
             .wrap_err("Failed to build config")?;
 
