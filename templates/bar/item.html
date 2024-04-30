@@ -1,27 +1,27 @@
 <li class="bar-filter-item">
   {% match button %}
     {% when BarButton::Favorite with (active) %}
-      <div class="link"
+      <div
         hx-get="/hx/bar/favorite"
         hx-target="#hx-main"
-        class="bar-filter-link{% if active %}-selected{% endif %}"
+        class="link bar-filter-link{% if active %}-selected{% endif %}"
       ><i class="fa-solid fa-heart icon-white"></i></div>
     {% when BarButton::Year with (active, year) %}
-      <div class="link"
+      <div
         hx-get="/hx/bar/year/{{ year }}"
         hx-target="#hx-main"
-        class="bar-filter-link{% if active %}-selected{% endif %}">{{ year }}</div>
+        class="link bar-filter-link{% if active %}-selected{% endif %}">{{ year }}</div>
     {% when BarButton::Month with (active, month_nr, month_text) %}
-      <div class="link"
+      <div
         hx-get="/hx/bar/month/{{ month_nr }}"
         hx-target="#hx-main"
-        class="bar-filter-link{% if active %}-selected{% endif %}">{{ month_text }}</div>
+        class="link bar-filter-link{% if active %}-selected{% endif %}">{{ month_text }}</div>
     {% when BarButton::Clear %}
-      <div class="link"
+      <div
         hx-get="/hx/bar/clear"
         hx-target="#hx-main"
-        class="bar-filter-link"><i class="fa-solid fa-xmark"></i></div>
+        class="link bar-filter-link"><i class="fa-solid fa-xmark"></i></div>
     {% when BarButton::Empty %}
-      <i></i>
+      <div><i></i></div>
   {% endmatch %}
 </li>

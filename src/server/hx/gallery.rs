@@ -1,5 +1,6 @@
 use crate::db;
 use crate::server::{Config, Features};
+use chrono::Datelike;
 
 use super::render::ServerError;
 use super::render::{Response, TemplatedResponse};
@@ -52,13 +53,23 @@ struct HxGallery<'a> {
 }
 
 pub(super) async fn render(pool: &Pool<Sqlite>, config: &Config, state: State) -> Response {
+    let now = chrono::Utc::now();
+
+    #[allow(clippy::cast_sign_loss)]
+    let current_year = now.year() as usize;
+    #[allow(clippy::cast_possible_truncation)]
+    let current_month = now.month() as u8;
+
     let mut buttons = vec![BarButton::Favorite(state.favorite.unwrap_or(false))];
-    let current_year = 2024;
+
     if state.year.is_none() {
         for i in (current_year - 14..=current_year).rev() {
             buttons.push(BarButton::Year(false, format!("{i}")));
         }
-        buttons.push(BarButton::Empty);
+        match state.favorite {
+            Some(true) => buttons.push(BarButton::Clear),
+            _ => buttons.push(BarButton::Empty),
+        }
     } else if let Some(year) = state.year {
         if year == current_year {
             buttons.push(BarButton::Empty);
@@ -85,28 +96,27 @@ pub(super) async fn render(pool: &Pool<Sqlite>, config: &Config, state: State) -
         .iter()
         .rev()
         {
-            buttons.push(BarButton::Month(
-                Some(month_nr) == state.month.as_ref(),
-                *month_nr,
-                (*month_text).to_string(),
-            ));
+            if year == current_year && month_nr > &current_month {
+                buttons.push(BarButton::Empty);
+            } else {
+                buttons.push(BarButton::Month(
+                    Some(month_nr) == state.month.as_ref(),
+                    *month_nr,
+                    (*month_text).to_string(),
+                ));
+            }
         }
 
         buttons.push(BarButton::Year(false, format!("{}", year - 1)));
         buttons.push(BarButton::Clear);
     }
 
-    let media = db::media_list(
-        pool,
-        &state,
-        db::Order::Desc,
-        PAGE_SIZE.try_into().expect("PAGE_SIZE conversion failed"),
-    )
-    .await
-    .map_err(ServerError::DBError)?
-    .into_iter()
-    .map(|row| (row, &config.pathfinder).into())
-    .collect();
+    let media = db::media_list(pool, &state, db::Order::Desc, PAGE_SIZE)
+        .await
+        .map_err(ServerError::DBError)?
+        .into_iter()
+        .map(|row| (row, &config.pathfinder).into())
+        .collect();
 
     HxGallery {
         bar_buttons: &buttons,
@@ -136,17 +146,12 @@ async fn more(
     state: Query<State>,
     cursor: Query<Cursor>,
 ) -> Response {
-    let media = db::media_list(
-        &pool,
-        (&*state, &*cursor),
-        db::Order::Desc,
-        PAGE_SIZE.try_into().expect("PAGE_SIZE conversion failed"),
-    )
-    .await
-    .map_err(ServerError::DBError)?
-    .into_iter()
-    .map(|row| (row, &config.pathfinder).into())
-    .collect();
+    let media = db::media_list(&pool, (&*state, &*cursor), db::Order::Desc, PAGE_SIZE)
+        .await
+        .map_err(ServerError::DBError)?
+        .into_iter()
+        .map(|row| (row, &config.pathfinder).into())
+        .collect();
 
     HxMore {
         features: &config.features,

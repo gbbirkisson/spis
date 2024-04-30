@@ -242,12 +242,12 @@ impl Filter {
     }
 }
 
-#[allow(clippy::missing_errors_doc)]
+#[allow(clippy::missing_errors_doc, clippy::missing_panics_doc)]
 pub async fn media_list(
     pool: &SqlitePool,
     filter: impl Into<Filter>,
     order: impl Into<Order>,
-    limit: i32,
+    limit: usize,
 ) -> Result<Vec<MediaRow>> {
     let filter = filter.into();
     let order = order.into();
@@ -262,7 +262,7 @@ LIMIT ?
     );
     let mut query = sqlx::query_as::<Sqlite, MediaRow>(&query);
     query = filter.bind(query);
-    query = query.bind(limit);
+    query = query.bind(i32::try_from(limit).expect("Failed to convert limit"));
     query.fetch_all(pool).await.wrap_err("Failed to fetch rows")
 }
 

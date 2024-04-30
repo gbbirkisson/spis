@@ -49,7 +49,7 @@ async fn month(
     render(&pool, &config, state).await
 }
 
-#[get("/bar/clear")]
+#[get("/clear")]
 async fn clear(pool: Data<Pool<Sqlite>>, config: Data<Config>) -> Response {
     render(&pool, &config, State::default()).await
 }
