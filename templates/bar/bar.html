@@ -19,4 +19,9 @@
       <input name="month" value="{{ month }}" type="hidden"/>
     {% when None %}
   {% endmatch %}
+  {% match state.new_to_old %}
+    {% when Some with (new_to_old) %}
+      <input name="new_to_old" value="{{ new_to_old }}" type="hidden"/>
+    {% when None %}
+  {% endmatch %}
 </div>

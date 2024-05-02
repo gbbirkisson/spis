@@ -40,6 +40,7 @@ struct State {
     favorite: Option<bool>,
     year: Option<usize>,
     month: Option<u8>,
+    new_to_old: Option<bool>,
 }
 
 fn to_timestamp(s: &str) -> DateTime<Utc> {
@@ -87,8 +88,11 @@ impl From<&State> for Filter {
 }
 
 impl From<&State> for Order {
-    fn from(_value: &State) -> Self {
-        Self::Desc // TODO:
+    fn from(value: &State) -> Self {
+        match value.new_to_old {
+            Some(true) | None => Self::Desc,
+            Some(false) => Self::Asc,
+        }
     }
 }
 
@@ -139,6 +143,7 @@ pub fn create_service(path: &str) -> actix_web::Scope {
                 .service(bar::favorite)
                 .service(bar::year)
                 .service(bar::month)
+                .service(bar::order)
                 .service(bar::clear),
         )
         .service(

@@ -28,7 +28,7 @@ async fn root(
     state: Query<State>,
     uuid: web::Path<Uuid>,
 ) -> Response {
-    let res = db::media_get(&pool, &*state, db::Order::Desc, &uuid)
+    let res = db::media_get(&pool, &*state, &*state, &uuid)
         .await
         .map_err(ServerError::DBError)?;
 
@@ -55,7 +55,7 @@ async fn favorite(
         .await
         .map_err(ServerError::DBError)?;
 
-    let res = db::media_get(&pool, &*state, db::Order::Desc, &uuid)
+    let res = db::media_get(&pool, &*state, &*state, &uuid)
         .await
         .map_err(ServerError::DBError)?;
 
@@ -76,7 +76,7 @@ async fn archive(
     state: Query<State>,
     uuid: web::Path<Uuid>,
 ) -> Response {
-    let res = db::media_get(&pool, &*state, db::Order::Desc, &uuid)
+    let res = db::media_get(&pool, &*state, &*state, &uuid)
         .await
         .map_err(ServerError::DBError)?;
 

@@ -49,6 +49,13 @@ async fn month(
     render(&pool, &config, state).await
 }
 
+#[get("/order")]
+async fn order(pool: Data<Pool<Sqlite>>, config: Data<Config>, state: Query<State>) -> Response {
+    let mut state = state.into_inner();
+    state.new_to_old = state.new_to_old.or(Some(true)).map(|b| !b);
+    render(&pool, &config, state).await
+}
+
 #[get("/clear")]
 async fn clear(pool: Data<Pool<Sqlite>>, config: Data<Config>) -> Response {
     render(&pool, &config, State::default()).await
