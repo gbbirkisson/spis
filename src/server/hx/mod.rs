@@ -42,14 +42,46 @@ struct State {
     month: Option<u8>,
 }
 
+fn to_timestamp(s: &str) -> DateTime<Utc> {
+    DateTime::parse_from_rfc3339(s)
+        .expect("malformed timestamp")
+        .with_timezone(&Utc)
+}
+
 impl From<&State> for Filter {
     fn from(value: &State) -> Self {
-        // https://github.com/gbbirkisson/spis/blob/main/spis-gui/src/filters.rs#L92
+        let (start, end) = value.year.map_or((None, None), |year| {
+            let start = to_timestamp(&format!(
+                "{}-{:02}-01T00:00:00-00:00",
+                year,
+                value.month.unwrap_or(1)
+            ));
+
+            let next_year = format!("{}-01-01T00:00:00-00:00", year + 1);
+            let end = to_timestamp(&match value.month {
+                None => next_year,
+                Some(month) => {
+                    if month == 12 {
+                        next_year
+                    } else {
+                        format!("{}-{:02}-01T00:00:00-00:00", year, month + 1,)
+                    }
+                }
+            });
+            (Some(start), Some(end))
+        });
+
+        let favorite = if matches!(value.favorite, Some(true)) {
+            Some(true)
+        } else {
+            None
+        };
+
         Self {
             archived: false,
-            favorite: value.favorite,
-            taken_after: None,  // TODO:
-            taken_before: None, // TODO:
+            favorite,
+            taken_after: start,
+            taken_before: end,
         }
     }
 }
