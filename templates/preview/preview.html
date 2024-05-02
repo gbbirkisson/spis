@@ -1,7 +1,7 @@
 {% match media %}
   {% when Some with (media) %}
     <div id="hx-media-preview" class="media-preview">
-      <div class="media-preview-content" _="on click hide #hx-media-preview">
+      <div id="hx-media-preview-content" class="media-preview-content" _="on click hide #hx-media-preview then remove #hx-media-preview-content">
         {% if media.video %}
         <video class="img-preview" autoplay="" controls="">
           <source type="video/mp4" src="{{ media.url }}">
@@ -42,7 +42,7 @@
         {% endif %}
 
         <!-- Exit button -->
-        <div class="link" _="on click hide #hx-media-preview">
+        <div class="link" _="on click hide #hx-media-preview then remove #hx-media-preview-content">
           <div class="media-action-button"><i class="fa-solid fa-xmark icon-white"></i></div>
         </div>
 
