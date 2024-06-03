@@ -75,6 +75,7 @@ impl MediaProcessor {
         let media_thumbnail_path = self.thumbnail_path.get_thumbnail(&media_uuid);
 
         let processed = if media_thumbnail_path.exists() && !self.force_processing {
+            tracing::trace!("Thumbnail already exists: {:?}", media_thumbnail_path);
             None
         } else {
             match (&self.video_processor, &media_type) {
@@ -99,7 +100,10 @@ impl MediaProcessor {
                         .wrap_err("Timestamp parsing failed")?;
                     Some((thumb, taken_at))
                 }
-                (_, _) => None,
+                (_, _) => {
+                    tracing::trace!("Skipping media: {}", media_path_str);
+                    None
+                }
             }
         };
 
