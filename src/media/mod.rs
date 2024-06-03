@@ -60,6 +60,7 @@ impl MediaProcessor {
         }
     }
 
+    #[allow(clippy::cognitive_complexity)]
     pub fn process(
         &self,
         media_uuid: Option<uuid::Uuid>,

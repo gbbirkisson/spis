@@ -11,6 +11,16 @@ opt-level = 3
 [profile.dev.build-override]
 opt-level = 3
 
+[lints.clippy]
+pedantic = { level = "deny", priority = -1 }
+nursery = { level = "deny", priority = -1 }
+unwrap_used = "deny"
+missing-const-for-fn = "allow"
+missing-errors-doc = "allow"
+must-use-candidate = "allow"
+needless-raw-string-hashes = "allow"
+future-not-send = "allow"
+
 [features]
 default = []
 dev = ["dep:actix", "dep:actix-web-actors"]

@@ -30,6 +30,13 @@ depends = ["clean:*"]
 
 ##### DEV #####
 
+
+[tasks."dev:clippy"]
+run = """
+watchexec --stop-timeout=0 -r -e rs,toml,html,css -- cargo clippy -F dev -- --no-deps -D warnings
+"""
+depends = ["setup:db"]
+
 [tasks."dev:nginx"]
 run = """
 cat << EOF > /tmp/nginx.conf
@@ -72,16 +79,7 @@ depends = ["dev:nginx", "dev:spis"]
 
 [tasks."lint:clippy"]
 run = """
-cargo clippy -F dev -- -D warnings \
-  -W clippy::pedantic \
-  -W clippy::nursery \
-  -W clippy::unwrap_used \
-  -A clippy::missing-const-for-fn \
-  -A clippy::missing-errors-doc \
-  -A clippy::must-use-candidate \
-  -A clippy::missing-errors-doc \
-  -A clippy::needless-raw-string-hashes \
-  -A clippy::future-not-send
+cargo clippy -F dev -- --no-deps -D warnings
 """
 depends = ["setup:db"]
 

@@ -9,7 +9,7 @@ use uuid::Builder;
 use uuid::Uuid;
 
 pub const THUMBNAIL_FORMAT: &str = "webp";
-const BUFFER_SIZE: usize = 512_000;
+const BUFFER_SIZE: usize = 1024 * 256;
 
 pub(crate) trait Thumbnail {
     fn get_thumbnail(&self, uuid: &Uuid) -> PathBuf;
