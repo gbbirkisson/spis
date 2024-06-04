@@ -1,0 +1,127 @@
+##### SETUP / CLEANUP #####
+
+[tasks."setup:folders"]
+run = ["mkdir -p data/media", "mkdir -p data/thumbnails"]
+outputs = ["data/media", "data/thumbnails"]
+
+[tasks."setup:db"]
+run = ["sqlx database create", "sqlx migrate run --source migrations"]
+sources = ["migrations/*.sql"]
+outputs = ["data/spis.db"]
+depends = ["setup:folders"]
+
+[tasks."setup:toolchain"]
+run = "rustup show"
+
+[tasks.setup]
+depends = ["setup:*"]
+
+[tasks."clean:cargo"]
+run = ["cargo clean", "rm -rf target"]
+
+[tasks."clean:state"]
+run = ["rm -f data/spis.db"]
+
+[tasks."clean:thumbnails"]
+run = ["rm -rf data/thumbnails"]
+
+[tasks.clean]
+depends = ["clean:*"]
+
+##### DEV #####
+
+
+[tasks."dev:clippy"]
+run = """
+watchexec --stop-timeout=0 -r -e rs,toml,html,css -- cargo clippy -F dev -- --no-deps -D warnings
+"""
+depends = ["setup:db"]
+
+[tasks."dev:nginx"]
+run = """
+cat << EOF > /tmp/nginx.conf
+daemon off;
+
+error_log /dev/stdout info;
+pid       /tmp/nginx.pid;
+
+events {
+    # No special events for this simple setup
+}
+
+http {
+EOF
+
+cat docker/nginx.conf | envsubst >> /tmp/nginx.conf
+
+cat << EOF >> /tmp/nginx.conf
+}
+EOF
+
+sed -i 's/Upgrade ;/Upgrade $http_upgrade;/g' /tmp/nginx.conf
+
+cat /tmp/nginx.conf
+nginx -c /tmp/nginx.conf > /dev/null
+"""
+
+[tasks."dev:spis"]
+run = "watchexec --stop-timeout=0 -r -e rs,toml,html,css -- cargo run --color always -F dev"
+depends = ["setup:db", "setup:folders"]
+
+[tasks."dev:process"]
+run = "cargo run -- -t"
+depends = ["setup:db", "setup:folders"]
+
+[tasks."dev"]
+depends = ["dev:nginx", "dev:spis"]
+
+##### CI #####
+
+[tasks."lint:clippy"]
+run = """
+cargo clippy -F dev -- --no-deps -D warnings
+"""
+depends = ["setup:db"]
+
+[tasks."lint:fmt"]
+run = "cargo fmt -- --check"
+
+[tasks."lint:audit"]
+run = "cargo audit"
+
+[tasks.lint]
+depends = ["lint:*"]
+
+[tasks.test]
+run = "cargo tarpaulin --ignore-tests --workspace --timeout 120 --skip-clean --out Xml"
+depends = ["setup:db"]
+
+[tasks.ci]
+depends = ["lint", "test"]
+
+##### RELEASE #####
+
+[tasks.release]
+depends = ["setup:db"]
+sources = ["src/**", "templates/**", "assets/**", "migrations/**"]
+outputs = ["release/spis-x86_64-unknown-linux-gnu"]
+run = """
+mkdir -p release
+cargo build --locked --release
+cp target/release/spis release/spis-x86_64-unknown-linux-gnu
+"""
+
+[tasks."docker:build"]
+run = "docker build -t spis-local -f docker/Dockerfile ."
+depends = ["release"]
+
+[tasks."docker:run"]
+raw = true
+depends = ["docker:build"]
+run = """
+docker run -it --rm \
+  -p 8080:8080 \
+  -v ${PWD}/data/media:/var/lib/spis/media \
+  -e SPIS_PROCESSING_RUN_ON_START=true \
+  spis-local
+"""

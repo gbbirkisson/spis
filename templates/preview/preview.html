@@ -1,0 +1,82 @@
+{% match media %}
+  {% when Some with (media) %}
+    <div id="hx-media-preview" class="media-preview">
+      <div id="hx-media-preview-content" class="media-preview-content" _="on click hide #hx-media-preview then remove #hx-media-preview-content">
+        {% if media.video %}
+        <video class="img-preview" autoplay="" controls="">
+          <source type="video/mp4" src="{{ media.url }}">
+        </video>
+        {% else %}
+        <img class="img-preview" src="{{ media.url }}">
+        {% endif %}
+      </div>
+      <div class="media-action">
+        <!-- Prev button -->
+        {% match prev %}
+          {% when Some with (prev) %}
+            <div class="link"
+              hx-get="/hx/preview/{{ prev.uuid }}"
+              hx-trigger="click, keyup[key=='ArrowLeft'] from:body"
+              hx-target="#hx-media-preview"
+              hx-swap="outerHTML">
+              <div class="media-action-button"><i class="fa-solid fa-chevron-left icon-white"></i></div>
+            </div>
+          {% when None %}
+            <div></i></div>
+        {% endmatch %}
+
+        <!-- Archive button -->
+        {% if features.archive_allow %}
+        <div class="link" id="del-{{ media.uuid }}"
+          {% if archive_confirm %}
+          _='on htmx:afterRequest remove #{"{{ media.uuid }}"}'
+          hx-delete="/hx/preview/{{ media.uuid }}/confirm"
+          {% else %}
+          hx-delete="/hx/preview/{{ media.uuid }}"
+          {% endif %}
+          hx-trigger="click, keyup[key=='Delete'] from:body"
+          hx-target="#hx-media-preview"
+          hx-swap="outerHTML">
+          <div class="media-action-button"><i class="fa-regular fa-trash-can {% if archive_confirm %}icon-red{% else %}icon-white{% endif %}"></i></div>
+        </div>
+        {% endif %}
+
+        <!-- Exit button -->
+        <div class="link" _="on click hide #hx-media-preview then remove #hx-media-preview-content">
+          <div class="media-action-button"><i class="fa-solid fa-xmark icon-white"></i></div>
+        </div>
+
+        <!-- Favorite button -->
+        {% if features.favorite_allow %}
+        <div class="link"
+          _="on htmx:afterRequest toggle between .hidden and .visible on #fav-{{ media.uuid }}"
+          hx-put="/hx/preview/{{ media.uuid }}/favorite/{{ !media.favorite }}"
+          hx-trigger="click, keyup[key=='Enter'] from:body"
+          hx-target="#hx-media-preview"
+          hx-swap="outerHTML">
+        {% if media.favorite %}
+          <div class="media-action-button"><i class="fa-solid fa-heart icon-pink"></i></div>
+        {% else %}
+          <div class="media-action-button"><i class="fa-regular fa-heart icon-white"></i></div>
+        {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Next button -->
+        {% match next %}
+          {% when Some with (next) %}
+            <div class="link"
+              hx-get="/hx/preview/{{ next.uuid }}"
+              hx-trigger="click, keyup[key=='ArrowRight'] from:body"
+              hx-target="#hx-media-preview"
+              hx-swap="outerHTML">
+              <div class="media-action-button"><i class="fa-solid fa-chevron-right icon-white"></i></div>
+            </div>
+          {% when None %}
+            <div></i></div>
+        {% endmatch %}
+      </div>
+    </div>
+  {% when None %}
+    <div id="hx-media-preview"></div>
+{% endmatch %}

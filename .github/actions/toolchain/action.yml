@@ -1,6 +1,6 @@
 ---
-name: rustup
-description: "Install Rust toolchain"
+name: toolchain
+description: "Install toolchain"
 
 inputs:
   bin-cache:
@@ -11,7 +11,15 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup caching
+    - name: Setup mise
+      uses: jdx/mise-action@v2
+      with:
+        # version: TODO:
+        install: true
+        cache: true
+        experimental: true
+
+    - name: Setup rust caching
       uses: Swatinem/rust-cache@v2
       with:
         shared-key: toolchain
@@ -25,6 +33,7 @@ runs:
       shell: bash
 
     - name: "Install rust toolchain"
+      shell: bash
       run: |
         # Make sure bin-cache dir exists with something in it
         mkdir -p ${{ inputs.bin-cache }}
@@ -33,10 +42,18 @@ runs:
         cp ${{ inputs.bin-cache }}/* /home/runner/.cargo/bin
 
         # Install everything needed
-        make setup-toolchain
+        mise run setup:toolchain
 
-        # Move bins to bin_cache
-        cat rust-toolchain.toml | grep '# bin' | sed 's/sqlx-cli/sqlx/g' | xargs -n 4 sh -c 'cp -f /home/runner/.cargo/bin/$2 ${{ inputs.bin-cache }}'
+        # Install dependencies
+        cargo install sqlx-cli@0.7.1 # TODO:
+        cargo install cargo-tarpaulin@0.27.3 # TODO:
 
-        rustc --version --verbose
+        # Cache these binaries
+        for f in sqlx cargo-tarpaulin; do
+          cp -f "/home/runner/.cargo/bin/$f" "${{ inputs.bin-cache }}"
+        done
+
+    - name: "Setup DB"
       shell: bash
+      run: |
+        mise run setup:db
