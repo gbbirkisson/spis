@@ -1,7 +1,7 @@
 use spis::{
-    db::{self},
+    db,
     media::{ProcessedMedia, ProcessedMediaData, ProcessedMediaType},
-    server::{Config, Listener},
+    server::{Config, Features, Listener},
     PathFinder,
 };
 use std::net::TcpListener;
@@ -49,7 +49,10 @@ async fn spawn_server() -> String {
 
     // Spawn server
     let config = Config {
-        archive_allow: true,
+        features: Features {
+            archive_allow: true,
+            favorite_allow: true,
+        },
         pathfinder,
     };
     let server =
