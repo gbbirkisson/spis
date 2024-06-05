@@ -65,7 +65,7 @@ chrono = { version = "0.4.32", features = ["serde"] }
 notify = "6.1.1"
 
 # Image processing
-image = { version = "0.25.0", features = ["jpeg", "webp-encoder"] }
+image = { version = "0.25.0", features = ["jpeg", "webp"] }
 kamadak-exif = "0.5"
 
 # Video processing
