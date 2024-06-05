@@ -27,6 +27,7 @@ pub struct PathFinder {
 }
 
 impl PathFinder {
+    #[must_use]
     pub fn new(
         media_dir: &str,
         media_path: &str,
@@ -41,10 +42,12 @@ impl PathFinder {
         }
     }
 
+    #[must_use]
     pub fn thumbnail(&self, id: &uuid::Uuid) -> String {
         format!("{}/{}.{}", self.thumbnail_path, id, self.thumbnail_ext)
     }
 
+    #[must_use]
     pub fn media(&self, path: &str) -> String {
         path.replace(&self.media_dir, &self.media_path)
     }
@@ -65,7 +68,6 @@ pub struct SpisCfg {
 }
 
 impl SpisCfg {
-    #[allow(clippy::missing_errors_doc)]
     pub fn new() -> Result<Self> {
         tracing::debug!("Loading config");
         let b = Config::builder()
@@ -104,7 +106,7 @@ impl SpisCfg {
         Ok(c)
     }
 
-    #[allow(clippy::must_use_candidate)]
+    #[must_use]
     pub fn server_listener(&self) -> SpisServerListener {
         match (&self.server_address, &self.server_socket) {
             (Some(address), _) => SpisServerListener::Address(address.clone()),
@@ -113,7 +115,7 @@ impl SpisCfg {
         }
     }
 
-    #[allow(clippy::must_use_candidate)]
+    #[must_use]
     pub fn pathfinder(&self) -> PathFinder {
         PathFinder::new(
             &self.media_dir,
@@ -123,38 +125,38 @@ impl SpisCfg {
         )
     }
 
-    #[allow(clippy::must_use_candidate)]
+    #[must_use]
     pub fn media_dir(&self) -> PathBuf {
         PathBuf::from(self.media_dir.clone())
     }
 
-    #[allow(clippy::must_use_candidate)]
+    #[must_use]
     pub fn thumbnail_dir(&self) -> PathBuf {
         PathBuf::from(self.data_dir.clone()).join("thumbnails")
     }
 
-    #[allow(clippy::must_use_candidate)]
+    #[must_use]
     pub fn db_file(&self) -> String {
         self.data_dir.clone() + "/spis.db"
     }
 
-    #[allow(clippy::must_use_candidate)]
+    #[must_use]
     pub fn processing_schedule(&self) -> String {
         self.processing_schedule.clone()
     }
 
-    #[allow(clippy::missing_const_for_fn, clippy::must_use_candidate)]
-    pub fn processing_run_on_start(&self) -> bool {
+    #[must_use]
+    pub const fn processing_run_on_start(&self) -> bool {
         self.processing_run_on_start
     }
 
-    #[allow(clippy::missing_const_for_fn, clippy::must_use_candidate)]
-    pub fn feature_archive(&self) -> bool {
+    #[must_use]
+    pub const fn feature_archive(&self) -> bool {
         self.feature_archive
     }
 
-    #[allow(clippy::missing_const_for_fn, clippy::must_use_candidate)]
-    pub fn feature_favorite(&self) -> bool {
+    #[must_use]
+    pub const fn feature_favorite(&self) -> bool {
         self.feature_favorite
     }
 }

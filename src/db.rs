@@ -20,7 +20,7 @@ impl MediaTypeConverter<i32> for ProcessedMediaType {
     }
 }
 
-#[allow(clippy::missing_errors_doc, clippy::module_name_repetitions)]
+#[allow(clippy::module_name_repetitions)]
 pub async fn setup_db(db_file: &str) -> Result<Pool<Sqlite>> {
     tracing::debug!("Setup db");
 
@@ -37,7 +37,6 @@ pub async fn setup_db(db_file: &str) -> Result<Pool<Sqlite>> {
     Ok(pool)
 }
 
-#[allow(clippy::missing_errors_doc)]
 pub async fn media_insert(pool: &SqlitePool, processed_media: ProcessedMedia) -> Result<()> {
     let media_type = processed_media.media_type.convert();
     match &processed_media.data {
@@ -74,20 +73,18 @@ pub struct MediaHashRow {
     pub path: String,
 }
 
-#[allow(clippy::missing_errors_doc)]
 pub async fn media_hashmap(pool: &SqlitePool) -> Result<HashMap<String, uuid::Uuid>> {
     tracing::debug!("Collect all DB entries UUIDs");
     let res = sqlx::query_as::<Sqlite, MediaHashRow>(
-        r#"
+        r"
         SELECT id, path FROM media
-        "#,
+        ",
     )
     .fetch_all(pool)
     .await?;
     Ok(res.into_iter().map(|e| (e.path, e.id)).collect())
 }
 
-#[allow(clippy::missing_errors_doc)]
 pub async fn media_mark_unwalked(pool: &SqlitePool) -> Result<()> {
     sqlx::query!(
         r#"
@@ -99,7 +96,6 @@ pub async fn media_mark_unwalked(pool: &SqlitePool) -> Result<()> {
     Ok(())
 }
 
-#[allow(clippy::missing_errors_doc)]
 pub async fn media_mark_missing(pool: &SqlitePool) -> Result<u64> {
     let res = sqlx::query!(
         r#"
@@ -121,10 +117,9 @@ pub struct MediaCount {
     pub missing: Option<i32>,
 }
 
-#[allow(clippy::missing_errors_doc)]
 pub async fn media_count(pool: &SqlitePool) -> Result<MediaCount> {
     let res = sqlx::query_as::<Sqlite, MediaCount>(
-        r#"
+        r"
         SELECT
         COUNT(*) as count,
         SUM(walked) as walked,
@@ -132,14 +127,13 @@ pub async fn media_count(pool: &SqlitePool) -> Result<MediaCount> {
         SUM(archived) as archived,
         SUM(missing) as missing
         FROM media
-        "#,
+        ",
     )
     .fetch_one(pool)
     .await?;
     Ok(res)
 }
 
-#[allow(clippy::missing_errors_doc)]
 pub async fn media_archive(pool: &SqlitePool, uuid: &uuid::Uuid, archive: bool) -> Result<bool> {
     let res = sqlx::query!(
         r#"
@@ -153,7 +147,6 @@ pub async fn media_archive(pool: &SqlitePool, uuid: &uuid::Uuid, archive: bool) 
     Ok(res.rows_affected() > 0)
 }
 
-#[allow(clippy::missing_errors_doc)]
 pub async fn media_favorite(pool: &SqlitePool, uuid: &uuid::Uuid, archive: bool) -> Result<bool> {
     let res = sqlx::query!(
         r#"
@@ -242,7 +235,7 @@ impl Filter {
     }
 }
 
-#[allow(clippy::missing_errors_doc, clippy::missing_panics_doc)]
+#[allow(clippy::future_not_send)]
 pub async fn media_list(
     pool: &SqlitePool,
     filter: impl Into<Filter>,
@@ -266,7 +259,7 @@ LIMIT ?
     query.fetch_all(pool).await.wrap_err("Failed to fetch rows")
 }
 
-#[allow(clippy::missing_errors_doc, clippy::missing_panics_doc)]
+#[allow(clippy::future_not_send)]
 pub async fn media_get(
     pool: &SqlitePool,
     filter: impl Into<Filter>,
