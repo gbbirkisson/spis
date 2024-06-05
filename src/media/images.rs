@@ -13,7 +13,6 @@ pub struct ImageProcessor {
 }
 
 impl ImageProcessor {
-    #[allow(clippy::missing_errors_doc)]
     pub fn new(path: &Path) -> Result<Self> {
         let media_bytes = fs::read(path)?;
         let mut exif_buf_reader = std::io::Cursor::new(media_bytes);
@@ -27,7 +26,6 @@ impl ImageProcessor {
         Ok(Self { exif, image })
     }
 
-    #[allow(clippy::missing_errors_doc)]
     pub fn get_timestamp(&self) -> Result<DateTime<Utc>> {
         let timestamp = exif_get_str(&self.exif, Tag::DateTimeOriginal)
             .or_else(|_| exif_get_str(&self.exif, Tag::DateTime))
@@ -51,7 +49,6 @@ impl ImageProcessor {
         Ok(timestamp)
     }
 
-    #[allow(clippy::missing_errors_doc)]
     pub fn get_thumbnail(&self, size: u32) -> Result<DynamicImage> {
         let mut image = self.image.thumbnail(size, size);
         image = match exif_get_u32(&self.exif, Tag::Orientation) {
@@ -94,7 +91,7 @@ fn exif_get_str(exif: &exif::Exif, tag: Tag) -> Result<&str> {
     }
 }
 
-#[allow(clippy::must_use_candidate)]
+#[must_use]
 pub fn crop(mut image: DynamicImage) -> DynamicImage {
     let image_height = image.height();
     let image_width = image.width();

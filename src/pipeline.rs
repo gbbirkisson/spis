@@ -28,7 +28,6 @@ pub type Nothing = ();
 pub type JobTrigger = ();
 pub type File = (Option<Uuid>, PathBuf);
 
-#[allow(clippy::missing_errors_doc, clippy::missing_panics_doc)]
 pub fn setup_filewatcher(file_sender: Sender<File>) -> Result<RecommendedWatcher> {
     // Setup debouncer channel
     let (debouncer_sender, mut debouncer_receiver): (
@@ -112,7 +111,6 @@ pub fn setup_filewatcher(file_sender: Sender<File>) -> Result<RecommendedWatcher
     Ok(file_watcher)
 }
 
-#[allow(clippy::missing_errors_doc)]
 pub fn setup_filewalker(
     pool: Pool<Sqlite>,
     media_dir: PathBuf,
@@ -253,7 +251,6 @@ fn walk_dir(
     tracing::info!("Walked {} files in total", count);
 }
 
-#[allow(clippy::missing_errors_doc)]
 pub fn setup_media_processing(
     thumb_dir: PathBuf,
     force_processing: bool,
@@ -312,7 +309,6 @@ pub fn setup_media_processing(
     Ok((file_sender, media_receiver))
 }
 
-#[allow(clippy::missing_errors_doc)]
 pub fn setup_db_store(pool: Pool<Sqlite>, media_receiver: Receiver<ProcessedMedia>) -> Result<()> {
     tracing::debug!("Setup db store");
 
@@ -332,7 +328,6 @@ pub fn setup_db_store(pool: Pool<Sqlite>, media_receiver: Receiver<ProcessedMedi
     Ok(())
 }
 
-#[allow(clippy::missing_errors_doc)]
 pub fn setup_cron(job_sender: Sender<()>, schedule: String) -> Result<()> {
     tracing::debug!("Setup cron job");
 

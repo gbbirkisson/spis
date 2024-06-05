@@ -14,14 +14,12 @@ use subprocess::{Exec, Redirection};
 pub struct VideoProcessor {}
 
 impl VideoProcessor {
-    #[allow(clippy::missing_errors_doc)]
     pub fn new() -> Result<Self> {
         which::which("ffprobe").wrap_err("ffprobe not installed")?;
         which::which("ffmpeg").wrap_err("ffmpeg not installed")?;
         Ok(Self {})
     }
 
-    #[allow(clippy::missing_errors_doc)]
     pub fn get_timestamp(&self, file: &str) -> Result<DateTime<Utc>> {
         let timestamp = Exec::cmd("ffprobe")
             .arg("-v")
@@ -50,7 +48,6 @@ impl VideoProcessor {
             .with_timezone(&Utc))
     }
 
-    #[allow(clippy::missing_errors_doc)]
     pub fn get_thumbnail(&self, file: &str, size: u32) -> Result<DynamicImage> {
         let mut img = Exec::cmd("ffmpeg")
             .arg("-v")

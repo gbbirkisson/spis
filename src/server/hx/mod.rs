@@ -113,7 +113,7 @@ impl From<(&State, &Cursor)> for Filter {
     }
 }
 
-fn dev_enabled() -> bool {
+const fn dev_enabled() -> bool {
     #[cfg(feature = "dev")]
     let dev = true;
     #[cfg(not(feature = "dev"))]
