@@ -35,7 +35,7 @@ jobs:
         uses: ./.github/actions/toolchain
 
       - name: Docker pulls images.
-        uses: ScribeMD/docker-cache@0.3.7
+        uses: ScribeMD/docker-cache@0.5.0
         with:
           key: docker-${{ runner.os }}
 
