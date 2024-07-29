@@ -4,8 +4,8 @@ use color_eyre::{
     eyre::{eyre, Context},
     Result,
 };
-use image::io::Reader;
 use image::DynamicImage;
+use image::ImageReader;
 use std::io::{Cursor, Read};
 use subprocess::{Exec, Redirection};
 
@@ -72,7 +72,7 @@ impl VideoProcessor {
         img.read_to_end(&mut buffer)
             .wrap_err("Failed to read thumbnail into buffer")?;
 
-        let mut img = Reader::with_format(Cursor::new(&buffer), image::ImageFormat::WebP)
+        let mut img = ImageReader::with_format(Cursor::new(&buffer), image::ImageFormat::WebP)
             .decode()
             .wrap_err("Failed to decode image")?;
 
