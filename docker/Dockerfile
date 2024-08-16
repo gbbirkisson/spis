@@ -1,4 +1,4 @@
-FROM nginx:1.27.0 as builder
+FROM nginx:1.27.1 as builder
 
 ENV \
     RELEASE_DIR=/tmp/release \
