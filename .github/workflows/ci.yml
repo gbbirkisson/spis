@@ -8,6 +8,9 @@ on:
     branches:
       - main
 
+env:
+  DATABASE_URL: sqlite:data/spis.db
+
 jobs:
   ci:
     name: Run ${{ matrix.target }}
@@ -21,9 +24,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Read .envrc
-        uses: HatsuneMiku3939/direnv-action@v1
 
       - name: Install rust toolchain
         uses: ./.github/actions/toolchain
