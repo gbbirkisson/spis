@@ -46,7 +46,7 @@ runs:
 
         # Install dependencies
         cargo install sqlx-cli@0.8.0 # TODO:
-        cargo install cargo-tarpaulin@0.27.3 # TODO:
+        cargo install cargo-tarpaulin@0.31.0 # TODO:
 
         # Cache these binaries
         for f in sqlx cargo-tarpaulin; do
