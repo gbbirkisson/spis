@@ -78,6 +78,8 @@ Variable Name | Required | Default | Description
 `SPIS_API_THUMBNAIL_PATH` | `No` | `/assets/thumbnails` | On what path will the webserver (`nginx`) serve thumbnails __*__
 `SPIS_SERVER_SOCKET` | `No` | `/var/run/spis.sock` | Path of the socket `SPIS` will listen to __**__
 `SPIS_SERVER_ADDRESS` | `No` | | Address `SPIS` will listen to rather than socket, i.e. `0.0.0.0:8000` __**__
+`SPIS_FEATURE_FAVORITE` | `No` | `true` | Enable favorite feature
+`SPIS_FEATURE_ARCHIVE` | `No` | `true` | Enable archive feature
 `RUST_LOG` | `No` | | Loglevels of the application, i.e. `error,spis=info`
 
 __*__ These are the paths that the webserver (`nginx`) serves media and thumbnails on. For a details on how this works, look at the [diagram](#diagram).
