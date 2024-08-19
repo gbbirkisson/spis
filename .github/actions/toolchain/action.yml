@@ -45,7 +45,7 @@ runs:
         mise run setup:toolchain
 
         # Install dependencies
-        cargo install sqlx-cli@0.7.1 # TODO:
+        cargo install sqlx-cli@0.8.0 # TODO:
         cargo install cargo-tarpaulin@0.27.3 # TODO:
 
         # Cache these binaries
