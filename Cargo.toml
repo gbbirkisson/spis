@@ -31,7 +31,6 @@ color-eyre = "0.6"
 thiserror = "1.0.57"
 config = "0.14"
 clap = { version = "4", features = ["derive"] }
-derive_more = "0.99.17"
 
 # Runtime
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync"] }
