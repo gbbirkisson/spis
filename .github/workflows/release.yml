@@ -9,7 +9,6 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   VERSION: ${{ github.ref_name }}
-  DATABASE_URL: sqlite:data/spis.db
 
 jobs:
   ci:
@@ -35,22 +34,10 @@ jobs:
       - name: Install rust toolchain
         uses: ./.github/actions/toolchain
 
-      - name: Docker pulls images.
-        uses: ScribeMD/docker-cache@0.5.0
-        with:
-          key: docker-${{ runner.os }}
-
-      - name: Build binary
-        uses: houseabsolute/actions-rust-cross@v0
-        with:
-          target: ${{ matrix.target }}
-          args: "--locked --release"
-          cross-version: v0.2.5
-
-      - name: Move to release dir
-        run: |
-          mkdir release
-          mv target/${{ matrix.target }}/release/spis release/spis-${{ matrix.target }}
+      - name: Build spis release
+        run: make release/spis-${{ matrix.target }}
+        env:
+          DATABASE_URL: sqlite:data/spis.db
 
       - name: Store artifact
         uses: actions/upload-artifact@v4

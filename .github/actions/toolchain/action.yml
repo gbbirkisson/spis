@@ -2,58 +2,37 @@
 name: toolchain
 description: "Install toolchain"
 
-inputs:
-  bin-cache:
-    description: 'Where to keep cached bins'
-    required: false
-    default: /home/runner/.bin-cache
-
 runs:
   using: "composite"
   steps:
-    - name: Setup mise
-      uses: jdx/mise-action@v2
-      with:
-        # version: TODO:
-        install: true
-        cache: true
-        experimental: true
-
     - name: Setup rust caching
       uses: Swatinem/rust-cache@v2
       with:
-        shared-key: toolchain
-        cache-directories: ${{ inputs.bin-cache }}
+        shared-key: toolchains
 
     - name: "Set environment variables used by toolchain"
+      shell: bash
       run: |
         echo CARGO_TERM_COLOR=always >> $GITHUB_ENV
         echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV
         echo RUST_BACKTRACE=1 >> $GITHUB_ENV
-      shell: bash
 
-    - name: "Install rust toolchain"
+    - name: Install rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: |
+          x86_64-unknown-linux-gnu,
+          armv7-unknown-linux-gnueabihf,
+          aarch64-unknown-linux-gnu
+
+    - name: Install cross compilation dependencies
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        version: 1.0
+        packages: gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu
+
+    - name: Install cargo dependencies
       shell: bash
       run: |
-        # Make sure bin-cache dir exists with something in it
-        mkdir -p ${{ inputs.bin-cache }}
-        touch ${{ inputs.bin-cache }}/empty
-
-        cp ${{ inputs.bin-cache }}/* /home/runner/.cargo/bin
-
-        # Install everything needed
-        mise run setup:toolchain
-
-        # Install dependencies
         cargo install sqlx-cli@0.8.0 # TODO:
         cargo install cargo-tarpaulin@0.31.0 # TODO:
-
-        # Cache these binaries
-        for f in sqlx cargo-tarpaulin; do
-          cp -f "/home/runner/.cargo/bin/$f" "${{ inputs.bin-cache }}"
-        done
-
-    - name: "Setup DB"
-      shell: bash
-      run: |
-        mise run setup:db
