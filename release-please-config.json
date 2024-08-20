@@ -4,7 +4,6 @@
   "extra-label": "release",
   "packages": {
     ".": {
-      "component": "spis",
       "release-type": "rust"
     }
   }
