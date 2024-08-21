@@ -328,9 +328,10 @@ pub fn setup_db_store(pool: Pool<Sqlite>, media_receiver: Receiver<ProcessedMedi
     Ok(())
 }
 
-pub fn setup_cron(job_sender: Sender<()>, schedule: String) -> Result<()> {
+pub fn setup_cron(job_sender: Sender<()>, schedule: &str) -> Result<()> {
     tracing::debug!("Setup cron job");
 
+    let schedule: String = schedule.to_string();
     let job = Job::cron(&schedule)?;
 
     tokio::spawn(async move {
