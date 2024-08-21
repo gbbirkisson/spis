@@ -45,7 +45,7 @@ enum BarButton {
 }
 
 #[derive(Template)]
-#[template(path = "gallery/gallery.html")]
+#[template(path = "web/gallery/gallery.html")]
 struct HxGallery<'a> {
     bar_buttons: &'a Vec<BarButton>,
     features: &'a Features,
@@ -149,7 +149,7 @@ async fn root(pool: Data<Pool<Sqlite>>, config: Data<Config>, state: Query<State
 }
 
 #[derive(Template)]
-#[template(path = "gallery/list.html")]
+#[template(path = "web/gallery/list.html")]
 struct HxMore<'a> {
     features: &'a Features,
     media: &'a Vec<Media>,
