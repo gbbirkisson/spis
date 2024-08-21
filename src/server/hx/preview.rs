@@ -12,7 +12,7 @@ use sqlx::{Pool, Sqlite};
 use uuid::Uuid;
 
 #[derive(Template)]
-#[template(path = "preview/preview.html")]
+#[template(path = "web/preview/preview.html")]
 struct HxRoot<'a> {
     archive_confirm: bool,
     features: &'a Features,

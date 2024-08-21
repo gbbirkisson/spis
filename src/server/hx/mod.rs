@@ -122,7 +122,7 @@ const fn dev_enabled() -> bool {
 }
 
 #[derive(Template)]
-#[template(path = "index.html")]
+#[template(path = "web/index.html")]
 struct HxIndex {}
 
 #[get("")]
