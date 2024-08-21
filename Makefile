@@ -1,3 +1,5 @@
+SOURCES:=$(shell find src -type f -name '*.rs')
+
 X86_64:=x86_64-unknown-linux-gnu
 ARMV7:=armv7-unknown-linux-gnueabihf
 AARCH64:=aarch64-unknown-linux-gnu
@@ -22,13 +24,13 @@ _release: ${DATABASE}
 	mkdir -p release
 	cp target/${TARGET}/release/spis release/spis-${TARGET}
 
-release/spis-${X86_64}:
+release/spis-${X86_64}: ${SOURCES}
 	TARGET=${X86_64} $(MAKE) --no-print-directory _release
 
-release/spis-${ARMV7}:
+release/spis-${ARMV7}: ${SOURCES}
 	TARGET=${ARMV7} $(MAKE) --no-print-directory _release
 
-release/spis-${AARCH64}:
+release/spis-${AARCH64}: ${SOURCES}
 	TARGET=${AARCH64} $(MAKE) --no-print-directory _release
 
 .PHONY: toolchain

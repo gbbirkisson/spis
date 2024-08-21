@@ -30,7 +30,9 @@ pub fn run(listener: Listener, pool: Pool<Sqlite>, config: Config) -> Result<Ser
     let config = web::Data::new(config);
 
     let server = HttpServer::new(move || {
-        let mut app = App::new()
+        let mut app = App::new();
+
+        app = app
             .service(web::redirect("/", "/hx"))
             .service(hx::create_service("/hx"))
             .service(assets::create_service("/assets"));
