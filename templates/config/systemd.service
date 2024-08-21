@@ -1,0 +1,26 @@
+[Unit]
+Requires=multi-user.target
+After=multi-user.target
+
+[Service]
+Environment="SPIS_MEDIA_DIR={{ config.media_dir.to_str().unwrap() }}"
+Environment="SPIS_DATA_DIR={{ config.data_dir.to_str().unwrap() }}"
+Environment="SPIS_PROCESSING_SCHEDULE={{ config.processing_schedule }}"
+Environment="SPIS_PROCESSING_RUN_ON_START={{ config.processing_run_on_start }}"
+Environment="SPIS_API_MEDIA_PATH={{ config.api_media_path }}"
+Environment="SPIS_API_THUMBNAIL_PATH={{ config.api_thumbnail_path }}"
+{%- if let Some(address) = config.listener.server_address %}
+Environment="SPIS_SERVER_ADDRESS={{ address }}"
+{% else if let Some(socket) = config.listener.server_socket %}
+Environment="SPIS_SERVER_SOCKET={{ socket }}"
+{%- endif %}
+Environment="SPIS_FEATURE_FAVORITE={{ config.feature_favorite }}"
+Environment="SPIS_FEATURE_ARCHIVE={{ config.feature_archive }}"
+Environment="RUST_LOG={{ spis_log }}"
+User={{ spis_user }}
+ExecStart={{ spis_bin }}
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

@@ -1,3 +1,4 @@
+use askama::Template;
 use clap::{ArgAction, Args, Parser, Subcommand};
 use color_eyre::eyre::{eyre, Error, OptionExt, WrapErr};
 use color_eyre::Result;
@@ -74,11 +75,11 @@ pub struct Spis {
     pub feature_archive: bool,
 
     #[command(subcommand)]
-    command: Option<Command>,
+    command: Option<SpisCommand>,
 }
 
 #[derive(Subcommand, Debug, Clone)]
-enum Command {
+enum SpisCommand {
     /// Runs the server (default)
     Run,
 
@@ -88,9 +89,55 @@ enum Command {
         #[clap(value_parser = file_exists)]
         media: Vec<PathBuf>,
     },
+
+    /// Render configuration templates
+    Template {
+        #[command(subcommand)]
+        template: SpisTemplate,
+    },
 }
 
-impl Default for Command {
+#[derive(Subcommand, Debug, Clone)]
+enum SpisTemplate {
+    /// Template nginx configuration
+    Nginx {
+        /// Nginx port
+        #[arg(short, long, env = "NGINX_PORT")]
+        port: u32,
+
+        /// Full nginx config
+        #[arg(short, long, default_value_t = false)]
+        full: bool,
+    },
+
+    /// Template systemd configuration
+    Systemd {
+        /// User that should run SPIS
+        #[arg(short, long)]
+        user: String,
+
+        /// Full path to SPIS binary
+        #[arg(short, long)]
+        bin: String,
+
+        /// Log configuration
+        #[arg(short, long, default_value = "error,spis=info")]
+        log: String,
+    },
+
+    /// Template docker compose configuration
+    DockerCompose {
+        /// Full path to SPIS binary
+        #[arg(short, long, default_value = "latest")]
+        version: String,
+
+        /// Log configuration
+        #[arg(short, long, default_value = "error,spis=info")]
+        log: String,
+    },
+}
+
+impl Default for SpisCommand {
     fn default() -> Self {
         Self::Run
     }
@@ -150,8 +197,9 @@ async fn main() -> Result<()> {
     let config = Spis::parse();
     tracing::debug!("Got config: {:?}", config);
     match config.command.clone().unwrap_or_default() {
-        Command::Process { media } => process(config, media).await,
-        Command::Run => run(config).await,
+        SpisCommand::Process { media } => process(config, media).await,
+        SpisCommand::Run => run(config).await,
+        SpisCommand::Template { template } => template_render(config, template),
     }
 }
 
@@ -258,4 +306,55 @@ async fn run(config: Spis) -> Result<()> {
     server.await?;
 
     Ok(())
+}
+
+fn template_render(config: Spis, template: SpisTemplate) -> Result<()> {
+    let res = match template {
+        SpisTemplate::Nginx { port, full } => NginxTemplate {
+            config,
+            nginx_port: port,
+            nginx_full: full,
+        }
+        .render()?,
+        SpisTemplate::Systemd { user, bin, log } => SystemdTemplate {
+            config,
+            spis_user: user,
+            spis_bin: bin,
+            spis_log: log,
+        }
+        .render()?,
+        SpisTemplate::DockerCompose { version, log } => DockerComposeTemplate {
+            config,
+            spis_version: version,
+            spis_log: log,
+        }
+        .render()?,
+    };
+    println!("{res}");
+    Ok(())
+}
+
+#[derive(Template)]
+#[template(path = "config/nginx.conf", escape = "none")]
+struct NginxTemplate {
+    config: Spis,
+    nginx_port: u32,
+    nginx_full: bool,
+}
+
+#[derive(Template)]
+#[template(path = "config/systemd.service", escape = "none")]
+struct SystemdTemplate {
+    config: Spis,
+    spis_user: String,
+    spis_bin: String,
+    spis_log: String,
+}
+
+#[derive(Template)]
+#[template(path = "config/docker-compose.yml", escape = "none")]
+struct DockerComposeTemplate {
+    config: Spis,
+    spis_version: String,
+    spis_log: String,
 }

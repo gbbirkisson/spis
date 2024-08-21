@@ -47,6 +47,14 @@ dev-spis: ${DATABASE} ${MEDIA_DIR} ${THUMBNAIL_DIR}
 	watchexec --stop-timeout=0 -r -e rs,toml,html,css -- \
 		cargo run --color always -F dev
 
+.PHONY: dev-nginx
+dev-nginx: ${DATABASE} ${MEDIA_DIR} ${THUMBNAIL_DIR}
+	bash -c 'cargo run -q -- template nginx --full > /tmp/nginx.conf && nginx -g "daemon off;" -c /tmp/nginx.conf'
+
+.PHONY: dev
+dev:
+	$(MAKE) --no-print-directory -j 2 dev-nginx dev-spis
+
 .PHONY: lint-fmt
 lint-fmt:
 	cargo fmt -- --check
@@ -62,9 +70,36 @@ lint: lint-fmt lint-clippy
 test: ${DATABASE} ${MEDIA_DIR} ${THUMBNAIL_DIR}
 	cargo tarpaulin --ignore-tests --color always --timeout 120 --skip-clean --out Xml
 
+.PHONY: template
+template: ${DATABASE} ${MEDIA_DIR} ${THUMBNAIL_DIR}
+	mkdir -p /tmp/media /tmp/data
+	cargo build --color always
+	cargo run -q -- \
+		--server-socket /tmp/spis.sock \
+		--media-dir /tmp/media \
+		--data-dir /tmp/data template \
+		nginx --port 8080 > examples/systemd/nginx.conf
+	cargo run -q -- \
+		--server-socket /tmp/spis.sock \
+		--media-dir /tmp/media \
+		--data-dir /tmp/data template \
+		systemd --bin /usr/bin/spis --user www-data > examples/systemd/spis.service
+	cargo run -q -- \
+		--server-socket /tmp/spis.sock \
+		--media-dir /tmp/media \
+		--data-dir /tmp/data template \
+		docker-compose > examples/docker/docker-compose.yml
+	git diff --exit-code
+
 .PHONY: docker-build
 docker-build: release/spis-${X86_64}
 	docker build -t spis-local -f docker/Dockerfile .
+
+.PHONY: docker-exec
+docker-exec: docker-build
+	docker run -it --rm \
+		--entrypoint bash \
+		spis-local
 
 .PHONY: docker-run
 docker-run: docker-build

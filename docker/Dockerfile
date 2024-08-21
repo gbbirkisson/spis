@@ -9,13 +9,10 @@ COPY release ${RELEASE_DIR}
 COPY docker/pick-release.sh /pick-release.sh
 RUN /pick-release.sh
 
-FROM debian:bookworm-slim
+FROM nginx:1.27.1
 
-# Install dependencies
 RUN apt-get update && apt-get install -y \
     supervisor \
-    nginx \
-    gettext-base \
     ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
@@ -29,15 +26,9 @@ ENV \
     SPIS_API_THUMBNAIL_PATH=/assets/thumbnails \
     SPIS_SERVER_SOCKET=/var/run/spis.sock
 
-# Copy default nginx configuration
-COPY --from=builder /etc/nginx /etc/nginx
-COPY --from=builder /docker-entrypoint.sh /docker-entrypoint.sh
-COPY --from=builder /docker-entrypoint.d /docker-entrypoint.d
-
 # Copy in custom configuration
-COPY docker/40-user-fix.sh /docker-entrypoint.d/40-user-fix.sh
-COPY docker/nginx.conf /etc/nginx/templates/default.conf.template
-COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
+COPY docker/docker-entrypoint.d/* /docker-entrypoint.d/
+COPY docker/supervisor/* /etc/supervisor/
 
 # Setup SPIS and smoketest
 COPY --from=builder /usr/bin/spis /usr/bin/spis
@@ -45,4 +36,4 @@ RUN chmod +x /usr/bin/spis && \
     /usr/bin/spis --version && \
     mkdir -p ${SPIS_MEDIA_DIR} ${SPIS_DATA_DIR}
 
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]
