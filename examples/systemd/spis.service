@@ -3,13 +3,14 @@ Requires=multi-user.target
 After=multi-user.target
 
 [Service]
-Environment="SPIS_MEDIA_DIR=/tmp/media"
-Environment="SPIS_DATA_DIR=/tmp/data"
+Environment="SPIS_MEDIA_DIR=/storage/spis/media"
+Environment="SPIS_DATA_DIR=/storage/spis/data"
 Environment="SPIS_PROCESSING_SCHEDULE=0 0 2 * * *"
 Environment="SPIS_PROCESSING_RUN_ON_START=false"
 Environment="SPIS_API_MEDIA_PATH=/assets/media"
 Environment="SPIS_API_THUMBNAIL_PATH=/assets/thumbnails"
-Environment="SPIS_SERVER_SOCKET=/tmp/spis.sock"
+Environment="SPIS_SERVER_SOCKET=/storage/spis/data/spis.sock"
+
 Environment="SPIS_FEATURE_FAVORITE=true"
 Environment="SPIS_FEATURE_ARCHIVE=true"
 Environment="RUST_LOG=error,spis=info"
