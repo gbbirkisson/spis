@@ -70,6 +70,10 @@ pub struct Spis {
     #[clap(long, env = "SPIS_FEATURE_FOLLOW_SYMLINKS", default_value = "true", action=ArgAction::SetFalse)]
     pub feature_follow_symlinks: bool,
 
+    /// Disable feature no exif
+    #[clap(long, env = "SPIS_FEATURE_NO_EXIF", default_value = "true", action=ArgAction::SetFalse)]
+    pub feature_allow_no_exif: bool,
+
     #[command(subcommand)]
     command: Option<SpisCommand>,
 }
@@ -218,9 +222,12 @@ async fn main() -> Result<()> {
 }
 
 async fn process(config: Spis, media: Vec<PathBuf>) -> Result<()> {
-    let (file_sender, mut media_receiver) =
-        pipeline::setup_media_processing(config.thumbnail_dir(), true)
-            .wrap_err("Failed to setup media processing")?;
+    let (file_sender, mut media_receiver) = pipeline::setup_media_processing(
+        config.thumbnail_dir(),
+        config.feature_allow_no_exif,
+        true,
+    )
+    .wrap_err("Failed to setup media processing")?;
 
     let (done_sender, done_receiver) = tokio::sync::oneshot::channel();
 
@@ -266,9 +273,12 @@ async fn run(config: Spis) -> Result<()> {
     .wrap_err("Failed to initialize DB")?;
 
     tracing::info!("Setting up media processing");
-    let (file_sender, media_receiver) =
-        pipeline::setup_media_processing(config.thumbnail_dir(), false)
-            .wrap_err("Failed to setup media processing")?;
+    let (file_sender, media_receiver) = pipeline::setup_media_processing(
+        config.thumbnail_dir(),
+        config.feature_allow_no_exif,
+        false,
+    )
+    .wrap_err("Failed to setup media processing")?;
 
     tracing::info!("Setting up file watcher");
     let mut file_watcher = pipeline::setup_filewatcher(file_sender.clone())

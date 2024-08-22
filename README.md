@@ -107,6 +107,8 @@ Options:
           Disable feature archive [env: SPIS_FEATURE_ARCHIVE=]
       --feature-follow-symlinks
           Disable feature follow symlinks [env: SPIS_FEATURE_FOLLOW_SYMLINKS=]
+      --feature-allow-no-exif
+          Disable feature no exif [env: SPIS_FEATURE_NO_EXIF=]
   -h, --help
           Print help
   -V, --version

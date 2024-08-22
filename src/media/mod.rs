@@ -66,6 +66,7 @@ impl MediaProcessor {
         media_uuid: Option<uuid::Uuid>,
         media_path: &Path,
         media_type: ProcessedMediaType,
+        allow_no_exif: bool,
     ) -> Result<ProcessedMedia> {
         let media_uuid = match media_uuid {
             Some(media_uuid) => media_uuid,
@@ -85,10 +86,14 @@ impl MediaProcessor {
                     let thumb = video_processor
                         .get_thumbnail(&media_path_str, THUMBNAIL_SIZE)
                         .wrap_err("Thumb creation failed")?;
-                    let taken_at = video_processor
+                    let mut taken_at = video_processor
                         .get_timestamp(&media_path_str)
-                        .wrap_err("Timestamp parsing failed")?;
-                    Some((thumb, taken_at))
+                        .wrap_err("Timestamp parsing failed");
+                    if taken_at.is_err() && allow_no_exif {
+                        tracing::trace!("No exif, using creation date: {}", media_path_str);
+                        taken_at = get_creation_date(media_path);
+                    }
+                    Some((thumb, taken_at?))
                 }
                 (_, ProcessedMediaType::Image) => {
                     tracing::debug!("Processing image: {}", media_path_str);
@@ -96,10 +101,14 @@ impl MediaProcessor {
                     let thumb = image_processor
                         .get_thumbnail(THUMBNAIL_SIZE)
                         .wrap_err("Thumb creation failed")?;
-                    let taken_at = image_processor
+                    let mut taken_at = image_processor
                         .get_timestamp()
-                        .wrap_err("Timestamp parsing failed")?;
-                    Some((thumb, taken_at))
+                        .wrap_err("Timestamp parsing failed");
+                    if taken_at.is_err() && allow_no_exif {
+                        tracing::trace!("No exif, using creation date: {}", media_path_str);
+                        taken_at = get_creation_date(media_path);
+                    }
+                    Some((thumb, taken_at?))
                 }
                 (_, _) => {
                     tracing::trace!("Skipping media: {}", media_path_str);
@@ -128,4 +137,10 @@ impl MediaProcessor {
 
         Ok(media)
     }
+}
+
+fn get_creation_date(file: &Path) -> Result<DateTime<Utc>> {
+    let metadata = std::fs::metadata(file)?;
+    let created = metadata.created()?;
+    Ok(DateTime::from(created))
 }

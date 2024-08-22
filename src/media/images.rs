@@ -8,7 +8,7 @@ use image::DynamicImage;
 use std::{fs, path::Path};
 
 pub struct ImageProcessor {
-    exif: Exif,
+    exif: Option<Exif>,
     image: DynamicImage,
 }
 
@@ -18,19 +18,19 @@ impl ImageProcessor {
         let mut exif_buf_reader = std::io::Cursor::new(media_bytes);
         let exif_reader = exif::Reader::new();
 
-        let exif = exif_reader
-            .read_from_container(&mut exif_buf_reader)
-            .wrap_err("Failed to read exif data")?;
+        let exif = exif_reader.read_from_container(&mut exif_buf_reader).ok();
         let image = image::open(path).wrap_err("Failed to open image")?;
 
         Ok(Self { exif, image })
     }
 
     pub fn get_timestamp(&self) -> Result<DateTime<Utc>> {
-        let timestamp = exif_get_str(&self.exif, Tag::DateTimeOriginal)
-            .or_else(|_| exif_get_str(&self.exif, Tag::DateTime))
+        let exif = self.exif.as_ref().ok_or(eyre!("no exif data"))?;
+
+        let timestamp = exif_get_str(exif, Tag::DateTimeOriginal)
+            .or_else(|_| exif_get_str(exif, Tag::DateTime))
             .wrap_err("Failed to get DateTime/DateTimeOriginal tag from exif data")?;
-        let timestamp_tz = exif_get_str(&self.exif, Tag::OffsetTimeOriginal);
+        let timestamp_tz = exif_get_str(exif, Tag::OffsetTimeOriginal);
 
         let mut timestamp_modified = timestamp.to_string().replace('-', ":");
         timestamp_modified.push(' ');
@@ -51,18 +51,20 @@ impl ImageProcessor {
 
     pub fn get_thumbnail(&self, size: u32) -> Result<DynamicImage> {
         let mut image = self.image.thumbnail(size, size);
-        image = match exif_get_u32(&self.exif, Tag::Orientation) {
-            // http://sylvana.net/jpegcrop/exif_orientation.html
-            // Ok(1) => image,
-            Ok(2) => image.flipv(),
-            Ok(3) => image.rotate180(),
-            Ok(4) => image.rotate180().flipv(),
-            Ok(5) => image.rotate90().flipv(),
-            Ok(6) => image.rotate90(),
-            Ok(7) => image.rotate270().flipv(),
-            Ok(8) => image.rotate270(),
-            _ => image,
-        };
+        if let Some(exif) = &self.exif {
+            image = match exif_get_u32(exif, Tag::Orientation) {
+                // http://sylvana.net/jpegcrop/exif_orientation.html
+                // Ok(1) => image,
+                Ok(2) => image.flipv(),
+                Ok(3) => image.rotate180(),
+                Ok(4) => image.rotate180().flipv(),
+                Ok(5) => image.rotate90().flipv(),
+                Ok(6) => image.rotate90(),
+                Ok(7) => image.rotate270().flipv(),
+                Ok(8) => image.rotate270(),
+                _ => image,
+            };
+        }
         Ok(crop(image))
     }
 }
