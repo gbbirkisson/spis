@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.8.0](https://github.com/gbbirkisson/spis/compare/v0.7.0...v0.8.0) (2024-08-22)
+
+
+### Features
+
+* **processing:** follow symlinks by default ([#267](https://github.com/gbbirkisson/spis/issues/267)) ([963f9c5](https://github.com/gbbirkisson/spis/commit/963f9c5fba4ebfbb96dc3e476d50d82bbf2bad45))
+* use creation time if exif data is missing ([#270](https://github.com/gbbirkisson/spis/issues/270)) ([d6fa5a5](https://github.com/gbbirkisson/spis/commit/d6fa5a56e47b0b9fad2498c291c4a29d8b27f5b2))
+
+
+### Bug Fixes
+
+* bump page size to 100 ([#269](https://github.com/gbbirkisson/spis/issues/269)) ([09f8381](https://github.com/gbbirkisson/spis/commit/09f83813ed3493603acec45ca771952fd893bcae))
+* **templates:** remove whitespaces ([#266](https://github.com/gbbirkisson/spis/issues/266)) ([c0bd908](https://github.com/gbbirkisson/spis/commit/c0bd9087ff248e42d612a5ec71f4f16bbd347fa8))
+
 ## [0.7.0](https://github.com/gbbirkisson/spis/compare/v0.6.0...v0.7.0) (2024-08-22)
 
 
