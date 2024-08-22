@@ -10,7 +10,6 @@ Environment="SPIS_PROCESSING_RUN_ON_START=false"
 Environment="SPIS_API_MEDIA_PATH=/assets/media"
 Environment="SPIS_API_THUMBNAIL_PATH=/assets/thumbnails"
 Environment="SPIS_SERVER_SOCKET=/storage/spis/data/spis.sock"
-
 Environment="SPIS_FEATURE_FAVORITE=true"
 Environment="SPIS_FEATURE_ARCHIVE=true"
 Environment="RUST_LOG=error,spis=info"
