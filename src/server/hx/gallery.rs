@@ -14,7 +14,7 @@ use askama::Template;
 use sqlx::Pool;
 use sqlx::Sqlite;
 
-const PAGE_SIZE: usize = 20;
+const PAGE_SIZE: usize = 100;
 
 mod filters {
     use core::fmt;
