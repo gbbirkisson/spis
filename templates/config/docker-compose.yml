@@ -5,17 +5,11 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPIS_MEDIA_DIR: "/var/lib/spis/media"
-      SPIS_DATA_DIR: "/var/lib/spis/data"
       SPIS_PROCESSING_SCHEDULE: "{{ config.processing_schedule }}"
       SPIS_PROCESSING_RUN_ON_START: "{{ config.processing_run_on_start }}"
       SPIS_FEATURE_FAVORITE: "{{ config.feature_favorite }}"
       SPIS_FEATURE_ARCHIVE: "{{ config.feature_archive }}"
       RUST_LOG: "{{ spis_log }}"
     volumes:
-      # This assumes you want to keep the SPIS data in a
-      # docker volume and not in some directory
-      - "data:/var/lib/spis/data"
+      - "{{ config.data_dir.to_str().unwrap() }}:/var/lib/spis/data"
       - "{{ config.media_dir.to_str().unwrap() }}:/var/lib/spis/media"
-volumes:
-  data:

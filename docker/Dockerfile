@@ -23,8 +23,9 @@ ENV \
     SPIS_MEDIA_DIR=/var/lib/spis/media \
     SPIS_DATA_DIR=/var/lib/spis/data \
     SPIS_API_MEDIA_PATH=/assets/media \
-    SPIS_API_THUMBNAIL_PATH=/assets/thumbnails \
-    SPIS_SERVER_SOCKET=/var/run/spis.sock
+    SPIS_API_THUMBNAIL_PATH=/assets/thumbnails
+ENV \
+    SPIS_SERVER_SOCKET=${SPIS_DATA_DIR}/spis.sock
 
 # Copy in custom configuration
 COPY docker/docker-entrypoint.d/* /docker-entrypoint.d/

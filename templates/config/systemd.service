@@ -13,6 +13,8 @@ Environment="SPIS_API_THUMBNAIL_PATH={{ config.api_thumbnail_path }}"
 Environment="SPIS_SERVER_ADDRESS={{ address }}"
 {% else if let Some(socket) = config.listener.server_socket %}
 Environment="SPIS_SERVER_SOCKET={{ socket }}"
+{% else %}
+{{ self::validate_listener(config) }}
 {%- endif %}
 Environment="SPIS_FEATURE_FAVORITE={{ config.feature_favorite }}"
 Environment="SPIS_FEATURE_ARCHIVE={{ config.feature_archive }}"

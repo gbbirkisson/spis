@@ -36,6 +36,8 @@ release/spis-${AARCH64}: ${SOURCES}
 .PHONY: toolchain
 toolchain:
 	rustup show
+	cargo install sqlx-cli@0.8.0
+	cargo install cargo-tarpaulin@0.31.0
 
 .PHONY: dev-clippy
 dev-clippy: ${DATABASE}
@@ -72,22 +74,20 @@ test: ${DATABASE} ${MEDIA_DIR} ${THUMBNAIL_DIR}
 
 .PHONY: template
 template: ${DATABASE} ${MEDIA_DIR} ${THUMBNAIL_DIR}
-	mkdir -p /tmp/media /tmp/data
 	cargo build --color always
 	cargo run -q -- \
-		--server-socket /tmp/spis.sock \
-		--media-dir /tmp/media \
-		--data-dir /tmp/data template \
+		--server-socket /storage/spis/data/spis.sock \
+		--data-dir /storage/spis/data \
+		--media-dir /storage/spis/media template \
 		nginx --port 8080 > examples/systemd/nginx.conf
 	cargo run -q -- \
-		--server-socket /tmp/spis.sock \
-		--media-dir /tmp/media \
-		--data-dir /tmp/data template \
+		--server-socket /storage/spis/data/spis.sock \
+		--data-dir /storage/spis/data \
+		--media-dir /storage/spis/media template \
 		systemd --bin /usr/bin/spis --user www-data > examples/systemd/spis.service
 	cargo run -q -- \
-		--server-socket /tmp/spis.sock \
-		--media-dir /tmp/media \
-		--data-dir /tmp/data template \
+		--data-dir /tmp/spis_data \
+		--media-dir /tmp/spis_media template \
 		docker-compose > examples/docker/docker-compose.yml
 	git diff --exit-code
 

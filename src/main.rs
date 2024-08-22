@@ -1,5 +1,5 @@
 use askama::Template;
-use clap::{ArgAction, Args, Parser, Subcommand};
+use clap::{error::ErrorKind, ArgAction, Args, CommandFactory, Parser, Subcommand};
 use color_eyre::eyre::{eyre, Error, OptionExt, WrapErr};
 use color_eyre::Result;
 use notify::Watcher;
@@ -12,15 +12,6 @@ use spis::{
 };
 use std::{net::TcpListener, path::PathBuf};
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
-
-fn dir_exists(s: &str) -> Result<PathBuf, String> {
-    let pathbuf = PathBuf::from(s);
-    if pathbuf.is_dir() {
-        Ok(pathbuf)
-    } else {
-        Err(format!("directory '{s}' does not exist"))
-    }
-}
 
 fn file_exists(s: &str) -> Result<PathBuf, String> {
     let pathbuf = PathBuf::from(s);
@@ -36,11 +27,11 @@ fn file_exists(s: &str) -> Result<PathBuf, String> {
 #[command(author, version, about, long_about = None)]
 pub struct Spis {
     /// Path to search for media files
-    #[clap(long, env = "SPIS_MEDIA_DIR", value_parser = dir_exists)]
+    #[clap(long, env = "SPIS_MEDIA_DIR", default_value = "")]
     pub media_dir: PathBuf,
 
     /// Path to store data
-    #[clap(long, env = "SPIS_DATA_DIR", value_parser = dir_exists)]
+    #[clap(long, env = "SPIS_DATA_DIR", default_value = "")]
     pub data_dir: PathBuf,
 
     /// Schedule to run processing on
@@ -80,7 +71,7 @@ pub struct Spis {
 
 #[derive(Subcommand, Debug, Clone)]
 enum SpisCommand {
-    /// Runs the server (default)
+    /// Runs the server [default]
     Run,
 
     /// Test process media files
@@ -144,7 +135,7 @@ impl Default for SpisCommand {
 }
 
 #[derive(Args, Debug)]
-#[group(required = true, multiple = false)]
+#[group(multiple = false)]
 pub struct ServerListener {
     /// Listen to address
     #[clap(long, group = "addr", env = "SPIS_SERVER_ADDRESS")]
@@ -153,6 +144,24 @@ pub struct ServerListener {
     /// Listen to UNIX socket
     #[clap(long, group = "addr", env = "SPIS_SERVER_SOCKET")]
     pub server_socket: Option<String>,
+}
+
+fn validate_listener(config: &Spis) -> &str {
+    match (
+        &config.listener.server_address,
+        &config.listener.server_socket,
+    ) {
+        (Some(_), None) | (None, Some(_)) => {}
+        _ => {
+            let mut cmd = Spis::command();
+            cmd.error(
+            ErrorKind::MissingRequiredArgument,
+            "missing either '--server-address <SERVER_ADDRESS>' or '--server-socket <SERVER_SOCKET>'",
+        )
+        .exit();
+        }
+    };
+    ""
 }
 
 impl TryFrom<&Spis> for PathFinder {
@@ -280,11 +289,12 @@ async fn run(config: Spis) -> Result<()> {
     pipeline::setup_cron(job_sender.clone(), &config.processing_schedule)
         .wrap_err("Failed to setup cron job")?;
 
+    validate_listener(&config);
     let listener = match (
         &config.listener.server_address,
         &config.listener.server_socket,
     ) {
-        (Some(address), _) => {
+        (Some(address), None) => {
             tracing::info!("Start listening on http://{}", address);
             Listener::Tcp(TcpListener::bind(address)?)
         }
@@ -292,7 +302,7 @@ async fn run(config: Spis) -> Result<()> {
             tracing::info!("Start listening on socket {}", socket);
             Listener::Socket(socket.clone())
         }
-        _ => return Err(eyre!("neither address nor socket was provided")),
+        _ => unreachable!(),
     };
 
     let config = Config {

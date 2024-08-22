@@ -34,5 +34,4 @@ runs:
     - name: Install cargo dependencies
       shell: bash
       run: |
-        cargo install sqlx-cli@0.8.0 # TODO:
-        cargo install cargo-tarpaulin@0.31.0 # TODO:
+        make toolchain
