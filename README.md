@@ -86,25 +86,27 @@ Commands:
 
 Options:
       --media-dir <MEDIA_DIR>
-          Path to search for media files [env: SPIS_MEDIA_DIR=/home/gbbirkisson/repos/personal/spis/data/media] [default: ]
+          Path to search for media files [env: SPIS_MEDIA_DIR=] [default: ]
       --data-dir <DATA_DIR>
-          Path to store data [env: SPIS_DATA_DIR=/home/gbbirkisson/repos/personal/spis/data] [default: ]
+          Path to store data [env: SPIS_DATA_DIR=] [default: ]
       --processing-schedule <PROCESSING_SCHEDULE>
-          Schedule to run processing on [env: SPIS_PROCESSING_SCHEDULE=0 0 2 * * *] [default: "0 0 2 * * *"]
+          Schedule to run processing on [env: SPIS_PROCESSING_SCHEDULE=] [default: "0 0 2 * * *"]
       --processing-run-on-start
-          Run processing on start [env: SPIS_PROCESSING_RUN_ON_START=true]
+          Run processing on start [env: SPIS_PROCESSING_RUN_ON_START=]
       --api-media-path <API_MEDIA_PATH>
-          Path webserver will serve media on [env: SPIS_API_MEDIA_PATH=/assets/media] [default: /assets/media]
+          Path webserver will serve media on [env: SPIS_API_MEDIA_PATH=] [default: /assets/media]
       --api-thumbnail-path <API_THUMBNAIL_PATH>
-          Path webserver will serve thumbnails on [env: SPIS_API_THUMBNAIL_PATH=/assets/thumbnails] [default: /assets/thumbnails]
+          Path webserver will serve thumbnails on [env: SPIS_API_THUMBNAIL_PATH=] [default: /assets/thumbnails]
       --server-address <SERVER_ADDRESS>
           Listen to address [env: SPIS_SERVER_ADDRESS=]
       --server-socket <SERVER_SOCKET>
-          Listen to UNIX socket [env: SPIS_SERVER_SOCKET=/tmp/spis.sock]
+          Listen to UNIX socket [env: SPIS_SERVER_SOCKET=]
       --feature-favorite
-          Disable feature favorite [env: SPIS_FEATURE_FAVORITE=true]
+          Disable feature favorite [env: SPIS_FEATURE_FAVORITE=]
       --feature-archive
-          Disable feature archive [env: SPIS_FEATURE_ARCHIVE=true]
+          Disable feature archive [env: SPIS_FEATURE_ARCHIVE=]
+      --feature-follow-symlinks
+          Disable feature follow symlinks [env: SPIS_FEATURE_FOLLOW_SYMLINKS=]
   -h, --help
           Print help
   -V, --version

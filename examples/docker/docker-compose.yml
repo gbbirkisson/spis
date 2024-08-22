@@ -9,6 +9,7 @@ services:
       SPIS_PROCESSING_RUN_ON_START: "false"
       SPIS_FEATURE_FAVORITE: "true"
       SPIS_FEATURE_ARCHIVE: "true"
+      SPIS_FEATURE_FOLLOW_SYMLINKS: "true"
       RUST_LOG: "error,spis=info"
     volumes:
       - "/tmp/spis_data:/var/lib/spis/data"

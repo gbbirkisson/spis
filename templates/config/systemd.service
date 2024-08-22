@@ -18,6 +18,7 @@ Environment="SPIS_SERVER_SOCKET={{ socket }}"
 {%- endif %}
 Environment="SPIS_FEATURE_FAVORITE={{ config.feature_favorite }}"
 Environment="SPIS_FEATURE_ARCHIVE={{ config.feature_archive }}"
+Environment="SPIS_FEATURE_FOLLOW_SYMLINKS={{ config.feature_follow_symlinks }}"
 Environment="RUST_LOG={{ spis_log }}"
 User={{ spis_user }}
 ExecStart={{ spis_bin }}

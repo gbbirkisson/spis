@@ -9,6 +9,7 @@ services:
       SPIS_PROCESSING_RUN_ON_START: "{{ config.processing_run_on_start }}"
       SPIS_FEATURE_FAVORITE: "{{ config.feature_favorite }}"
       SPIS_FEATURE_ARCHIVE: "{{ config.feature_archive }}"
+      SPIS_FEATURE_FOLLOW_SYMLINKS: "{{ config.feature_follow_symlinks }}"
       RUST_LOG: "{{ spis_log }}"
     volumes:
       - "{{ config.data_dir.to_str().unwrap() }}:/var/lib/spis/data"

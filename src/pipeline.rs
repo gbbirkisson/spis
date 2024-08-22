@@ -7,6 +7,7 @@ use chrono::Local;
 use chrono::{DateTime, Duration, Utc};
 use color_eyre::eyre::Context;
 use color_eyre::Result;
+use notify::event::ModifyKind;
 use notify::{
     event::{AccessKind, CreateKind, EventKind},
     Config, Error, Event, RecommendedWatcher, Watcher,
@@ -87,7 +88,8 @@ pub fn setup_filewatcher(file_sender: Sender<File>) -> Result<RecommendedWatcher
                 tracing::trace!("Got file event: {:?}", event);
                 let trigger_processing = match event.kind {
                     EventKind::Create(CreateKind::File)
-                    | EventKind::Access(AccessKind::Close(_)) => true,
+                    | EventKind::Access(AccessKind::Close(_))
+                    | EventKind::Modify(ModifyKind::Name(_)) => true,
                     // EventKind::Remove(RemoveKind::File) => {
                     //     // TODO: Handle file deletions?
                     // }
@@ -115,6 +117,7 @@ pub fn setup_filewalker(
     pool: Pool<Sqlite>,
     media_dir: PathBuf,
     file_sender: Sender<File>,
+    follow_symlinks: bool,
 ) -> Result<Sender<JobTrigger>> {
     tracing::debug!("Setup file walker");
 
@@ -150,7 +153,7 @@ pub fn setup_filewalker(
 
             tracing::debug!("Start walk thread");
             tokio::task::spawn_blocking(move || {
-                walk_dir(&old_uuids, &media_dir, &file_sender);
+                walk_dir(&old_uuids, &media_dir, &file_sender, follow_symlinks);
                 if let Err(error) = walk_finished_sender.send(NOTHING) {
                     tracing::error!("Failed to trigger processing finish: {:?}", error);
                 };
@@ -226,9 +229,10 @@ fn walk_dir(
     old_uuids: &HashMap<String, Uuid>,
     media_dir: &PathBuf,
     file_sender: &Sender<(Option<Uuid>, PathBuf)>,
+    follow_symlinks: bool,
 ) {
     let mut count = 0;
-    for entry in WalkDir::new(media_dir) {
+    for entry in WalkDir::new(media_dir).follow_links(follow_symlinks) {
         count += 1;
         if count % 1000 == 0 {
             tracing::info!("Walked {} files so far ...", count);
