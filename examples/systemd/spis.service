@@ -12,6 +12,7 @@ Environment="SPIS_API_THUMBNAIL_PATH=/assets/thumbnails"
 Environment="SPIS_SERVER_SOCKET=/storage/spis/data/spis.sock"
 Environment="SPIS_FEATURE_FAVORITE=true"
 Environment="SPIS_FEATURE_ARCHIVE=true"
+Environment="SPIS_FEATURE_FOLLOW_SYMLINKS=true"
 Environment="RUST_LOG=error,spis=info"
 User=www-data
 ExecStart=/usr/bin/spis

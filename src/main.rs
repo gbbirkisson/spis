@@ -25,6 +25,7 @@ fn file_exists(s: &str) -> Result<PathBuf, String> {
 /// Simple private image server
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
+#[allow(clippy::struct_excessive_bools)]
 pub struct Spis {
     /// Path to search for media files
     #[clap(long, env = "SPIS_MEDIA_DIR", default_value = "")]
@@ -64,6 +65,10 @@ pub struct Spis {
     /// Disable feature archive
     #[clap(long, env = "SPIS_FEATURE_ARCHIVE", default_value = "true", action=ArgAction::SetFalse)]
     pub feature_archive: bool,
+
+    /// Disable feature follow symlinks
+    #[clap(long, env = "SPIS_FEATURE_FOLLOW_SYMLINKS", default_value = "true", action=ArgAction::SetFalse)]
+    pub feature_follow_symlinks: bool,
 
     #[command(subcommand)]
     command: Option<SpisCommand>,
@@ -273,9 +278,13 @@ async fn run(config: Spis) -> Result<()> {
         .wrap_err("Failed to start file watcher")?;
 
     tracing::info!("Setting up file walker");
-    let job_sender =
-        pipeline::setup_filewalker(pool.clone(), config.media_dir.clone(), file_sender.clone())
-            .wrap_err("Failed to setup file walker")?;
+    let job_sender = pipeline::setup_filewalker(
+        pool.clone(),
+        config.media_dir.clone(),
+        file_sender.clone(),
+        config.feature_follow_symlinks,
+    )
+    .wrap_err("Failed to setup file walker")?;
 
     pipeline::setup_db_store(pool.clone(), media_receiver).wrap_err("Failed to setup db store")?;
 

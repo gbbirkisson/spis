@@ -51,7 +51,7 @@ dev-spis: ${DATABASE} ${MEDIA_DIR} ${THUMBNAIL_DIR}
 
 .PHONY: dev-nginx
 dev-nginx: ${DATABASE} ${MEDIA_DIR} ${THUMBNAIL_DIR}
-	bash -c 'cargo run -q -- template nginx --full > /tmp/nginx.conf && nginx -g "daemon off;" -c /tmp/nginx.conf'
+	bash -c 'RUST_LOG=error cargo run -q -- template nginx --full > /tmp/nginx.conf && nginx -g "daemon off;" -c /tmp/nginx.conf'
 
 .PHONY: dev
 dev:
