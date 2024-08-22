@@ -257,6 +257,7 @@ fn walk_dir(
 
 pub fn setup_media_processing(
     thumb_dir: PathBuf,
+    allow_no_exif: bool,
     force_processing: bool,
 ) -> Result<(Sender<File>, Receiver<ProcessedMedia>)> {
     tracing::debug!("Setup media processing");
@@ -291,7 +292,7 @@ pub fn setup_media_processing(
                 _ => None,
             })
             .map(|(uuid, path, media_type)| {
-                match media_processor.process(uuid, &path, media_type) {
+                match media_processor.process(uuid, &path, media_type, allow_no_exif) {
                     Ok(media) => {
                         if let Err(error) = media_sender
                             .blocking_send(media)
