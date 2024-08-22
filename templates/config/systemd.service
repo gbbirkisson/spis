@@ -11,9 +11,9 @@ Environment="SPIS_API_MEDIA_PATH={{ config.api_media_path }}"
 Environment="SPIS_API_THUMBNAIL_PATH={{ config.api_thumbnail_path }}"
 {%- if let Some(address) = config.listener.server_address %}
 Environment="SPIS_SERVER_ADDRESS={{ address }}"
-{% else if let Some(socket) = config.listener.server_socket %}
+{%- else if let Some(socket) = config.listener.server_socket %}
 Environment="SPIS_SERVER_SOCKET={{ socket }}"
-{% else %}
+{%- else %}
 {{ self::validate_listener(config) }}
 {%- endif %}
 Environment="SPIS_FEATURE_FAVORITE={{ config.feature_favorite }}"
