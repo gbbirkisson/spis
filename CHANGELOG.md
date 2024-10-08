@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.2](https://github.com/gbbirkisson/spis/compare/v0.8.1...v0.8.2) (2024-10-08)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate clap to v4.5.20 ([#288](https://github.com/gbbirkisson/spis/issues/288)) ([8d8d251](https://github.com/gbbirkisson/spis/commit/8d8d251cf352bc81c2e281a96c97fa38cf7d8d71))
+
 ## [0.8.1](https://github.com/gbbirkisson/spis/compare/v0.8.0...v0.8.1) (2024-10-03)
 
 
