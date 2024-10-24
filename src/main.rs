@@ -267,7 +267,7 @@ async fn run(config: Spis) -> Result<()> {
         config
             .db_file()
             .to_str()
-            .ok_or(eyre!("failed to get db path"))?,
+            .ok_or_else(|| eyre!("failed to get db path"))?,
     )
     .await
     .wrap_err("Failed to initialize DB")?;

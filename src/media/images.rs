@@ -25,7 +25,7 @@ impl ImageProcessor {
     }
 
     pub fn get_timestamp(&self) -> Result<DateTime<Utc>> {
-        let exif = self.exif.as_ref().ok_or(eyre!("no exif data"))?;
+        let exif = self.exif.as_ref().ok_or_else(|| eyre!("no exif data"))?;
 
         let timestamp = exif_get_str(exif, Tag::DateTimeOriginal)
             .or_else(|_| exif_get_str(exif, Tag::DateTime))
@@ -84,7 +84,7 @@ fn exif_get_str(exif: &exif::Exif, tag: Tag) -> Result<&str> {
     match exif.get_field(tag, In::PRIMARY) {
         Some(field) => match &field.value {
             Value::Ascii(bytes) => {
-                let bytes = bytes.first().ok_or(eyre!("Something is wrong"))?;
+                let bytes = bytes.first().ok_or_else(|| eyre!("Something is wrong"))?;
                 Ok(std::str::from_utf8(bytes)?)
             }
             _ => Err(eyre!("Not Ascii value")),
