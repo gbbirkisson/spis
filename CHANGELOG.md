@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.8.2](https://github.com/gbbirkisson/spis/compare/v0.8.1...v0.8.2) (2024-10-24)
+
+
+### Bug Fixes
+
+* **deps:** update dependency rust to v1.82.0 ([#293](https://github.com/gbbirkisson/spis/issues/293)) ([3df2bac](https://github.com/gbbirkisson/spis/commit/3df2bac2d296a61294dfb4a2f11310e7e46f7092))
+* **deps:** update rust crate clap to v4.5.20 ([#288](https://github.com/gbbirkisson/spis/issues/288)) ([8d8d251](https://github.com/gbbirkisson/spis/commit/8d8d251cf352bc81c2e281a96c97fa38cf7d8d71))
+* **deps:** update rust crate image to v0.25.3 ([#291](https://github.com/gbbirkisson/spis/issues/291)) ([f408d67](https://github.com/gbbirkisson/spis/commit/f408d672f2e9c9261e001a12ac126a2697958fa9))
+* **deps:** update rust crate image to v0.25.4 ([#292](https://github.com/gbbirkisson/spis/issues/292)) ([be1a98c](https://github.com/gbbirkisson/spis/commit/be1a98cd533eda48148972bcc5c6d080c3238875))
+* **deps:** update rust crate serde to v1.0.213 ([#295](https://github.com/gbbirkisson/spis/issues/295)) ([f217740](https://github.com/gbbirkisson/spis/commit/f217740957556e2b1f9505fb487191f381b50c18))
+* **deps:** update rust crate thiserror to v1.0.65 ([#297](https://github.com/gbbirkisson/spis/issues/297)) ([49121bc](https://github.com/gbbirkisson/spis/commit/49121bcf87d9899ccf34b84276f2e4db1a3a74c2))
+* **deps:** update rust crate tokio to v1.41.0 ([#296](https://github.com/gbbirkisson/spis/issues/296)) ([afccc7f](https://github.com/gbbirkisson/spis/commit/afccc7f0ac4d7c0b25e8619466c03be5a78a1095))
+* **deps:** update rust crate tracing-actix-web to v0.7.14 ([#294](https://github.com/gbbirkisson/spis/issues/294)) ([cb65d72](https://github.com/gbbirkisson/spis/commit/cb65d7205ac290d8f63909a22a9d146fc676a3aa))
+* **deps:** update rust crate uuid to v1.11.0 ([#290](https://github.com/gbbirkisson/spis/issues/290)) ([c01b97f](https://github.com/gbbirkisson/spis/commit/c01b97ff20950f7945a44435a4cd83ee7a1f813f))
+
 ## [0.8.1](https://github.com/gbbirkisson/spis/compare/v0.8.0...v0.8.1) (2024-10-03)
 
 
