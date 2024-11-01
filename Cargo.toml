@@ -61,7 +61,7 @@ notify = "7.0.0"
 
 # Image processing
 image = { version = "0.25.0", features = ["jpeg", "webp"] }
-kamadak-exif = "0.5"
+kamadak-exif = "0.6"
 
 # Video processing
 which = "6.0"
