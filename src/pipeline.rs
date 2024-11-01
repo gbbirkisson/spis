@@ -287,7 +287,7 @@ pub fn setup_media_processing(
             })
             .filter_map(|(uuid, path, ext)| match ext.as_str() {
                 // Map extensions to media type
-                "jpg" | "jpeg" => Some((uuid, path, media::ProcessedMediaType::Image)),
+                "avif" | "jpg" | "jpeg" | "png" | "apng" | "gif" | "webp" | "tif" | "tiff" | "bmp" => Some((uuid, path, media::ProcessedMediaType::Image)),
                 "mov" | "mp4" => Some((uuid, path, media::ProcessedMediaType::Video)),
                 _ => None,
             })
