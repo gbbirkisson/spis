@@ -1,5 +1,45 @@
 # Changelog
 
+## [0.9.0](https://github.com/gbbirkisson/spis/compare/v0.8.1...v0.9.0) (2024-11-25)
+
+
+### Features
+
+* support more image formats ([#304](https://github.com/gbbirkisson/spis/issues/304)) ([76e49ff](https://github.com/gbbirkisson/spis/commit/76e49ff806997f467a2a9cb836c879872e01f295))
+
+
+### Bug Fixes
+
+* **deps:** update codecov/codecov-action action to v5 ([#317](https://github.com/gbbirkisson/spis/issues/317)) ([5dad4e5](https://github.com/gbbirkisson/spis/commit/5dad4e52e88d9a5c9ecce8d7f2418ffcdc69701d))
+* **deps:** update dependency rust to v1.82.0 ([#293](https://github.com/gbbirkisson/spis/issues/293)) ([3df2bac](https://github.com/gbbirkisson/spis/commit/3df2bac2d296a61294dfb4a2f11310e7e46f7092))
+* **deps:** update rust crate clap to v4.5.20 ([#288](https://github.com/gbbirkisson/spis/issues/288)) ([8d8d251](https://github.com/gbbirkisson/spis/commit/8d8d251cf352bc81c2e281a96c97fa38cf7d8d71))
+* **deps:** update rust crate clap to v4.5.21 ([#316](https://github.com/gbbirkisson/spis/issues/316)) ([77b8a78](https://github.com/gbbirkisson/spis/commit/77b8a78b46590b5535dce7a47e5f86b2c61ae2dc))
+* **deps:** update rust crate image to v0.25.3 ([#291](https://github.com/gbbirkisson/spis/issues/291)) ([f408d67](https://github.com/gbbirkisson/spis/commit/f408d672f2e9c9261e001a12ac126a2697958fa9))
+* **deps:** update rust crate image to v0.25.4 ([#292](https://github.com/gbbirkisson/spis/issues/292)) ([be1a98c](https://github.com/gbbirkisson/spis/commit/be1a98cd533eda48148972bcc5c6d080c3238875))
+* **deps:** update rust crate image to v0.25.5 ([#308](https://github.com/gbbirkisson/spis/issues/308)) ([567f68f](https://github.com/gbbirkisson/spis/commit/567f68f54c7dbb344ec2f9e4340e5a1c68f698ce))
+* **deps:** update rust crate kamadak-exif to 0.6 ([#305](https://github.com/gbbirkisson/spis/issues/305)) ([7318295](https://github.com/gbbirkisson/spis/commit/7318295afa2fe444a48a94437d57d90e47bbdae1))
+* **deps:** update rust crate kamadak-exif to v0.6.1 ([#310](https://github.com/gbbirkisson/spis/issues/310)) ([c98c004](https://github.com/gbbirkisson/spis/commit/c98c004c5b2f0f81de4055d5555c468ba580865b))
+* **deps:** update rust crate notify to v7 ([#298](https://github.com/gbbirkisson/spis/issues/298)) ([2b7968f](https://github.com/gbbirkisson/spis/commit/2b7968f423a2220ac98af33c02e03b71ae4d169e))
+* **deps:** update rust crate reqwest to v0.12.9 ([#299](https://github.com/gbbirkisson/spis/issues/299)) ([2540ca5](https://github.com/gbbirkisson/spis/commit/2540ca5be5ca762d4034fb22e9b1f54af4e6e78b))
+* **deps:** update rust crate serde to v1.0.213 ([#295](https://github.com/gbbirkisson/spis/issues/295)) ([f217740](https://github.com/gbbirkisson/spis/commit/f217740957556e2b1f9505fb487191f381b50c18))
+* **deps:** update rust crate serde to v1.0.214 ([#300](https://github.com/gbbirkisson/spis/issues/300)) ([315beca](https://github.com/gbbirkisson/spis/commit/315beca0d0a39db0a047a2cf4d5d40593f2f72de))
+* **deps:** update rust crate serde to v1.0.215 ([#315](https://github.com/gbbirkisson/spis/issues/315)) ([eb8c1c2](https://github.com/gbbirkisson/spis/commit/eb8c1c2a72c3f78b65d14e899e33de4ba88e4bc0))
+* **deps:** update rust crate tempfile to v3.14.0 ([#312](https://github.com/gbbirkisson/spis/issues/312)) ([4814cbf](https://github.com/gbbirkisson/spis/commit/4814cbf3926b2948b3c4de5152133b30dbf818d4))
+* **deps:** update rust crate thiserror to v1.0.65 ([#297](https://github.com/gbbirkisson/spis/issues/297)) ([49121bc](https://github.com/gbbirkisson/spis/commit/49121bcf87d9899ccf34b84276f2e4db1a3a74c2))
+* **deps:** update rust crate thiserror to v1.0.66 ([#302](https://github.com/gbbirkisson/spis/issues/302)) ([6a3c361](https://github.com/gbbirkisson/spis/commit/6a3c361b3e8e5450f59eff13980d63f255c639a4))
+* **deps:** update rust crate thiserror to v1.0.67 ([#306](https://github.com/gbbirkisson/spis/issues/306)) ([3d8a087](https://github.com/gbbirkisson/spis/commit/3d8a087d9a001b2ee63d62bad2e8881005326f20))
+* **deps:** update rust crate thiserror to v1.0.68 ([#307](https://github.com/gbbirkisson/spis/issues/307)) ([ab1b388](https://github.com/gbbirkisson/spis/commit/ab1b388c593e9221eab3e08396438643db3394f1))
+* **deps:** update rust crate thiserror to v1.0.69 ([#314](https://github.com/gbbirkisson/spis/issues/314)) ([c2c6a2c](https://github.com/gbbirkisson/spis/commit/c2c6a2ce52cd6f08123b9f7b208caa533f6e250f))
+* **deps:** update rust crate thiserror to v2 ([#309](https://github.com/gbbirkisson/spis/issues/309)) ([16cf28b](https://github.com/gbbirkisson/spis/commit/16cf28bcad25373eedfc95d68cd957a214ad422c))
+* **deps:** update rust crate tokio to v1.41.0 ([#296](https://github.com/gbbirkisson/spis/issues/296)) ([afccc7f](https://github.com/gbbirkisson/spis/commit/afccc7f0ac4d7c0b25e8619466c03be5a78a1095))
+* **deps:** update rust crate tokio to v1.41.1 ([#311](https://github.com/gbbirkisson/spis/issues/311)) ([ab37430](https://github.com/gbbirkisson/spis/commit/ab374303da052da8facbf9458e2347586fe79241))
+* **deps:** update rust crate tracing-actix-web to v0.7.14 ([#294](https://github.com/gbbirkisson/spis/issues/294)) ([cb65d72](https://github.com/gbbirkisson/spis/commit/cb65d7205ac290d8f63909a22a9d146fc676a3aa))
+* **deps:** update rust crate tracing-actix-web to v0.7.15 ([#318](https://github.com/gbbirkisson/spis/issues/318)) ([5295b35](https://github.com/gbbirkisson/spis/commit/5295b3528f218f5637d13ec12c255f8fa0ba6e8c))
+* **deps:** update rust crate uuid to v1.11.0 ([#290](https://github.com/gbbirkisson/spis/issues/290)) ([c01b97f](https://github.com/gbbirkisson/spis/commit/c01b97ff20950f7945a44435a4cd83ee7a1f813f))
+* **deps:** update rust crate which to v7 ([#303](https://github.com/gbbirkisson/spis/issues/303)) ([ae5cf81](https://github.com/gbbirkisson/spis/commit/ae5cf8105bdf0bf9d43e7ec4323f5bc68ecf796f))
+* increase page size to 200 ([#319](https://github.com/gbbirkisson/spis/issues/319)) ([0fce593](https://github.com/gbbirkisson/spis/commit/0fce59399dc89515003ae003e72b657c51163760))
+* linting ([#313](https://github.com/gbbirkisson/spis/issues/313)) ([9c40485](https://github.com/gbbirkisson/spis/commit/9c404855daa6a44726411de885055a434b84a2c4))
+
 ## [0.8.1](https://github.com/gbbirkisson/spis/compare/v0.8.0...v0.8.1) (2024-10-03)
 
 
