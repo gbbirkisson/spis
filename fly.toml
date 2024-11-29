@@ -1,0 +1,22 @@
+app = 'spis'
+primary_region = 'arn'
+
+[build]
+image = 'ghcr.io/gbbirkisson/spis:v0.9.0' # x-release-please-version
+
+[env]
+PORT = '8080'
+SPIS_MEDIA_FETCH_STOCK = '100'
+
+[http_service]
+internal_port = 8080
+force_https = true
+auto_stop_machines = false
+auto_start_machines = true
+min_machines_running = 0
+processes = ['app']
+
+[[vm]]
+memory = '1gb'
+cpu_kind = 'shared'
+cpus = 1

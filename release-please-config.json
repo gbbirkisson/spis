@@ -6,7 +6,13 @@
   "extra-label": "release",
   "packages": {
     ".": {
-      "release-type": "rust"
+      "release-type": "rust",
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "fly.toml"
+        }
+      ]
     }
   }
 }
