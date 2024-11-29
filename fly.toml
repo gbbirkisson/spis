@@ -6,14 +6,15 @@ image = 'ghcr.io/gbbirkisson/spis:v0.9.1' # x-release-please-version
 
 [env]
 PORT = '8080'
-SPIS_MEDIA_FETCH_STOCK = '100'
+SPIS_MEDIA_FETCH_STOCK = '300'
+SPIS_FEATURE_ARCHIVE = 'false'
 
 [http_service]
 internal_port = 8080
 force_https = true
 auto_stop_machines = false
-auto_start_machines = true
-min_machines_running = 0
+auto_start_machines = false
+min_machines_running = 1
 processes = ['app']
 
 [[vm]]
