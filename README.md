@@ -38,7 +38,7 @@ me a coffee ☕
 
 <!-- vim-markdown-toc GFM -->
 
-* [Screenshots](#screenshots)
+* [Demo](#demo)
 * [Configuration](#configuration)
 * [Running](#running)
     * [Docker](#docker)
@@ -58,14 +58,10 @@ me a coffee ☕
 
 <!-- vim-markdown-toc -->
 
-## Screenshots
+## Demo
 
-This is how the GUI looks on mobile!
-
-<p float="left">
-<img src="examples/screen1.jpg">
-<img src="examples/screen2.jpg">
-</p>
+Go to [spis.fly.dev](https://spis.fly.dev) to see a live demo! Also try opening the demo on your
+mobile.
 
 ## Configuration
 
