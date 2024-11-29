@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.1](https://github.com/gbbirkisson/spis/compare/v0.9.0...v0.9.1) (2024-11-29)
+
+
+### Bug Fixes
+
+* add ability to fetch stock images on startup in dockerfile ([#324](https://github.com/gbbirkisson/spis/issues/324)) ([ac947d4](https://github.com/gbbirkisson/spis/commit/ac947d4d252ebdf0d77c26e27dc8389349b1f4d5))
+* add fly deployment ([#325](https://github.com/gbbirkisson/spis/issues/325)) ([aba8337](https://github.com/gbbirkisson/spis/commit/aba83370f6ceb1dc7144193837487dc1076e40e0))
+* **deps:** update dependency rust to v1.83.0 ([#323](https://github.com/gbbirkisson/spis/issues/323)) ([863b765](https://github.com/gbbirkisson/spis/commit/863b76504aad8ac46b444aaf22d9e096e66e85e2))
+* **deps:** update nginx docker tag to v1.27.3 ([#320](https://github.com/gbbirkisson/spis/issues/320)) ([62b74ac](https://github.com/gbbirkisson/spis/commit/62b74ace36501dcae9c1fc7e6a0e52a605daf587))
+* **deps:** update rust crate tracing to v0.1.41 ([#321](https://github.com/gbbirkisson/spis/issues/321)) ([8213d68](https://github.com/gbbirkisson/spis/commit/8213d6823d7b1d0e5c490cb242ec477c8051e03f))
+
 ## [0.9.0](https://github.com/gbbirkisson/spis/compare/v0.8.1...v0.9.0) (2024-11-25)
 
 
