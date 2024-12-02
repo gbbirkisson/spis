@@ -24,6 +24,10 @@ ul {
   padding: 5px;
 }
 
+#hx-media-preview {
+  transition: all 0.3s ease
+}
+
 .media-preview {
   z-index: 10;
 
@@ -176,7 +180,7 @@ li {
   background-color: #111111;
 }
 
-.bar-filter-item > .link {
+.bar-filter-item>.link {
   border-radius: 10px;
 
   display: block;
@@ -193,7 +197,7 @@ li {
   justify-content: center;
 }
 
-.bar-filter-item > .link:hover {
+.bar-filter-item>.link:hover {
   background-color: #111111;
   border-radius: 10px;
 }
@@ -201,20 +205,21 @@ li {
 /* On the phone */
 @media screen and (max-width: 1000px) {
   .main {
-      margin-top: 30px;
+    margin-top: 30px;
   }
+
   .bar-inner {
-      height: 35px;
-      overflow-x: scroll;
+    height: 35px;
+    overflow-x: scroll;
   }
 
   .bar-filter-item {
-      padding-bottom: 2px;
-      padding-top: 2px;
-      margin-left: 2px;
-      margin-right: 2px;
+    padding-bottom: 2px;
+    padding-top: 2px;
+    margin-left: 2px;
+    margin-right: 2px;
 
-      min-width: 32px;
-      font-size: small;
+    min-width: 32px;
+    font-size: small;
   }
 }
