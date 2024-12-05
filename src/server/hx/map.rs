@@ -12,8 +12,6 @@ use askama::Template;
 use sqlx::Pool;
 use sqlx::Sqlite;
 
-const PAGE_SIZE: usize = 1000;
-
 #[derive(Template)]
 #[template(path = "web/map/map.html")]
 struct HxMap<'a> {
@@ -21,7 +19,7 @@ struct HxMap<'a> {
 }
 
 pub(super) async fn render(pool: &Pool<Sqlite>, config: &Config, state: State) -> Response {
-    let media = db::media_list(pool, &state, &state, PAGE_SIZE)
+    let media = db::media_with_pos(pool)
         .await
         .map_err(ServerError::DBError)?
         .into_iter()

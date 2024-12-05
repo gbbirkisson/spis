@@ -1,64 +1,139 @@
 <div id="map"></div>
 <script>
-	mapboxgl.accessToken = 'pk.eyJ1Ijoicm9hbGRzdG9ybSIsImEiOiJjbHdkaDhlN2QxNGFvMnFwcDB6YmFjd3RsIn0.kZAP04DN43268ORUH5bJsw';
-    const map = new mapboxgl.Map({
-        container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v12',
-        projection: 'globe', // Display the map as a globe, since satellite-v9 defaults to Mercator
-        zoom: 8,
-        center: [10, 60]
+mapboxgl.accessToken = 'pk.eyJ1Ijoicm9hbGRzdG9ybSIsImEiOiJjbHdkaDhlN2QxNGFvMnFwcDB6YmFjd3RsIn0.kZAP04DN43268ORUH5bJsw';
+const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v12',
+    projection: 'globe',
+    zoom: 8,
+    center: [10, 60]
+});
+
+map.addControl(new mapboxgl.NavigationControl());
+
+map.on('style.load', () => {
+    map.setFog({});
+});
+
+map.on('load', function () {
+    // Define the GeoJSON data
+    const geojsonData = {
+        'type': 'FeatureCollection',
+        'features': [
+            {% for media in media %}
+                {% if let Some(pos) = media.pos %}
+                    {
+                        'type': 'Feature',
+                        'geometry': {
+                            'type': 'Point',
+                            'coordinates': [{{pos.1}}, {{pos.0}}]
+                        },
+                        'properties': {
+                            'uuid': '{{media.uuid}}',
+                            'thumbnail': '{{media.thumbnail}}'
+                        }
+                    }
+                    {% if !loop.last %} , {% endif %}
+                {% endif %}
+            {% endfor %}
+        ]
+    };
+
+    // Add the GeoJSON data as a source
+    map.addSource('photos', {
+        'type': 'geojson',
+        'data': geojsonData,
+        'cluster': true,
+        'clusterMaxZoom': 14, // Max zoom to cluster points on
+        'clusterRadius': 90 // Radius of each cluster when clustering points (defaults to 50)
     });
-    window.m = map;
 
-    map.addControl(new mapboxgl.NavigationControl());
-
-    map.on('style.load', () => {
-        map.setFog({}); // Set the default atmosphere style
+    // Add a layer for unclustered points
+    map.addLayer({
+        'id': 'unclustered-point',
+        'type': 'symbol',
+        'source': 'photos',
+        'filter': ['!', ['has', 'point_count']],
+        'layout': {
+            'icon-image': ['get', 'uuid'],
+            'icon-size': ['interpolate', ['linear'], ['zoom'], 16, 0.5, 22, 1.5],
+            'icon-allow-overlap': true
+        }
     });
 
-    map.on('load', function () {
-      {% for media in media %}
-        {% if let Some(pos) = media.pos %}
-            map.loadImage(
-                '{{media.thumbnail}}',
-                function (error, image) {
-                    if (error) throw error;
-                    map.addImage('{{media.uuid}}', image);
-                }
-            );
-        {% endif %}
-      {% endfor %}
-      const features = [];
-      {% for media in media %}
-        {% if let Some(pos) = media.pos %}
-            features.push({
-                type: 'Feature',
-                geometry: {
-                    type: 'Point',
-                    coordinates: [{{pos.1}}, {{pos.0}}],
-                },
-                properties: {
-                    icon: '{{media.uuid}}'
-                }
+    // Add a layer for clusters
+    map.addLayer({
+        'id': 'clusters',
+        'type': 'circle',
+        'source': 'photos',
+        'filter': ['has', 'point_count'],
+        'paint': {
+            'circle-color': [
+                'step',
+                ['get', 'point_count'],
+                '#51bbd6',
+                100,
+                '#f1f075',
+                750,
+                '#f28cb1'
+            ],
+            'circle-radius': [
+                'step',
+                ['get', 'point_count'],
+                20,
+                100,
+                30,
+                750,
+                40
+            ]
+        }
+    });
+
+    // Add a layer for cluster count labels
+    map.addLayer({
+        'id': 'cluster-count',
+        'type': 'symbol',
+        'source': 'photos',
+        'filter': ['has', 'point_count'],
+        'layout': {
+            'text-field': '{point_count_abbreviated}',
+            'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+            'text-size': 12
+        }
+    });
+
+    map.on('styleimagemissing', function (e) {
+        map.loadImage("/assets/thumbnails/"+e.id+".webp", function (error, image) {
+            if (error) throw error;
+            if (!map.hasImage(e.id)) {
+                map.addImage(e.id, image);
+            }
+        });
+    });
+
+    // Zoom into clusters when clicked
+    map.on('click', 'clusters', function (e) {
+        e.preventDefault()
+        const features = map.queryRenderedFeatures(e.point, { layers: ['clusters'] });
+        const clusterId = features[0].properties.cluster_id;
+        map.getSource('photos').getClusterExpansionZoom(clusterId, function (err, zoom) {
+            if (err) return;
+
+            map.easeTo({
+                center: features[0].geometry.coordinates,
+                zoom: zoom
             });
-        {% endif %}
-      {% endfor %}
-      map.addSource('point', {
-          'type': 'geojson',
-          'data': {
-              'type': 'FeatureCollection',
-              'features': features
-          }
-      });
-      map.addLayer({
-          'id': 'points',
-          'type': 'symbol',
-          'source': 'point',
-          'layout': {
-              'icon-allow-overlap': true,
-              'icon-image': ['get', 'icon'],
-              'icon-size': 0.5
-          }
-      });
+        });
     });
+
+    // TODO: Add a full page preview overlay when clicking actual images
+
+    // Change cursor to pointer when over clusters or unclustered points
+    map.on('mouseenter', 'clusters', function () {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+    map.on('mouseleave', 'clusters', function () {
+        map.getCanvas().style.cursor = '';
+    });
+});
 </script>

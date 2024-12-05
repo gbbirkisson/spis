@@ -145,7 +145,7 @@ pub async fn media_count(pool: &SqlitePool) -> Result<MediaCount> {
         SUM(favorite) as favorite,
         SUM(archived) as archived,
         SUM(missing) as missing,
-        SUM(latitude) as pos
+        COUNT(latitude) as pos
         FROM media
         ",
     )
@@ -278,6 +278,17 @@ LIMIT ?
     let mut query = sqlx::query_as::<Sqlite, MediaRow>(&query);
     query = filter.bind(query);
     query = query.bind(i32::try_from(limit).expect("Failed to convert limit"));
+    query.fetch_all(pool).await.wrap_err("Failed to fetch rows")
+}
+
+#[allow(clippy::future_not_send)]
+pub async fn media_with_pos(pool: &SqlitePool) -> Result<Vec<MediaRow>> {
+    let query = r"
+        SELECT id, path, taken_at, type as media_type, archived, favorite, latitude, longitude FROM media
+        WHERE latitude IS NOT NULL;
+        "
+    .to_string();
+    let query = sqlx::query_as::<Sqlite, MediaRow>(&query);
     query.fetch_all(pool).await.wrap_err("Failed to fetch rows")
 }
 
