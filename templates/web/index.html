@@ -15,7 +15,9 @@
     <link rel="stylesheet" href="/assets/fa/css/fontawesome.min.css">
     <link rel="stylesheet" href="/assets/fa/css/regular.min.css">
     <link rel="stylesheet" href="/assets/fa/css/solid.min.css">
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v3.8.0/mapbox-gl.css">
 
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.8.0/mapbox-gl.js"></script>
     <script src="/assets/scripts/htmx-2.0.2.js"></script>
     <script src="/assets/scripts/hyperscript-0.9.12.js"></script>
     {% if self::dev_enabled() %}
@@ -29,7 +31,8 @@
     <title>SPIS</title>
   </head>
   <body>
-    <div hx-get="/hx/gallery"
+    <!-- <div hx-get="/hx/gallery" -->
+    <div hx-get="/hx/map"
       hx-trigger="load"
       hx-swap="outerHTML"
     />

@@ -40,18 +40,36 @@ pub async fn setup_db(db_file: &str) -> Result<Pool<Sqlite>> {
 pub async fn media_insert(pool: &SqlitePool, processed_media: ProcessedMedia) -> Result<()> {
     let media_type = processed_media.media_type.convert();
     match &processed_media.data {
-        Some(data) => {
-            sqlx::query!(
-                r#"
-                INSERT OR REPLACE INTO media ( id, path, taken_at, type, walked )
-                VALUES ( ?1, ?2, ?3, ?4, 1 )
-                "#,
-                processed_media.uuid,
-                processed_media.path,
-                data.taken_at,
-                media_type,
-            )
-        }
+        Some(data) => match data.pos {
+            Some(p) => {
+                sqlx::query!(
+                    r#"
+                    INSERT OR REPLACE INTO media ( id, path, taken_at, type, latitude, longitude, walked )
+                    VALUES ( ?1, ?2, ?3, ?4,  ?5,  ?6, 1 )
+                    "#,
+                    processed_media.uuid,
+                    processed_media.path,
+                    data.taken_at,
+                    media_type,
+                    p.0,
+                    p.1,
+                ).execute(pool).await?
+            }
+            None => {
+                sqlx::query!(
+                    r#"
+                    INSERT OR REPLACE INTO media ( id, path, taken_at, type, walked )
+                    VALUES ( ?1, ?2, ?3, ?4, 1 )
+                    "#,
+                    processed_media.uuid,
+                    processed_media.path,
+                    data.taken_at,
+                    media_type,
+                )
+                .execute(pool)
+                .await?
+            }
+        },
         None => {
             sqlx::query!(
                 r#"
@@ -60,10 +78,10 @@ pub async fn media_insert(pool: &SqlitePool, processed_media: ProcessedMedia) ->
                 processed_media.uuid,
                 processed_media.path,
             )
+            .execute(pool)
+            .await?
         }
-    }
-    .execute(pool)
-    .await?;
+    };
     Ok(())
 }
 
@@ -115,6 +133,7 @@ pub struct MediaCount {
     pub favorite: Option<i32>,
     pub archived: Option<i32>,
     pub missing: Option<i32>,
+    pub pos: Option<i32>,
 }
 
 pub async fn media_count(pool: &SqlitePool) -> Result<MediaCount> {
@@ -125,7 +144,8 @@ pub async fn media_count(pool: &SqlitePool) -> Result<MediaCount> {
         SUM(walked) as walked,
         SUM(favorite) as favorite,
         SUM(archived) as archived,
-        SUM(missing) as missing
+        SUM(missing) as missing,
+        SUM(latitude) as pos
         FROM media
         ",
     )
@@ -168,6 +188,8 @@ pub struct MediaRow {
     pub media_type: i32,
     pub archived: bool,
     pub favorite: bool,
+    pub latitude: Option<f64>,
+    pub longitude: Option<f64>,
 }
 
 pub enum Order {
@@ -247,7 +269,7 @@ pub async fn media_list(
 
     let query = format!(
         r"
-SELECT id, path, taken_at, type as media_type, archived, favorite FROM media
+SELECT id, path, taken_at, type as media_type, archived, favorite, latitude, longitude FROM media
 {filter}
 {order}
 LIMIT ?
@@ -275,7 +297,7 @@ WITH NR_MED AS (
     SELECT *, ROW_NUMBER() OVER ({order}) AS RN FROM media
     {filter}
 )
-SELECT id, path, taken_at, type as media_type, archived, favorite FROM NR_MED
+SELECT id, path, taken_at, type as media_type, archived, favorite, latitude, longitude FROM NR_MED
 WHERE RN IN (
 	SELECT RN+i
     FROM NR_MED

@@ -1,0 +1,64 @@
+<div id="map"></div>
+<script>
+	mapboxgl.accessToken = 'pk.eyJ1Ijoicm9hbGRzdG9ybSIsImEiOiJjbHdkaDhlN2QxNGFvMnFwcDB6YmFjd3RsIn0.kZAP04DN43268ORUH5bJsw';
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v12',
+        projection: 'globe', // Display the map as a globe, since satellite-v9 defaults to Mercator
+        zoom: 8,
+        center: [10, 60]
+    });
+    window.m = map;
+
+    map.addControl(new mapboxgl.NavigationControl());
+
+    map.on('style.load', () => {
+        map.setFog({}); // Set the default atmosphere style
+    });
+
+    map.on('load', function () {
+      {% for media in media %}
+        {% if let Some(pos) = media.pos %}
+            map.loadImage(
+                '{{media.thumbnail}}',
+                function (error, image) {
+                    if (error) throw error;
+                    map.addImage('{{media.uuid}}', image);
+                }
+            );
+        {% endif %}
+      {% endfor %}
+      const features = [];
+      {% for media in media %}
+        {% if let Some(pos) = media.pos %}
+            features.push({
+                type: 'Feature',
+                geometry: {
+                    type: 'Point',
+                    coordinates: [{{pos.1}}, {{pos.0}}],
+                },
+                properties: {
+                    icon: '{{media.uuid}}'
+                }
+            });
+        {% endif %}
+      {% endfor %}
+      map.addSource('point', {
+          'type': 'geojson',
+          'data': {
+              'type': 'FeatureCollection',
+              'features': features
+          }
+      });
+      map.addLayer({
+          'id': 'points',
+          'type': 'symbol',
+          'source': 'point',
+          'layout': {
+              'icon-allow-overlap': true,
+              'icon-image': ['get', 'icon'],
+              'icon-size': 0.5
+          }
+      });
+    });
+</script>
