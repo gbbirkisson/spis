@@ -32,6 +32,7 @@ pub enum ProcessedMediaType {
 #[derive(Debug)]
 pub struct ProcessedMediaData {
     pub taken_at: DateTime<Utc>,
+    pub pos: Option<(f64, f64)>,
 }
 
 pub(crate) struct MediaProcessor {
@@ -93,7 +94,7 @@ impl MediaProcessor {
                         tracing::trace!("No exif, using creation date: {}", media_path_str);
                         taken_at = get_creation_date(media_path);
                     }
-                    Some((thumb, taken_at?))
+                    Some((thumb, taken_at?, None))
                 }
                 (_, ProcessedMediaType::Image) => {
                     tracing::debug!("Processing image: {}", media_path_str);
@@ -101,6 +102,7 @@ impl MediaProcessor {
                     let thumb = image_processor
                         .get_thumbnail(THUMBNAIL_SIZE)
                         .wrap_err("Thumb creation failed")?;
+                    let pos = image_processor.get_gps_coordinates().ok();
                     let mut taken_at = image_processor
                         .get_timestamp()
                         .wrap_err("Timestamp parsing failed");
@@ -108,7 +110,7 @@ impl MediaProcessor {
                         tracing::trace!("No exif, using creation date: {}", media_path_str);
                         taken_at = get_creation_date(media_path);
                     }
-                    Some((thumb, taken_at?))
+                    Some((thumb, taken_at?, pos))
                 }
                 (_, _) => {
                     tracing::trace!("Skipping media: {}", media_path_str);
@@ -118,12 +120,12 @@ impl MediaProcessor {
         };
 
         let media = match processed {
-            Some((thumb, taken_at)) => {
+            Some((thumb, taken_at, pos)) => {
                 thumb.save(media_thumbnail_path)?;
                 ProcessedMedia {
                     uuid: media_uuid,
                     path: media_path_str,
-                    data: Some(ProcessedMediaData { taken_at }),
+                    data: Some(ProcessedMediaData { taken_at, pos }),
                     media_type,
                 }
             }
