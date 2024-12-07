@@ -295,8 +295,10 @@ I leave it up do you to put some images/videos in the `./data/media` folder.
 
 Run stack with:
 
-```console
-$ make dev
+```bash
+# If you don't have direnv installed load the env vars manually!
+. .envrc
+make dev
 ```
 
 And then open http://localhost:8080 in your browser
