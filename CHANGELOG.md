@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.9.2](https://github.com/gbbirkisson/spis/compare/v0.9.1...v0.9.2) (2024-12-16)
+
+
+### Bug Fixes
+
+* deploy new releases automatically to fly.io ([#336](https://github.com/gbbirkisson/spis/issues/336)) ([7867603](https://github.com/gbbirkisson/spis/commit/7867603f524f2cc43da83ffc0142fa4b0a8b17d5))
+* **deps:** update rust crate chrono to v0.4.39 ([#342](https://github.com/gbbirkisson/spis/issues/342)) ([150bcb1](https://github.com/gbbirkisson/spis/commit/150bcb19071bca748bd483e0d32533f01f1ef702))
+* **deps:** update rust crate clap to v4.5.22 ([#335](https://github.com/gbbirkisson/spis/issues/335)) ([43c8887](https://github.com/gbbirkisson/spis/commit/43c8887f086c62ae91b3034f0efa8de313a3a6ec))
+* **deps:** update rust crate clap to v4.5.23 ([#338](https://github.com/gbbirkisson/spis/issues/338)) ([449a485](https://github.com/gbbirkisson/spis/commit/449a485e35364cbfb9be9e98b8c5a2f197aa7bcc))
+* **deps:** update rust crate serde to v1.0.216 ([#343](https://github.com/gbbirkisson/spis/issues/343)) ([cba2243](https://github.com/gbbirkisson/spis/commit/cba22435831fe6527c921d768d5103c9c9bcde56))
+* **deps:** update rust crate thiserror to v2.0.4 ([#333](https://github.com/gbbirkisson/spis/issues/333)) ([1554502](https://github.com/gbbirkisson/spis/commit/1554502abc984689fa7eea501bdd87c25982f47a))
+* **deps:** update rust crate thiserror to v2.0.5 ([#340](https://github.com/gbbirkisson/spis/issues/340)) ([07fb763](https://github.com/gbbirkisson/spis/commit/07fb763c0c6836d3a82ac80840ebb63583aab83c))
+* **deps:** update rust crate thiserror to v2.0.6 ([#341](https://github.com/gbbirkisson/spis/issues/341)) ([4d4551e](https://github.com/gbbirkisson/spis/commit/4d4551e10849fb7417d05306cef44161578c21d6))
+* **deps:** update rust crate thiserror to v2.0.7 ([#344](https://github.com/gbbirkisson/spis/issues/344)) ([b5632d3](https://github.com/gbbirkisson/spis/commit/b5632d3a09e6a02a00908b933e1f08610700dc0b))
+* **deps:** update rust crate tokio to v1.42.0 ([#334](https://github.com/gbbirkisson/spis/issues/334)) ([d2eb91a](https://github.com/gbbirkisson/spis/commit/d2eb91a65b149ed57f9cfb45c5428193698971cd))
+* **deps:** update rust crate tracing-subscriber to v0.3.19 ([#330](https://github.com/gbbirkisson/spis/issues/330)) ([4f636d7](https://github.com/gbbirkisson/spis/commit/4f636d7a35654d6eb11d3ec6a4d4081e7298d729))
+* update fly config ([#327](https://github.com/gbbirkisson/spis/issues/327)) ([6f718e2](https://github.com/gbbirkisson/spis/commit/6f718e2060b9a7f722bbe9241dacc691be1c215d))
+* update fly vm size ([#339](https://github.com/gbbirkisson/spis/issues/339)) ([daff744](https://github.com/gbbirkisson/spis/commit/daff7446c7b05f3540bc8576e7b530b14a5344ba))
+
 ## [0.9.1](https://github.com/gbbirkisson/spis/compare/v0.9.0...v0.9.1) (2024-11-29)
 
 
