@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.3](https://github.com/gbbirkisson/spis/compare/v0.9.2...v0.9.3) (2024-12-18)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate thiserror to v2.0.8 ([#345](https://github.com/gbbirkisson/spis/issues/345)) ([21d2bce](https://github.com/gbbirkisson/spis/commit/21d2bce2aa41adf9a514678ea56c4d7e5579adf4))
+
 ## [0.9.2](https://github.com/gbbirkisson/spis/compare/v0.9.1...v0.9.2) (2024-12-16)
 
 
