@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.9.3](https://github.com/gbbirkisson/spis/compare/v0.9.2...v0.9.3) (2024-12-23)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate thiserror to v2.0.8 ([#345](https://github.com/gbbirkisson/spis/issues/345)) ([21d2bce](https://github.com/gbbirkisson/spis/commit/21d2bce2aa41adf9a514678ea56c4d7e5579adf4))
+* **deps:** update rust crate thiserror to v2.0.9 ([#348](https://github.com/gbbirkisson/spis/issues/348)) ([614142d](https://github.com/gbbirkisson/spis/commit/614142dedfd664661fa39106309ea42508b7023c))
+* **deps:** update rust crate which to v7.0.1 ([#347](https://github.com/gbbirkisson/spis/issues/347)) ([c1c0709](https://github.com/gbbirkisson/spis/commit/c1c0709167a775e906235194deb519151f703fae))
+
 ## [0.9.2](https://github.com/gbbirkisson/spis/compare/v0.9.1...v0.9.2) (2024-12-16)
 
 
