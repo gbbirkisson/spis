@@ -155,7 +155,7 @@ pub struct ServerListener {
     pub server_socket: Option<String>,
 }
 
-fn validate_listener(config: &Spis) -> &str {
+fn validate_listener(config: &Spis) -> &'static str {
     match (
         &config.listener.server_address,
         &config.listener.server_socket,
