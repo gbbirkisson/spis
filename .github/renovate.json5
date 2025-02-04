@@ -1,40 +1,54 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "reviewersFromCodeOwners": true,
-  "dependencyDashboard": true,
-  "semanticCommitType": "fix",
-  "packageRules": [
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  reviewersFromCodeOwners: true,
+  dependencyDashboard: true,
+  semanticCommitType: 'fix',
+  packageRules: [
     {
-      "packagePatterns": ["^futures[-_]?"],
-      "groupName": "futures packages"
-    },
-    {
-      "packagePatterns": ["^serde[-_]?"],
-      "groupName": "serde packages"
-    },
-    {
-      "packagePatterns": ["^tokio[-_]?"],
-      "groupName": "tokio packages"
-    },
-    {
-      "packagePatterns": ["^tracing[-_]?"],
-      "excludePackageNames": ["tracing-opentelemetry"],
-      "groupName": "tracing packages"
-    },
-    {
-      "packagePatterns": ["^liquid[-_]?", "^kstring$"],
-      "groupName": "liquid packages"
-    }
-  ],
-  "regexManagers": [
-    {
-      "fileMatch": ["^rust-toolchain\\.toml?$"],
-      "matchStrings": [
-        "channel\\s*=\\s*\"(?<currentValue>\\d+\\.\\d+\\.\\d+)\""
+      groupName: 'futures packages',
+      matchPackageNames: [
+        '/^futures[-_]?/',
       ],
-      "depNameTemplate": "rust",
-      "lookupNameTemplate": "rust-lang/rust",
-      "datasourceTemplate": "github-releases"
-    }
-  ]
+    },
+    {
+      groupName: 'serde packages',
+      matchPackageNames: [
+        '/^serde[-_]?/',
+      ],
+    },
+    {
+      groupName: 'tokio packages',
+      matchPackageNames: [
+        '/^tokio[-_]?/',
+      ],
+    },
+    {
+      groupName: 'tracing packages',
+      matchPackageNames: [
+        '/^tracing[-_]?/',
+        '!tracing-opentelemetry',
+      ],
+    },
+    {
+      groupName: 'liquid packages',
+      matchPackageNames: [
+        '/^liquid[-_]?/',
+        '/^kstring$/',
+      ],
+    },
+  ],
+  customManagers: [
+    {
+      customType: 'regex',
+      fileMatch: [
+        '^rust-toolchain\\.toml?$',
+      ],
+      matchStrings: [
+        'channel\\s*=\\s*"(?<currentValue>\\d+\\.\\d+\\.\\d+)"',
+      ],
+      depNameTemplate: 'rust',
+      packageNameTemplate: 'rust-lang/rust',
+      datasourceTemplate: 'github-releases',
+    },
+  ],
 }
