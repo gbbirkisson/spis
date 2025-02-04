@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.9.4](https://github.com/gbbirkisson/spis/compare/v0.9.3...v0.9.4) (2025-02-04)
+
+
+### Bug Fixes
+
+* **config:** migrate config .github/renovate.json5 ([#367](https://github.com/gbbirkisson/spis/issues/367)) ([86311ca](https://github.com/gbbirkisson/spis/commit/86311ca8a93fdd9c68038927da5ae16d9b9da3ab))
+* **deps:** update dependency rust to v1.84.1 ([#365](https://github.com/gbbirkisson/spis/issues/365)) ([ae55de4](https://github.com/gbbirkisson/spis/commit/ae55de41afb439d304661c6d6604420f1e8fa207))
+* **deps:** update rust crate clap to v4.5.28 ([#366](https://github.com/gbbirkisson/spis/issues/366)) ([3262779](https://github.com/gbbirkisson/spis/commit/32627795ae1b83779f023fd991f73dd6b2237736))
+* **deps:** update rust crate tempfile to v3.16.0 ([#363](https://github.com/gbbirkisson/spis/issues/363)) ([7ab6e6e](https://github.com/gbbirkisson/spis/commit/7ab6e6e57ce0a903df07c5ee62c6e964aea3a441))
+
 ## [0.9.3](https://github.com/gbbirkisson/spis/compare/v0.9.2...v0.9.3) (2025-01-21)
 
 
