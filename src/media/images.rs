@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use color_eyre::{
-    eyre::{eyre, Context},
     Result,
+    eyre::{Context, eyre},
 };
 use exif::{Exif, In, Tag, Value};
 use image::DynamicImage;

@@ -3,8 +3,8 @@ use self::video::VideoProcessor;
 use crate::media::images::ImageProcessor;
 use crate::media::util::Thumbnail;
 use chrono::{DateTime, Utc};
-use color_eyre::eyre::Context;
 use color_eyre::Result;
+use color_eyre::eyre::Context;
 use std::path::{Path, PathBuf};
 use uuid::Uuid;
 

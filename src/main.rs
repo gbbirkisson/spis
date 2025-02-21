@@ -1,17 +1,17 @@
 use askama::Template;
-use clap::{error::ErrorKind, ArgAction, Args, CommandFactory, Parser, Subcommand};
-use color_eyre::eyre::{eyre, Error, OptionExt, WrapErr};
+use clap::{ArgAction, Args, CommandFactory, Parser, Subcommand, error::ErrorKind};
 use color_eyre::Result;
+use color_eyre::eyre::{Error, OptionExt, WrapErr, eyre};
 use notify::Watcher;
-use spis::media::util::THUMBNAIL_FORMAT;
 use spis::PathFinder;
+use spis::media::util::THUMBNAIL_FORMAT;
 use spis::{
     db,
     pipeline::{self, JOB_TRIGGER},
     server::{self, Config, Listener},
 };
 use std::{net::TcpListener, path::PathBuf};
-use tracing_subscriber::{fmt, prelude::*, EnvFilter};
+use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 
 fn file_exists(s: &str) -> Result<PathBuf, String> {
     let pathbuf = PathBuf::from(s);

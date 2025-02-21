@@ -1,5 +1,5 @@
 use actix::{Actor, StreamHandler};
-use actix_web::{web, Error, HttpRequest, HttpResponse};
+use actix_web::{Error, HttpRequest, HttpResponse, web};
 use actix_web_actors::ws;
 
 struct MyWs;

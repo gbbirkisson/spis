@@ -2,9 +2,9 @@ use std::{collections::HashMap, fmt::Display};
 
 use crate::media::{ProcessedMedia, ProcessedMediaType};
 use chrono::{DateTime, Utc};
-use color_eyre::{eyre::Context, Result};
+use color_eyre::{Result, eyre::Context};
 use sqlx::{
-    migrate::MigrateDatabase, query::QueryAs, sqlite::SqliteArguments, Pool, Sqlite, SqlitePool,
+    Pool, Sqlite, SqlitePool, migrate::MigrateDatabase, query::QueryAs, sqlite::SqliteArguments,
 };
 
 pub trait MediaTypeConverter<T> {

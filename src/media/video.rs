@@ -1,8 +1,8 @@
 use super::images::crop;
 use chrono::{DateTime, Utc};
 use color_eyre::{
-    eyre::{eyre, Context},
     Result,
+    eyre::{Context, eyre},
 };
 use image::DynamicImage;
 use image::ImageReader;
