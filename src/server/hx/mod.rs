@@ -6,7 +6,7 @@ use render::{Response, TemplatedResponse};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{db::Filter, db::MediaRow, db::Order, PathFinder};
+use crate::{PathFinder, db::Filter, db::MediaRow, db::Order};
 
 mod bar;
 mod gallery;

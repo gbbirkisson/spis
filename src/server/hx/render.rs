@@ -1,6 +1,6 @@
-use actix_web::http::header::HeaderValue;
-use actix_web::http::StatusCode;
 use actix_web::ResponseError;
+use actix_web::http::StatusCode;
+use actix_web::http::header::HeaderValue;
 use actix_web::{HttpResponse, HttpResponseBuilder};
 use thiserror::Error;
 

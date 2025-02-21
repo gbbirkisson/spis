@@ -1,5 +1,5 @@
-use actix_web::{dev::Server, web, App, HttpServer};
-use color_eyre::{eyre::eyre, Result};
+use actix_web::{App, HttpServer, dev::Server, web};
+use color_eyre::{Result, eyre::eyre};
 use sqlx::{Pool, Sqlite};
 use std::net::TcpListener;
 
