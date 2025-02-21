@@ -1,5 +1,5 @@
-use color_eyre::eyre::Context;
 use color_eyre::Result;
+use color_eyre::eyre::Context;
 use md5::{Digest, Md5};
 use std::fs::File;
 use std::io::Read;

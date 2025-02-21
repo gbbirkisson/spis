@@ -2,11 +2,11 @@ use crate::db;
 use crate::server::{Config, Features};
 use chrono::Datelike;
 
-use super::render::ServerError;
-use super::render::{Response, TemplatedResponse};
 use super::Cursor;
 use super::Media;
 use super::State;
+use super::render::ServerError;
+use super::render::{Response, TemplatedResponse};
 use actix_web::get;
 use actix_web::web::Data;
 use actix_web::web::Query;
@@ -19,7 +19,7 @@ const PAGE_SIZE: usize = 200;
 mod filters {
     use core::fmt;
 
-    use super::super::{gallery::PAGE_SIZE, Cursor, Media};
+    use super::super::{Cursor, Media, gallery::PAGE_SIZE};
 
     const EMPTY: String = String::new();
 

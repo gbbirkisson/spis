@@ -1,7 +1,8 @@
 [package]
 name = "spis"
 version = "0.9.5"
-edition = "2021"
+edition = "2024"
+
 
 # https://docs.rs/color-eyre/latest/color_eyre/#improving-perf-on-debug-builds
 [profile.dev.package.backtrace]

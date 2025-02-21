@@ -5,18 +5,18 @@ use crate::prelude::*;
 use async_cron_scheduler::{Job, Scheduler};
 use chrono::Local;
 use chrono::{DateTime, Duration, Utc};
-use color_eyre::eyre::Context;
 use color_eyre::Result;
+use color_eyre::eyre::Context;
 use notify::event::ModifyKind;
 use notify::{
-    event::{AccessKind, CreateKind, EventKind},
     Config, Error, Event, RecommendedWatcher, Watcher,
+    event::{AccessKind, CreateKind, EventKind},
 };
 use rayon::prelude::*;
 use sqlx::{Pool, Sqlite};
 use std::collections::HashMap;
 use std::{collections::HashSet, path::PathBuf};
-use tokio::sync::mpsc::{channel, Receiver, Sender};
+use tokio::sync::mpsc::{Receiver, Sender, channel};
 use tokio::time::sleep;
 use uuid::Uuid;
 use walkdir::WalkDir;

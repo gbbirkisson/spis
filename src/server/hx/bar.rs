@@ -1,6 +1,6 @@
+use super::State;
 use super::gallery::render;
 use super::render::Response;
-use super::State;
 use crate::server::Config;
 use actix_web::get;
 use actix_web::web::{Data, Path, Query};

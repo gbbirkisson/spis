@@ -1,9 +1,9 @@
 use crate::db;
 use crate::server::{Config, Features};
 
-use super::render::{Response, ServerError, TemplatedResponse};
 use super::Media;
 use super::State;
+use super::render::{Response, ServerError, TemplatedResponse};
 use actix_web::web::Data;
 use actix_web::web::{self, Query};
 use actix_web::{delete, get, put};

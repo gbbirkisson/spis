@@ -1,12 +1,11 @@
 use spis::{
-    db,
+    PathFinder, db,
     media::{ProcessedMedia, ProcessedMediaData, ProcessedMediaType},
     server::{Config, Features, Listener},
-    PathFinder,
 };
 use std::net::TcpListener;
 use tempfile::NamedTempFile;
-use tracing_subscriber::{fmt, prelude::*, EnvFilter};
+use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 
 async fn spawn_server() -> String {
     // Init logging
@@ -26,7 +25,7 @@ async fn spawn_server() -> String {
         .expect("Failed to keep");
 
     // Create DB
-    let pool = db::setup_db(&db_file.to_str().unwrap())
+    let pool = db::setup_db(db_file.to_str().unwrap())
         .await
         .expect("Failed to create DB");
 
@@ -35,7 +34,7 @@ async fn spawn_server() -> String {
         &pool,
         ProcessedMedia {
             uuid: uuid::Uuid::new_v4(),
-            path: "".to_string(),
+            path: String::new(),
             data: Some(ProcessedMediaData {
                 taken_at: chrono::Utc::now(),
             }),
@@ -60,7 +59,7 @@ async fn spawn_server() -> String {
     let _ = tokio::spawn(server);
 
     // Return endpoint
-    format!("http://127.0.0.1:{}", port)
+    format!("http://127.0.0.1:{port}")
 }
 
 // async fn fetch(client: &reqwest::Client, address: &String) -> Vec<Media> {
