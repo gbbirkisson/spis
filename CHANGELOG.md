@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.9.6](https://github.com/gbbirkisson/spis/compare/v0.9.5...v0.9.6) (2025-03-08)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate chrono to v0.4.40 ([#387](https://github.com/gbbirkisson/spis/issues/387)) ([aba4db3](https://github.com/gbbirkisson/spis/commit/aba4db3324a857b41b17f7af9fcb73bec9e61501))
+* **deps:** update rust crate clap to v4.5.31 ([#385](https://github.com/gbbirkisson/spis/issues/385)) ([f51bbec](https://github.com/gbbirkisson/spis/commit/f51bbec99cb87f624a9065aae22a1029f33a1635))
+* **deps:** update rust crate tempfile to v3.18.0 ([#390](https://github.com/gbbirkisson/spis/issues/390)) ([2c92229](https://github.com/gbbirkisson/spis/commit/2c9222950302f0db2e9d986640ba6021b9c8941c))
+* **deps:** update rust crate thiserror to v2.0.12 ([#389](https://github.com/gbbirkisson/spis/issues/389)) ([984f4bd](https://github.com/gbbirkisson/spis/commit/984f4bdf11e24af971602fe04e76a892de9a58c6))
+* **deps:** update rust crate tokio to v1.44.0 ([#391](https://github.com/gbbirkisson/spis/issues/391)) ([40d8716](https://github.com/gbbirkisson/spis/commit/40d8716839b51a94f65f7337b9641e6290abda57))
+* **deps:** update rust crate tracing-actix-web to v0.7.16 ([#383](https://github.com/gbbirkisson/spis/issues/383)) ([39f74e2](https://github.com/gbbirkisson/spis/commit/39f74e2048dba15963dca423dcbea843f6d61473))
+* **deps:** update rust crate uuid to v1.15.0 ([#386](https://github.com/gbbirkisson/spis/issues/386)) ([e42508c](https://github.com/gbbirkisson/spis/commit/e42508c1da71e78404d4e9abef9cec81693b948b))
+* **deps:** update rust crate uuid to v1.15.1 ([#388](https://github.com/gbbirkisson/spis/issues/388)) ([ea82fbd](https://github.com/gbbirkisson/spis/commit/ea82fbdaa41b60dd8e474e0e1f574f118af4edee))
+
 ## [0.9.5](https://github.com/gbbirkisson/spis/compare/v0.9.4...v0.9.5) (2025-02-21)
 
 
