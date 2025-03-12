@@ -1,12 +1,23 @@
-<img align="right" width="128" height="128" src="assets/favicon.png">
+<h1>
+  <p align="center">
+    <a href="https://github.com/gbbirkisson/spis">
+      <img src="assets/favicon.png" alt="Logo" height="128">
+    </a>
+    <br>spis
+  </p>
+</h1>
 
-<h1>SPIS</h1>
+<p align="center">
+  <b>S</b>imple <b>P</b>rivate <b>I</b>mage <b>S</b>erver
+</p>
 
-[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/gbbirkisson/spis)](https://github.com/gbbirkisson/spis/releases)
-[![GitHub last commit (branch)](https://img.shields.io/github/last-commit/gbbirkisson/spis/main)](https://github.com/gbbirkisson/spis/commits/main)
-[![CI](https://github.com/gbbirkisson/spis/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/gbbirkisson/spis/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/github/gbbirkisson/spis/branch/main/graph/badge.svg?token=5VQHEBQ7JV)](https://codecov.io/github/gbbirkisson/spis)
-[![GitHub](https://img.shields.io/github/license/gbbirkisson/spis)](https://github.com/gbbirkisson/spis/blob/main/LICENSE)
+<p align="center">
+<a href="https://github.com/gbbirkisson/spis/releases"><img src="https://img.shields.io/github/v/release/gbbirkisson/spis"></a>
+<a href="https://github.com/gbbirkisson/spis/commits/main"><img src="https://img.shields.io/github/last-commit/gbbirkisson/spis/main"></a>
+<a href="https://github.com/gbbirkisson/spis/actions/workflows/ci.yml"><img src="https://github.com/gbbirkisson/spis/actions/workflows/ci.yml/badge.svg?branch=main"></a>
+<a href="https://codecov.io/github/gbbirkisson/spis"><img src="https://codecov.io/github/gbbirkisson/spis/branch/main/graph/badge.svg?token=5VQHEBQ7JV"></a>
+<a href="https://github.com/gbbirkisson/spis/blob/main/LICENSE"><img src="https://img.shields.io/github/license/gbbirkisson/spis"></a>
+</p>
 
 This project is called "Simple Private Image Server" or `SPIS` for short. It's purpose is to be
 a lightweight and fast server to display media hosted on a private server. This project came
