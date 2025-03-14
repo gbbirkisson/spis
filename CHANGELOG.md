@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.9.7](https://github.com/gbbirkisson/spis/compare/v0.9.6...v0.9.7) (2025-03-14)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate tempfile to v3.19.0 ([#400](https://github.com/gbbirkisson/spis/issues/400)) ([4ce7cb5](https://github.com/gbbirkisson/spis/commit/4ce7cb5d8d22fea7a90937aff6853dd60a5e2a1c))
+* **deps:** update rust crate tokio to v1.44.1 ([#398](https://github.com/gbbirkisson/spis/issues/398)) ([036a557](https://github.com/gbbirkisson/spis/commit/036a557e28e76897bfe5184ced616d137664ab8f))
+* **deps:** update rust crate uuid to v1.16.0 ([#401](https://github.com/gbbirkisson/spis/issues/401)) ([32a1290](https://github.com/gbbirkisson/spis/commit/32a12905ab7b66067fdc1a400a7317e55768a3d4))
+
 ## [0.9.6](https://github.com/gbbirkisson/spis/compare/v0.9.5...v0.9.6) (2025-03-12)
 
 
