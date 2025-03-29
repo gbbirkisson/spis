@@ -175,20 +175,26 @@ pub fn setup_filewalker(
             }
 
             // Print counts
-            if let Ok(counts) = db::media_count(&pool).await {
-                tracing::info!("DB counts total:    {}", counts.count);
-                if let Some(c) = counts.walked {
-                    tracing::info!("DB counts walked:   {}", c);
+            match db::media_count(&pool).await {
+                Ok(counts) => {
+                    tracing::info!("DB counts total:    {}", counts.count);
+                    if let Some(c) = counts.walked {
+                        tracing::info!("DB counts walked:   {}", c);
+                    }
+                    if let Some(c) = counts.favorite {
+                        tracing::info!("DB counts favorite: {}", c);
+                    }
+                    if let Some(c) = counts.archived {
+                        tracing::info!("DB counts archived: {}", c);
+                    }
+                    if let Some(c) = counts.missing {
+                        tracing::info!("DB counts missing:  {}", c);
+                    }
+                    if let Some(c) = counts.pos {
+                        tracing::info!("DB counts pos:  {}", c);
+                    }
                 }
-                if let Some(c) = counts.favorite {
-                    tracing::info!("DB counts favorite: {}", c);
-                }
-                if let Some(c) = counts.archived {
-                    tracing::info!("DB counts archived: {}", c);
-                }
-                if let Some(c) = counts.missing {
-                    tracing::info!("DB counts missing:  {}", c);
-                }
+                Err(e) => tracing::error!("DB counts failed:  {}", e),
             }
 
             // Print duration
