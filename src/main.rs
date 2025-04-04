@@ -169,7 +169,7 @@ fn validate_listener(config: &Spis) -> &'static str {
         )
         .exit();
         }
-    };
+    }
     ""
 }
 

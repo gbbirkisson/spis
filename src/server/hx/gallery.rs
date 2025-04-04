@@ -125,7 +125,7 @@ pub(super) async fn render(pool: &Pool<Sqlite>, config: &Config, state: State) -
     match (state.favorite, state.year) {
         (Some(true), _) | (_, Some(_)) => buttons.push(BarButton::Clear),
         (_, _) => buttons.push(BarButton::Empty),
-    };
+    }
 
     let media = db::media_list(pool, &state, &state, PAGE_SIZE)
         .await

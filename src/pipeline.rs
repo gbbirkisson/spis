@@ -156,13 +156,13 @@ pub fn setup_filewalker(
                 walk_dir(&old_uuids, &media_dir, &file_sender, follow_symlinks);
                 if let Err(error) = walk_finished_sender.send(NOTHING) {
                     tracing::error!("Failed to trigger processing finish: {:?}", error);
-                };
+                }
             });
 
             tracing::debug!("Wait for walk to finish");
             if let Err(error) = walk_finished_receiver.await {
                 tracing::error!("Failed to trigger processing finish: {:?}", error);
-            };
+            }
 
             tracing::info!("Walking done, waiting for grace period");
             sleep(tokio::time::Duration::from_secs(10)).await;
@@ -300,12 +300,12 @@ pub fn setup_media_processing(
                             .wrap_err("blocking_send failed")
                         {
                             tracing::error!("Failed to send media to channel: {:?}", error);
-                        };
+                        }
                     }
                     Err(error) => {
                         tracing::error!("Failed processing media: {:?} {:?}", &path, error);
                     }
-                };
+                }
             })
             .collect();
         tracing::warn!("file_channel was closed");
