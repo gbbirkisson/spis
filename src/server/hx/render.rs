@@ -1,10 +1,8 @@
 use actix_web::ResponseError;
-use actix_web::http::StatusCode;
-use actix_web::http::header::HeaderValue;
-use actix_web::{HttpResponse, HttpResponseBuilder};
+use actix_web::web::Html;
 use thiserror::Error;
 
-pub(super) type Response = Result<HttpResponse, ServerError>;
+pub(super) type Response = Result<Html, ServerError>;
 
 #[derive(Error, Debug)]
 pub(super) enum ServerError {
@@ -22,11 +20,9 @@ pub(super) trait TemplatedResponse {
 
 impl<T: askama::Template> TemplatedResponse for T {
     fn render_response(&self) -> Response {
-        Ok(HttpResponseBuilder::new(StatusCode::OK)
-            .content_type(HeaderValue::from_static(T::MIME_TYPE))
-            .body(
-                self.render()
-                    .map_err(|e| ServerError::TemplateError(e.into()))?,
-            ))
+        Ok(Html::new(
+            self.render()
+                .map_err(|e| ServerError::TemplateError(e.into()))?,
+        ))
     }
 }
