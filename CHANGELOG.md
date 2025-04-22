@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.9.7](https://github.com/gbbirkisson/spis/compare/v0.9.6...v0.9.7) (2025-04-22)
+
+
+### Bug Fixes
+
+* **deps:** update dependency rust to v1.85.1 ([#406](https://github.com/gbbirkisson/spis/issues/406)) ([2188f23](https://github.com/gbbirkisson/spis/commit/2188f23db2986e8a0731ab49edb8008ccbee63be))
+* **deps:** update dependency rust to v1.86.0 ([#411](https://github.com/gbbirkisson/spis/issues/411)) ([56a057d](https://github.com/gbbirkisson/spis/commit/56a057daaad5872f133758f2de5412d8f6b231d8))
+* **deps:** update nginx docker tag to v1.27.5 ([#416](https://github.com/gbbirkisson/spis/issues/416)) ([04b14a2](https://github.com/gbbirkisson/spis/commit/04b14a223ce0151d43a3b299e07b2d6eb240d8d1))
+* **deps:** update rust crate askama to 0.13.0 ([#409](https://github.com/gbbirkisson/spis/issues/409)) ([98bd6d2](https://github.com/gbbirkisson/spis/commit/98bd6d276352d3f2314578899261f76f8508698a))
+* **deps:** update rust crate askama to v0.13.1 ([#418](https://github.com/gbbirkisson/spis/issues/418)) ([9f29973](https://github.com/gbbirkisson/spis/commit/9f299737d1180d8cd58d1cd01a0e5953606570e8))
+* **deps:** update rust crate clap to v4.5.34 ([#408](https://github.com/gbbirkisson/spis/issues/408)) ([9e5239b](https://github.com/gbbirkisson/spis/commit/9e5239bb46abeeafb4fb85226a0971904b97734e))
+* **deps:** update rust crate clap to v4.5.35 ([#410](https://github.com/gbbirkisson/spis/issues/410)) ([0df420f](https://github.com/gbbirkisson/spis/commit/0df420f5dd21d92fbb9d8c038e862ee7e57dd0be))
+* **deps:** update rust crate clap to v4.5.36 ([#415](https://github.com/gbbirkisson/spis/issues/415)) ([5a712b0](https://github.com/gbbirkisson/spis/commit/5a712b030b038a469ed30c0f9f8be9c53109f0c3))
+* **deps:** update rust crate clap to v4.5.37 ([#417](https://github.com/gbbirkisson/spis/issues/417)) ([88b8b48](https://github.com/gbbirkisson/spis/commit/88b8b4837c6fb71b6bb40181cdb7e6eb65bca845))
+* **deps:** update rust crate image to v0.25.6 ([#407](https://github.com/gbbirkisson/spis/issues/407)) ([60df482](https://github.com/gbbirkisson/spis/commit/60df482088251bc20156d60b6c2459f228bd3390))
+* **deps:** update rust crate reqwest to v0.12.15 ([#404](https://github.com/gbbirkisson/spis/issues/404)) ([0d18b5c](https://github.com/gbbirkisson/spis/commit/0d18b5c8a759bc81c35683ac1630db718d2fa53a))
+* **deps:** update rust crate tempfile to v3.19.0 ([#400](https://github.com/gbbirkisson/spis/issues/400)) ([4ce7cb5](https://github.com/gbbirkisson/spis/commit/4ce7cb5d8d22fea7a90937aff6853dd60a5e2a1c))
+* **deps:** update rust crate tempfile to v3.19.1 ([#405](https://github.com/gbbirkisson/spis/issues/405)) ([77a5111](https://github.com/gbbirkisson/spis/commit/77a5111fc7bc64ba1159c132dcb12d52a2ad5a61))
+* **deps:** update rust crate tokio to v1.44.1 ([#398](https://github.com/gbbirkisson/spis/issues/398)) ([036a557](https://github.com/gbbirkisson/spis/commit/036a557e28e76897bfe5184ced616d137664ab8f))
+* **deps:** update rust crate tokio to v1.44.2 ([#413](https://github.com/gbbirkisson/spis/issues/413)) ([015e0a4](https://github.com/gbbirkisson/spis/commit/015e0a432ef111b0200055383bca7f0d2dfe81ed))
+* **deps:** update rust crate tracing-actix-web to v0.7.18 ([#414](https://github.com/gbbirkisson/spis/issues/414)) ([3cf712c](https://github.com/gbbirkisson/spis/commit/3cf712c363e45d26256743488eab93f7cde00c02))
+* **deps:** update rust crate uuid to v1.16.0 ([#401](https://github.com/gbbirkisson/spis/issues/401)) ([32a1290](https://github.com/gbbirkisson/spis/commit/32a12905ab7b66067fdc1a400a7317e55768a3d4))
+
 ## [0.9.6](https://github.com/gbbirkisson/spis/compare/v0.9.5...v0.9.6) (2025-03-12)
 
 
