@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.8](https://github.com/gbbirkisson/spis/compare/v0.9.7...v0.9.8) (2025-04-25)
+
+
+### Bug Fixes
+
+* **deps:** update nginx docker tag to v1.28.0 ([#420](https://github.com/gbbirkisson/spis/issues/420)) ([a15a28f](https://github.com/gbbirkisson/spis/commit/a15a28f6ff3a5a34a823a7805e1c0c2f95a6c424))
+* **deps:** update rust crate askama to 0.14.0 ([#419](https://github.com/gbbirkisson/spis/issues/419)) ([615c956](https://github.com/gbbirkisson/spis/commit/615c9560776db44b163325df4c35a0bee9677a16))
+
 ## [0.9.7](https://github.com/gbbirkisson/spis/compare/v0.9.6...v0.9.7) (2025-04-22)
 
 
