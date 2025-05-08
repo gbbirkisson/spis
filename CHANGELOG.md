@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.9.9](https://github.com/gbbirkisson/spis/compare/v0.9.8...v0.9.9) (2025-05-06)
+
+
+### Bug Fixes
+
+* **deps:** update Cargo.lock ([#425](https://github.com/gbbirkisson/spis/issues/425)) ([34b02a8](https://github.com/gbbirkisson/spis/commit/34b02a8fd18a153aed61b6726484b0b1a59e2d98))
+* **deps:** update rust crate chrono to v0.4.41 ([#422](https://github.com/gbbirkisson/spis/issues/422)) ([ac67a05](https://github.com/gbbirkisson/spis/commit/ac67a051ab1188ed968446a99ad9215ebd9ac7fd))
+* **deps:** update rust crate color-eyre to v0.6.4 ([#424](https://github.com/gbbirkisson/spis/issues/424)) ([662717d](https://github.com/gbbirkisson/spis/commit/662717d42931ed6c0f00929af524be87b9facc10))
+
 ## [0.9.8](https://github.com/gbbirkisson/spis/compare/v0.9.7...v0.9.8) (2025-04-25)
 
 
