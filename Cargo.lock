@@ -3136,7 +3136,7 @@ dependencies = [
 
 [[package]]
 name = "spis"
-version = "0.9.9"
+version = "0.9.10"
 dependencies = [
  "actix",
  "actix-web",

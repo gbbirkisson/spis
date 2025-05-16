@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.9.10](https://github.com/gbbirkisson/spis/compare/v0.9.9...v0.9.10) (2025-05-16)
+
+
+### Bug Fixes
+
+* **deps:** update dependency rust to v1.87.0 ([#430](https://github.com/gbbirkisson/spis/issues/430)) ([bb695a9](https://github.com/gbbirkisson/spis/commit/bb695a9a3a05f9189192e4cc4c2593b22c8514bc))
+* **deps:** update rust crate actix-web to v4.11.0 ([#429](https://github.com/gbbirkisson/spis/issues/429)) ([3c34f50](https://github.com/gbbirkisson/spis/commit/3c34f5040119b7f15634449c13176eb8885e7987))
+* **deps:** update rust crate clap to v4.5.38 ([#426](https://github.com/gbbirkisson/spis/issues/426)) ([e36dd82](https://github.com/gbbirkisson/spis/commit/e36dd82155bd899e11ad8d3ab74a8ec3b40812ba))
+* **deps:** update rust crate tempfile to v3.20.0 ([#428](https://github.com/gbbirkisson/spis/issues/428)) ([40944b7](https://github.com/gbbirkisson/spis/commit/40944b723c0c505a324c8bc4722bbaef57e8cf62))
+
 ## [0.9.9](https://github.com/gbbirkisson/spis/compare/v0.9.8...v0.9.9) (2025-05-06)
 
 

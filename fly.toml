@@ -2,7 +2,7 @@ app = 'spis'
 primary_region = 'arn'
 
 [build]
-image = 'ghcr.io/gbbirkisson/spis:v0.9.9' # x-release-please-version
+image = 'ghcr.io/gbbirkisson/spis:v0.9.10' # x-release-please-version
 
 [env]
 PORT = '8080'
