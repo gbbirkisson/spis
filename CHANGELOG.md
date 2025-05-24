@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.9.11](https://github.com/gbbirkisson/spis/compare/v0.9.10...v0.9.11) (2025-05-24)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate sqlx to v0.8.6 ([#431](https://github.com/gbbirkisson/spis/issues/431)) ([e407cf9](https://github.com/gbbirkisson/spis/commit/e407cf981ef45b06648938e52663336da1822461))
+* **deps:** update rust crate tokio to v1.45.1 ([#434](https://github.com/gbbirkisson/spis/issues/434)) ([c06bb57](https://github.com/gbbirkisson/spis/commit/c06bb57b43dd6a58a673182966d6214b20689ff7))
+* **deps:** update rust crate uuid to v1.17.0 ([#433](https://github.com/gbbirkisson/spis/issues/433)) ([5de64d1](https://github.com/gbbirkisson/spis/commit/5de64d1ea43b043ab5890b1992e0f516bd5ca59a))
+
 ## [0.9.10](https://github.com/gbbirkisson/spis/compare/v0.9.9...v0.9.10) (2025-05-16)
 
 
