@@ -64,7 +64,7 @@ image = { version = "0.25.0", features = ["jpeg", "webp"] }
 kamadak-exif = "0.6"
 
 # Video processing
-which = "7.0"
+which = "8.0"
 subprocess = "0.2"
 md-5 = "0.10"
 
