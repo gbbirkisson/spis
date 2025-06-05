@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.9.11](https://github.com/gbbirkisson/spis/compare/v0.9.10...v0.9.11) (2025-06-05)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate actix-web-actors to v4.3.1 ([#437](https://github.com/gbbirkisson/spis/issues/437)) ([21c2cc4](https://github.com/gbbirkisson/spis/commit/21c2cc4ef4e49ff9763692e17d56ccb323c421bc))
+* **deps:** update rust crate clap to v4.5.39 ([#435](https://github.com/gbbirkisson/spis/issues/435)) ([dc07d55](https://github.com/gbbirkisson/spis/commit/dc07d55dfe22ea8af7dc5f16ab6ce3020c4b8fca))
+* **deps:** update rust crate color-eyre to v0.6.5 ([#439](https://github.com/gbbirkisson/spis/issues/439)) ([3e04180](https://github.com/gbbirkisson/spis/commit/3e041801e500e25851ef21cbc6a8996c96ab9bf5))
+* **deps:** update rust crate reqwest to v0.12.16 ([#436](https://github.com/gbbirkisson/spis/issues/436)) ([2e2fe28](https://github.com/gbbirkisson/spis/commit/2e2fe28f09ac06a095735f7204bc8e58520a0d62))
+* **deps:** update rust crate reqwest to v0.12.18 ([#438](https://github.com/gbbirkisson/spis/issues/438)) ([f6094ee](https://github.com/gbbirkisson/spis/commit/f6094ee1fabcfef80bb4025244f5fcd23adcef03))
+* **deps:** update rust crate reqwest to v0.12.19 ([#440](https://github.com/gbbirkisson/spis/issues/440)) ([83fd967](https://github.com/gbbirkisson/spis/commit/83fd9675685dc822fa854c6de891fcbb85fa15e8))
+* **deps:** update rust crate sqlx to v0.8.6 ([#431](https://github.com/gbbirkisson/spis/issues/431)) ([e407cf9](https://github.com/gbbirkisson/spis/commit/e407cf981ef45b06648938e52663336da1822461))
+* **deps:** update rust crate tokio to v1.45.1 ([#434](https://github.com/gbbirkisson/spis/issues/434)) ([c06bb57](https://github.com/gbbirkisson/spis/commit/c06bb57b43dd6a58a673182966d6214b20689ff7))
+* **deps:** update rust crate uuid to v1.17.0 ([#433](https://github.com/gbbirkisson/spis/issues/433)) ([5de64d1](https://github.com/gbbirkisson/spis/commit/5de64d1ea43b043ab5890b1992e0f516bd5ca59a))
+* **deps:** update rust crate which to v8 ([#441](https://github.com/gbbirkisson/spis/issues/441)) ([142b4a4](https://github.com/gbbirkisson/spis/commit/142b4a441f434c36ae4a848c0307d994e89f1984))
+
 ## [0.9.10](https://github.com/gbbirkisson/spis/compare/v0.9.9...v0.9.10) (2025-05-16)
 
 
