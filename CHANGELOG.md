@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.12](https://github.com/gbbirkisson/spis/compare/v0.9.11...v0.9.12) (2025-06-11)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate clap to v4.5.40 ([#442](https://github.com/gbbirkisson/spis/issues/442)) ([ce7156d](https://github.com/gbbirkisson/spis/commit/ce7156df08afa93f4a84d430171667ce299ac36d))
+* **deps:** update rust crate reqwest to v0.12.20 ([#444](https://github.com/gbbirkisson/spis/issues/444)) ([8f5beab](https://github.com/gbbirkisson/spis/commit/8f5beab75475e679b9b9f0dbecd768eada606a8f))
+
 ## [0.9.11](https://github.com/gbbirkisson/spis/compare/v0.9.10...v0.9.11) (2025-06-05)
 
 
