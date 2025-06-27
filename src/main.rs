@@ -201,6 +201,7 @@ impl Spis {
     }
 }
 
+#[allow(clippy::cognitive_complexity)]
 #[tokio::main]
 async fn main() -> Result<()> {
     // Setup logging
@@ -254,6 +255,7 @@ async fn process(config: Spis, media: Vec<PathBuf>) -> Result<()> {
     Ok(())
 }
 
+#[allow(clippy::cognitive_complexity)]
 async fn run(config: Spis) -> Result<()> {
     std::fs::create_dir_all(config.thumbnail_dir())?;
 

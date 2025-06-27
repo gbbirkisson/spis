@@ -20,7 +20,7 @@ impl MediaTypeConverter<i32> for ProcessedMediaType {
     }
 }
 
-#[allow(clippy::module_name_repetitions)]
+#[allow(clippy::module_name_repetitions, clippy::cognitive_complexity)]
 pub async fn setup_db(db_file: &str) -> Result<Pool<Sqlite>> {
     tracing::debug!("Setup db");
 
