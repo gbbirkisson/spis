@@ -38,6 +38,7 @@ toolchain:
 	rustup show
 	cargo install sqlx-cli@0.8.0
 	cargo install cargo-tarpaulin@0.31.0
+	cargo install --locked watchexec-cli
 
 .PHONY: dev-clippy
 dev-clippy: ${DATABASE}
