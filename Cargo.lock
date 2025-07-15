@@ -1019,7 +1019,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "976dd42dc7e85965fe702eb8164f21f450704bdde31faefd6471dba214cb594e"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -2879,7 +2879,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -3524,7 +3524,7 @@ dependencies = [
  "getrandom 0.3.2",
  "once_cell",
  "rustix",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -3812,9 +3812,9 @@ dependencies = [
 
 [[package]]
 name = "tracing-actix-web"
-version = "0.7.18"
+version = "0.7.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2340b7722695166c7fc9b3e3cd1166e7c74fedb9075b8f0c74d3822d2e41caf5"
+checksum = "5360edd490ec8dee9fedfc6a9fd83ac2f01b3e1996e3261b9ad18a61971fe064"
 dependencies = [
  "actix-web",
  "mutually_exclusive_features",
