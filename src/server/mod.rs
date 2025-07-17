@@ -25,12 +25,32 @@ pub struct Features {
     pub favorite_allow: bool,
 }
 
+use actix_web::{
+    body::MessageBody,
+    dev::{ServiceRequest, ServiceResponse},
+    middleware::{from_fn, Next},
+    Error,
+};
+
+async fn log_errors(
+    req: ServiceRequest,
+    next: Next<impl MessageBody>,
+) -> Result<ServiceResponse<impl MessageBody>, Error> {
+    let res = next.call(req).await?;
+
+    if let Some(error) = res.response().error() {
+        tracing::error!("Error in response: {:?}", error);
+    }
+
+    Ok(res)
+}
+
 pub fn run(listener: Listener, pool: Pool<Sqlite>, config: Config) -> Result<Server> {
     let pool = web::Data::new(pool);
     let config = web::Data::new(config);
 
     let server = HttpServer::new(move || {
-        let mut app = App::new();
+        let mut app = App::new().wrap(from_fn(log_errors));
 
         app = app
             .service(web::redirect("/", "/hx"))
