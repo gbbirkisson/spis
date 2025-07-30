@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.9.13](https://github.com/gbbirkisson/spis/compare/v0.9.12...v0.9.13) (2025-07-30)
+
+
+### Bug Fixes
+
+* **deps:** update dependency rust to v1.88.0 ([#447](https://github.com/gbbirkisson/spis/issues/447)) ([8a590c7](https://github.com/gbbirkisson/spis/commit/8a590c77b84e8e4f8ae6cdf677f2eb531f4c24ab))
+* **deps:** update nginx docker tag to v1.29.0 ([#445](https://github.com/gbbirkisson/spis/issues/445)) ([3d91514](https://github.com/gbbirkisson/spis/commit/3d91514ae7a1cf8ad5594ba9c79ba79da63c523e))
+* **deps:** update rust crate clap to v4.5.41 ([#451](https://github.com/gbbirkisson/spis/issues/451)) ([e6da3c8](https://github.com/gbbirkisson/spis/commit/e6da3c85ff010bfd86255b2d350aee62dbf0fe0a))
+* **deps:** update rust crate clap to v4.5.42 ([#454](https://github.com/gbbirkisson/spis/issues/454)) ([09788f8](https://github.com/gbbirkisson/spis/commit/09788f84f103548f83ff56c2590260b7112ef311))
+* **deps:** update rust crate reqwest to v0.12.22 ([#448](https://github.com/gbbirkisson/spis/issues/448)) ([6d0f5ee](https://github.com/gbbirkisson/spis/commit/6d0f5ee6553b9f3d0644e04b71637b695adc46c9))
+* **deps:** update rust crate tokio to v1.46.0 ([#449](https://github.com/gbbirkisson/spis/issues/449)) ([195131f](https://github.com/gbbirkisson/spis/commit/195131fea50077ac310d165d07f0bdc1165a269b))
+* **deps:** update rust crate tokio to v1.46.1 ([#450](https://github.com/gbbirkisson/spis/issues/450)) ([d759b2f](https://github.com/gbbirkisson/spis/commit/d759b2fedc42669a10cfdf41f641a935478cbbd5))
+* **deps:** update rust crate tokio to v1.47.0 ([#453](https://github.com/gbbirkisson/spis/issues/453)) ([121095e](https://github.com/gbbirkisson/spis/commit/121095e64090ffd3bb2a715f914a3bf6eeb1722d))
+* **deps:** update rust crate tracing-actix-web to v0.7.19 ([#452](https://github.com/gbbirkisson/spis/issues/452)) ([c979fb4](https://github.com/gbbirkisson/spis/commit/c979fb40aa6ed8b799cd87c2e907cd11bc8343f7))
+
 ## [0.9.12](https://github.com/gbbirkisson/spis/compare/v0.9.11...v0.9.12) (2025-06-11)
 
 
