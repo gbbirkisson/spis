@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.14](https://github.com/gbbirkisson/spis/compare/v0.9.13...v0.9.14) (2025-08-01)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate tokio to v1.47.1 ([#455](https://github.com/gbbirkisson/spis/issues/455)) ([55b82ea](https://github.com/gbbirkisson/spis/commit/55b82eaa7132d557d63245dad29b8f0c8a5ef285))
+
 ## [0.9.13](https://github.com/gbbirkisson/spis/compare/v0.9.12...v0.9.13) (2025-07-30)
 
 
