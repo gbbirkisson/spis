@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.9.14](https://github.com/gbbirkisson/spis/compare/v0.9.13...v0.9.14) (2025-08-07)
+
+
+### Bug Fixes
+
+* **deps:** update actions/download-artifact action to v5 ([#457](https://github.com/gbbirkisson/spis/issues/457)) ([55cd193](https://github.com/gbbirkisson/spis/commit/55cd193abf1661e329a439b06ea11134f953db52))
+* **deps:** update rust crate clap to v4.5.43 ([#458](https://github.com/gbbirkisson/spis/issues/458)) ([4204b4f](https://github.com/gbbirkisson/spis/commit/4204b4fba6d34566df35e68ff3d4587c854903e7))
+* **deps:** update rust crate tokio to v1.47.1 ([#455](https://github.com/gbbirkisson/spis/issues/455)) ([55b82ea](https://github.com/gbbirkisson/spis/commit/55b82eaa7132d557d63245dad29b8f0c8a5ef285))
+
 ## [0.9.13](https://github.com/gbbirkisson/spis/compare/v0.9.12...v0.9.13) (2025-07-30)
 
 
