@@ -1,6 +1,6 @@
 static ASSETS: include_dir::Dir<'_> = include_dir::include_dir!("$CARGO_MANIFEST_DIR/assets");
 
-fn find_files(name: &str) -> Vec<&include_dir::File> {
+fn find_files(name: &str) -> Vec<&include_dir::File<'_>> {
     ASSETS
         .find(name)
         .unwrap_or_else(|_| panic!("Could not find {name}"))
