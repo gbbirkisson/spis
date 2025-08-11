@@ -168,10 +168,8 @@ pub fn setup_filewalker(
             sleep(tokio::time::Duration::from_secs(10)).await;
 
             tracing::debug!("Update missing field in DB");
-            if db_mark_missing {
-                if let Err(error) = db::media_mark_missing(&pool).await {
-                    tracing::error!("Failed marking media as walked: {:?}", error);
-                }
+            if db_mark_missing && let Err(error) = db::media_mark_missing(&pool).await {
+                tracing::error!("Failed marking media as walked: {:?}", error);
             }
 
             // Print counts
