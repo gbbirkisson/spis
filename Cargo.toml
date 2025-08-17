@@ -1,6 +1,6 @@
 [package]
 name = "spis"
-version = "0.9.13"
+version = "0.9.14"
 edition = "2024"
 
 # https://docs.rs/color-eyre/latest/color_eyre/#improving-perf-on-debug-builds
