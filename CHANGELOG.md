@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.15](https://github.com/gbbirkisson/spis/compare/v0.9.14...v0.9.15) (2025-08-20)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate tempfile to v3.21.0 ([#470](https://github.com/gbbirkisson/spis/issues/470)) ([e3bf246](https://github.com/gbbirkisson/spis/commit/e3bf2462392d55016e644852ee0c61c4a53ea774))
+* **deps:** update rust crate thiserror to v2.0.16 ([#472](https://github.com/gbbirkisson/spis/issues/472)) ([8e94ab1](https://github.com/gbbirkisson/spis/commit/8e94ab1e7485ae9a64f35983d1f827cbe436395c))
+
 ## [0.9.14](https://github.com/gbbirkisson/spis/compare/v0.9.13...v0.9.14) (2025-08-17)
 
 
