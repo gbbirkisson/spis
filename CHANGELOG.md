@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.9.15](https://github.com/gbbirkisson/spis/compare/v0.9.14...v0.9.15) (2025-09-09)
+
+
+### Bug Fixes
+
+* **deps:** update actions/stale action to v10 ([#478](https://github.com/gbbirkisson/spis/issues/478)) ([4af4f4a](https://github.com/gbbirkisson/spis/commit/4af4f4a58bbc10282d34a6735e317feb5949e85e))
+* **deps:** update rust crate chrono to v0.4.42 ([#479](https://github.com/gbbirkisson/spis/issues/479)) ([512be66](https://github.com/gbbirkisson/spis/commit/512be66231ccb7bd885131d24e037508b78f105d))
+* **deps:** update rust crate clap to v4.5.46 ([#473](https://github.com/gbbirkisson/spis/issues/473)) ([6a0c46b](https://github.com/gbbirkisson/spis/commit/6a0c46b18dacda155cc7ae0939917f7d6502b9db))
+* **deps:** update rust crate clap to v4.5.47 ([#476](https://github.com/gbbirkisson/spis/issues/476)) ([0b0a6a3](https://github.com/gbbirkisson/spis/commit/0b0a6a32a2445b9da004d4b84f2c7652d6651616))
+* **deps:** update rust crate image to v0.25.8 ([#477](https://github.com/gbbirkisson/spis/issues/477)) ([a26d8cf](https://github.com/gbbirkisson/spis/commit/a26d8cfbfdfe2d927399921f4530856deb719f31))
+* **deps:** update rust crate tempfile to v3.21.0 ([#470](https://github.com/gbbirkisson/spis/issues/470)) ([e3bf246](https://github.com/gbbirkisson/spis/commit/e3bf2462392d55016e644852ee0c61c4a53ea774))
+* **deps:** update rust crate tempfile to v3.22.0 ([#480](https://github.com/gbbirkisson/spis/issues/480)) ([8d8025b](https://github.com/gbbirkisson/spis/commit/8d8025b5c6e9e87e1e781bd456c82ef40d026c34))
+* **deps:** update rust crate thiserror to v2.0.16 ([#472](https://github.com/gbbirkisson/spis/issues/472)) ([8e94ab1](https://github.com/gbbirkisson/spis/commit/8e94ab1e7485ae9a64f35983d1f827cbe436395c))
+* **deps:** update rust crate tracing-subscriber to v0.3.20 ([#474](https://github.com/gbbirkisson/spis/issues/474)) ([788f5fc](https://github.com/gbbirkisson/spis/commit/788f5fc4c4487fc33acefcacb474a49f92ed1fb3))
+* **deps:** update rust crate uuid to v1.18.1 ([#475](https://github.com/gbbirkisson/spis/issues/475)) ([57640cd](https://github.com/gbbirkisson/spis/commit/57640cdb5f4349e8cb4d629b6c7e3c34173d696e))
+
 ## [0.9.14](https://github.com/gbbirkisson/spis/compare/v0.9.13...v0.9.14) (2025-08-17)
 
 
