@@ -40,7 +40,7 @@ jobs:
           DATABASE_URL: sqlite:data/spis.db
 
       - name: Store artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: spis-${{ matrix.target }}
           path: release/spis-${{ matrix.target }}
