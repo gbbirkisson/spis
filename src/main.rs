@@ -78,9 +78,10 @@ pub struct Spis {
     command: Option<SpisCommand>,
 }
 
-#[derive(Subcommand, Debug, Clone)]
+#[derive(Subcommand, Default, Debug, Clone)]
 enum SpisCommand {
     /// Runs the server [default]
+    #[default]
     Run,
 
     /// Test process media files
@@ -135,12 +136,6 @@ enum SpisTemplate {
         #[arg(short, long, default_value = "error,spis=info")]
         log: String,
     },
-}
-
-impl Default for SpisCommand {
-    fn default() -> Self {
-        Self::Run
-    }
 }
 
 #[derive(Args, Debug)]
