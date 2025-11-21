@@ -10,9 +10,11 @@ use crate::{PathFinder, db::Filter, db::MediaRow, db::Order};
 
 mod bar;
 mod gallery;
+mod map;
 mod preview;
 mod render;
 
+#[derive(Debug)]
 struct Media {
     uuid: Uuid,
     url: String,
@@ -20,17 +22,23 @@ struct Media {
     favorite: bool,
     video: bool,
     taken_at: DateTime<Utc>,
+    pos: Option<(f64, f64)>,
 }
 
 impl From<(MediaRow, &PathFinder)> for Media {
-    fn from(value: (MediaRow, &PathFinder)) -> Self {
+    fn from((media, pf): (MediaRow, &PathFinder)) -> Self {
+        let pos = match (media.latitude, media.longitude) {
+            (Some(lat), Some(lon)) => Some((lat, lon)),
+            _ => None,
+        };
         Self {
-            uuid: value.0.id,
-            url: value.1.media(&value.0.path),
-            thumbnail: value.1.thumbnail(&value.0.id),
-            favorite: value.0.favorite,
-            video: value.0.media_type == 1,
-            taken_at: value.0.taken_at,
+            uuid: media.id,
+            url: pf.media(&media.path),
+            thumbnail: pf.thumbnail(&media.id),
+            favorite: media.favorite,
+            video: media.media_type == 1,
+            taken_at: media.taken_at,
+            pos,
         }
     }
 }
@@ -133,6 +141,7 @@ async fn index() -> Response {
 pub fn create_service(path: &str) -> actix_web::Scope {
     scope(path)
         .service(index)
+        .service(scope("/map").service(map::root))
         .service(
             scope("/gallery")
                 .service(gallery::root)
