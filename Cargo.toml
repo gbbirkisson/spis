@@ -46,7 +46,7 @@ sqlx = { version = "0.8", features = [
 # Web
 actix-web = "4"
 tracing-actix-web = "0.7.9"
-askama = { version = "0.14.0" }
+askama = { version = "0.15.0" }
 
 # Serialization
 serde = { version = "1", features = ["derive"] }
