@@ -76,5 +76,5 @@ actix = { version = "0.13.1", optional = true }
 actix-web-actors = { version = "4.2.0", optional = true }
 
 [dev-dependencies]
-reqwest = { version = "0.12", features = ["json"] }
+reqwest = { version = "0.13", features = ["json"] }
 tempfile = "3"
