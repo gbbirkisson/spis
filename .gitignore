@@ -2,3 +2,4 @@ data
 target
 release
 cobertura.xml
+.helix
