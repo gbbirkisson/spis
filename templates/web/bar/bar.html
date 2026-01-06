@@ -1,27 +1,31 @@
 <div class="bar-inner">
   <ul class="bar-filter-list-main">
     {% for button in bar_buttons %}
-      {% include "web/bar/item.html" %}
+    {% include "web/bar/item.html" %}
     {% endfor %}
   </ul>
+
   {% match state.favorite %}
-    {% when Some with (favorite) %}
-      <input name="favorite" value="{{ favorite }}" type="hidden"/>
-    {% when None %}
+  {% when Some with (favorite) %}
+  <input name="favorite" value="{{ favorite }}" type="hidden" />
+  {% when None %}
   {% endmatch %}
+
   {% match state.year %}
-    {% when Some with (year) %}
-      <input name="year" value="{{ year }}" type="hidden"/>
-    {% when None %}
+  {% when Some with (year) %}
+  <input name="year" value="{{ year }}" type="hidden" />
+  {% when None %}
   {% endmatch %}
+
   {% match state.month %}
-    {% when Some with (month) %}
-      <input name="month" value="{{ month }}" type="hidden"/>
-    {% when None %}
+  {% when Some with (month) %}
+  <input name="month" value="{{ month }}" type="hidden" />
+  {% when None %}
   {% endmatch %}
+
   {% match state.new_to_old %}
-    {% when Some with (new_to_old) %}
-      <input name="new_to_old" value="{{ new_to_old }}" type="hidden"/>
-    {% when None %}
+  {% when Some with (new_to_old) %}
+  <input name="new_to_old" value="{{ new_to_old }}" type="hidden" />
+  {% when None %}
   {% endmatch %}
 </div>
