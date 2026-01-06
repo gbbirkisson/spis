@@ -23,7 +23,8 @@ mod filters {
 
     const EMPTY: String = String::new();
 
-    pub fn cursor(media: &[Media], _: &dyn askama::Values) -> ::askama::Result<String> {
+    #[askama::filter_fn]
+    pub fn cursor(media: &[Media], _: &dyn askama::Values) -> askama::Result<String> {
         if media.len() < PAGE_SIZE {
             Ok(EMPTY)
         } else {
