@@ -1,37 +1,28 @@
 <li class="bar-filter-item">
   {% match button %}
-    {% when BarButton::Favorite with (active) %}
-      <div
-        hx-get="/hx/bar/favorite"
-        hx-target="#hx-main"
-        hx-swap="outerHTML"
-        class="link bar-filter-link{% if active %}-selected{% endif %}"
-      ><i class="fa-solid fa-heart icon-white"></i></div>
-    {% when BarButton::Year with (active, year) %}
-      <div
-        hx-get="/hx/bar/year/{{ year }}"
-        hx-target="#hx-main"
-        hx-swap="outerHTML"
-        class="link bar-filter-link{% if active %}-selected{% endif %}">{{ year }}</div>
-    {% when BarButton::Month with (active, month_nr, month_text) %}
-      <div
-        hx-get="/hx/bar/month/{{ month_nr }}"
-        hx-target="#hx-main"
-        hx-swap="outerHTML"
-        class="link bar-filter-link{% if active %}-selected{% endif %}">{{ month_text }}</div>
-    {% when BarButton::Order with (new_to_old) %}
-      <div
-        hx-get="/hx/bar/order"
-        hx-target="#hx-main"
-        hx-swap="outerHTML"
-        class="link bar-filter-link"><i class="fa-solid fa-arrow-{% if new_to_old %}up-9-1{% else %}down-1-9{% endif %}"></i></div>
-    {% when BarButton::Clear %}
-      <div
-        hx-get="/hx/bar/clear"
-        hx-target="#hx-main"
-        hx-swap="outerHTML"
-        class="link bar-filter-link"><i class="fa-solid fa-xmark"></i></div>
-    {% when BarButton::Empty %}
-      <div><i></i></div>
+
+  {% when BarButton::Favorite with (active) %}
+  <div hx-get="/hx/bar/favorite" hx-target="#hx-main" hx-swap="outerHTML"
+    class="link bar-filter-link{% if active %}-selected{% endif %}"><i class="fa-solid fa-heart icon-white"></i></div>
+
+  {% when BarButton::Year with (active, year) %}
+  <div hx-get="/hx/bar/year/{{ year }}" hx-target="#hx-main" hx-swap="outerHTML"
+    class="link bar-filter-link{% if active %}-selected{% endif %}">{{ year }}</div>
+
+  {% when BarButton::Month with (active, month_nr, month_text) %}
+  <div hx-get="/hx/bar/month/{{ month_nr }}" hx-target="#hx-main" hx-swap="outerHTML"
+    class="link bar-filter-link{% if active %}-selected{% endif %}">{{ month_text }}</div>
+
+  {% when BarButton::Order with (new_to_old) %}
+  <div hx-get="/hx/bar/order" hx-target="#hx-main" hx-swap="outerHTML" class="link bar-filter-link"><i
+      class="fa-solid fa-arrow-{% if new_to_old %}up-9-1{% else %}down-1-9{% endif %}"></i></div>
+
+  {% when BarButton::Clear %}
+  <div hx-get="/hx/bar/clear" hx-target="#hx-main" hx-swap="outerHTML" class="link bar-filter-link"><i
+      class="fa-solid fa-xmark"></i></div>
+
+  {% when BarButton::Empty %}
+  <div><i></i></div>
+
   {% endmatch %}
 </li>
