@@ -1,62 +1,67 @@
-use super::State;
+use super::GalleryState;
 use super::gallery::render;
-use super::render::Response;
-use crate::server::Config;
-use actix_web::get;
-use actix_web::web::{Data, Path, Query};
-use sqlx::{Pool, Sqlite};
+use super::render::RenderResult;
+use crate::server::AppState;
+use axum::extract::{Path, Query, State};
+use axum::{Router, routing::get};
 
-#[get("/favorite")]
-async fn favorite(pool: Data<Pool<Sqlite>>, config: Data<Config>, state: Query<State>) -> Response {
-    let mut state = state.into_inner();
+async fn favorite(
+    State(app_state): State<AppState>,
+    Query(state): Query<GalleryState>,
+) -> RenderResult {
+    let mut state = state;
     state.favorite = state.favorite.or(Some(false)).map(|b| !b);
-    render(&pool, &config, state).await
+    render(&app_state, state).await
 }
 
-#[get("/year/{year}")]
 async fn year(
-    pool: Data<Pool<Sqlite>>,
-    config: Data<Config>,
-    state: Query<State>,
-    path: Path<usize>,
-) -> Response {
-    let mut state = state.into_inner();
-    let year = path.into_inner();
+    State(app_state): State<AppState>,
+    Query(state): Query<GalleryState>,
+    Path(year): Path<usize>,
+) -> RenderResult {
+    let mut state = state;
     if state.year == Some(year) {
         state.year = None;
     } else {
         state.year = Some(year);
     }
     state.month = None;
-    render(&pool, &config, state).await
+    render(&app_state, state).await
 }
 
-#[get("/month/{month}")]
 async fn month(
-    pool: Data<Pool<Sqlite>>,
-    config: Data<Config>,
-    state: Query<State>,
-    path: Path<u8>,
-) -> Response {
-    let mut state = state.into_inner();
-    let month = path.into_inner();
+    State(app_state): State<AppState>,
+    Query(state): Query<GalleryState>,
+    Path(month): Path<u8>,
+) -> RenderResult {
+    let mut state = state;
     assert!(state.year.is_some());
     if state.month == Some(month) {
         state.month = None;
     } else {
         state.month = Some(month);
     }
-    render(&pool, &config, state).await
+    render(&app_state, state).await
 }
 
-#[get("/order")]
-async fn order(pool: Data<Pool<Sqlite>>, config: Data<Config>, state: Query<State>) -> Response {
-    let mut state = state.into_inner();
+async fn order(
+    State(app_state): State<AppState>,
+    Query(state): Query<GalleryState>,
+) -> RenderResult {
+    let mut state = state;
     state.new_to_old = state.new_to_old.or(Some(true)).map(|b| !b);
-    render(&pool, &config, state).await
+    render(&app_state, state).await
 }
 
-#[get("/clear")]
-async fn clear(pool: Data<Pool<Sqlite>>, config: Data<Config>) -> Response {
-    render(&pool, &config, State::default()).await
+async fn clear(State(app_state): State<AppState>) -> RenderResult {
+    render(&app_state, GalleryState::default()).await
+}
+
+pub fn create_router() -> Router<AppState> {
+    Router::new()
+        .route("/favorite", get(favorite))
+        .route("/year/{year}", get(year))
+        .route("/month/{month}", get(month))
+        .route("/order", get(order))
+        .route("/clear", get(clear))
 }

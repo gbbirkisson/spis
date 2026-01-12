@@ -20,7 +20,7 @@ missing-panics-doc = "allow"
 
 [features]
 default = []
-dev = ["dep:actix", "dep:actix-web-actors"]
+dev = []
 
 [dependencies]
 # Basics
@@ -34,18 +34,12 @@ clap = { version = "4", features = ["derive", "env"] }
 # Runtime
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync"] }
 async-cron-scheduler = "2"
-sqlx = { version = "0.8", features = [
-  "runtime-tokio-rustls",
-  "sqlite",
-  "macros",
-  "chrono",
-  "migrate",
-  "uuid",
-] }
+sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "sqlite", "macros", "chrono", "migrate", "uuid"] }
 
 # Web
-actix-web = "4"
-tracing-actix-web = "0.7.9"
+axum = { version = "0.8", features = ["macros", "ws"] }
+tower = { version = "0.5", features = ["util"] }
+tower-http = { version = "0.6", features = ["fs", "trace"] }
 askama = { version = "0.15.0" }
 
 # Serialization
@@ -70,10 +64,6 @@ md-5 = "0.10"
 
 # Bake GUI into bin
 include_dir = { version = "0.7.3", features = ["glob"] }
-
-# Dev websocket
-actix = { version = "0.13.1", optional = true }
-actix-web-actors = { version = "4.2.0", optional = true }
 
 [dev-dependencies]
 reqwest = { version = "0.13", features = ["json"] }

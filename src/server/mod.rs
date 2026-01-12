@@ -1,7 +1,10 @@
-use actix_web::{App, HttpServer, dev::Server, web};
-use color_eyre::{Result, eyre::eyre};
+use axum::{Router, response::Redirect, routing::get};
+use color_eyre::Result;
 use sqlx::{Pool, Sqlite};
 use std::net::TcpListener;
+use std::sync::Arc;
+use tokio::net::UnixListener;
+use tower_http::trace::TraceLayer;
 
 use crate::PathFinder;
 
@@ -25,36 +28,43 @@ pub struct Features {
     pub favorite_allow: bool,
 }
 
-pub fn run(listener: Listener, pool: Pool<Sqlite>, config: Config) -> Result<Server> {
-    let pool = web::Data::new(pool);
-    let config = web::Data::new(config);
+#[derive(Clone)]
+pub struct AppState {
+    pub pool: Pool<Sqlite>,
+    pub config: Arc<Config>,
+}
 
-    let server = HttpServer::new(move || {
-        let mut app = App::new();
+pub async fn run(listener: Listener, pool: Pool<Sqlite>, config: Config) -> Result<()> {
+    let state = AppState {
+        pool,
+        config: Arc::new(config),
+    };
 
-        app = app
-            .service(web::redirect("/", "/hx"))
-            .service(hx::create_service("/hx"))
-            .service(assets::create_service("/assets"));
+    let app = Router::new()
+        .route("/", get(|| async { Redirect::permanent("/hx") }))
+        .nest("/hx", hx::create_router())
+        .nest("/assets", assets::create_router());
 
-        #[cfg(feature = "dev")]
-        {
-            app = app.route("/dev/ws", dev::create_socket());
+    #[cfg(feature = "dev")]
+    let app = app.nest("/dev", dev::create_router());
+
+    let app = app.layer(TraceLayer::new_for_http()).with_state(state);
+
+    match listener {
+        Listener::Tcp(std_listener) => {
+            std_listener.set_nonblocking(true)?;
+            let listener = tokio::net::TcpListener::from_std(std_listener)?;
+            axum::serve(listener, app).await?;
         }
-
-        app.app_data(pool.clone()).app_data(config.clone())
-    });
-
-    let server = match listener {
-        Listener::Tcp(listener) => server.listen(listener)?,
-        Listener::Socket(file) => {
-            if cfg!(not(unix)) {
-                return Err(eyre!("You can only use unix sockets on unix!"));
+        Listener::Socket(path) => {
+            // Remove existing socket if it exists
+            if std::path::Path::new(&path).exists() {
+                std::fs::remove_file(&path)?;
             }
-            server.bind_uds(file)?
+            let listener = UnixListener::bind(path)?;
+            axum::serve(listener, app).await?;
         }
     }
-    .run();
 
-    Ok(server)
+    Ok(())
 }

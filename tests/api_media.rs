@@ -54,9 +54,11 @@ async fn spawn_server() -> String {
         },
         pathfinder,
     };
-    let server =
-        spis::server::run(Listener::Tcp(listener), pool, config).expect("Failed to bind address");
-    let _ = tokio::spawn(server);
+    tokio::spawn(async move {
+        spis::server::run(Listener::Tcp(listener), pool, config)
+            .await
+            .expect("Server failed");
+    });
 
     // Return endpoint
     format!("http://127.0.0.1:{port}")

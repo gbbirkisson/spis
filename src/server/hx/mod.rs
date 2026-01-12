@@ -1,11 +1,11 @@
-use actix_web::get;
-use actix_web::web::scope;
 use askama::Template;
+use axum::{Router, routing::get};
 use chrono::{DateTime, Utc};
-use render::{Response, TemplatedResponse};
+use render::{RenderResult, TemplatedResponse};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::server::AppState;
 use crate::{PathFinder, db::Filter, db::MediaRow, db::Order};
 
 mod bar;
@@ -35,8 +35,8 @@ impl From<(MediaRow, &PathFinder)> for Media {
     }
 }
 
-#[derive(Deserialize, Default, Debug)]
-struct State {
+#[derive(Deserialize, Default, Debug, Clone)]
+pub(super) struct GalleryState {
     favorite: Option<bool>,
     year: Option<usize>,
     month: Option<u8>,
@@ -49,8 +49,8 @@ fn to_timestamp(s: &str) -> DateTime<Utc> {
         .with_timezone(&Utc)
 }
 
-impl From<&State> for Filter {
-    fn from(value: &State) -> Self {
+impl From<&GalleryState> for Filter {
+    fn from(value: &GalleryState) -> Self {
         let (start, end) = value.year.map_or((None, None), |year| {
             let start = to_timestamp(&format!(
                 "{}-{:02}-01T00:00:00-00:00",
@@ -87,8 +87,8 @@ impl From<&State> for Filter {
     }
 }
 
-impl From<&State> for Order {
-    fn from(value: &State) -> Self {
+impl From<&GalleryState> for Order {
+    fn from(value: &GalleryState) -> Self {
         match value.new_to_old {
             Some(true) | None => Self::Desc,
             Some(false) => Self::Asc,
@@ -101,8 +101,8 @@ struct Cursor {
     cursor: DateTime<Utc>,
 }
 
-impl From<(&State, &Cursor)> for Filter {
-    fn from(value: (&State, &Cursor)) -> Self {
+impl From<(&GalleryState, &Cursor)> for Filter {
+    fn from(value: (&GalleryState, &Cursor)) -> Self {
         let mut filter: Self = value.0.into();
         let order: Order = value.0.into();
         match order {
@@ -125,32 +125,14 @@ const fn dev_enabled() -> bool {
 #[template(path = "web/index.html")]
 struct HxIndex {}
 
-#[get("")]
-async fn index() -> Response {
+async fn index() -> RenderResult {
     HxIndex {}.render_response()
 }
 
-pub fn create_service(path: &str) -> actix_web::Scope {
-    scope(path)
-        .service(index)
-        .service(
-            scope("/gallery")
-                .service(gallery::root)
-                .service(gallery::more),
-        )
-        .service(
-            scope("/bar")
-                .service(bar::favorite)
-                .service(bar::year)
-                .service(bar::month)
-                .service(bar::order)
-                .service(bar::clear),
-        )
-        .service(
-            scope("/preview")
-                .service(preview::root)
-                .service(preview::favorite)
-                .service(preview::archive)
-                .service(preview::archive_confirm),
-        )
+pub fn create_router() -> Router<AppState> {
+    Router::new()
+        .route("/", get(index))
+        .nest("/gallery", gallery::create_router())
+        .nest("/bar", bar::create_router())
+        .nest("/preview", preview::create_router())
 }

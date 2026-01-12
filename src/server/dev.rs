@@ -1,22 +1,23 @@
-use actix::{Actor, StreamHandler};
-use actix_web::{Error, HttpRequest, HttpResponse, web};
-use actix_web_actors::ws;
+use crate::server::AppState;
+use axum::{
+    Router,
+    extract::{WebSocketUpgrade, ws::WebSocket},
+    response::IntoResponse,
+    routing::get,
+};
 
-struct MyWs;
-
-impl Actor for MyWs {
-    type Context = ws::WebsocketContext<Self>;
+async fn handler(ws: WebSocketUpgrade) -> impl IntoResponse {
+    ws.on_upgrade(handle_socket)
 }
 
-impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for MyWs {
-    fn handle(&mut self, _msg: Result<ws::Message, ws::ProtocolError>, _ctx: &mut Self::Context) {}
+async fn handle_socket(mut socket: WebSocket) {
+    while let Some(msg) = socket.recv().await {
+        if msg.is_err() {
+            return;
+        }
+    }
 }
 
-#[allow(clippy::future_not_send)]
-async fn ws(req: HttpRequest, stream: web::Payload) -> Result<HttpResponse, Error> {
-    ws::start(MyWs {}, &req, stream)
-}
-
-pub fn create_socket() -> actix_web::Route {
-    web::get().to(ws)
+pub fn create_router() -> Router<AppState> {
+    Router::new().route("/ws", get(handler))
 }
