@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: ["lint-fmt", "lint-clippy", "test", "template"]
+        target: ["lint-fmt", "lint-clippy", "test", "template", "js-libs"]
 
     steps:
       - name: Checkout

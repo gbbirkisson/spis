@@ -66,5 +66,33 @@
       ],
       datasourceTemplate: 'crate',
     },
+    {
+      customType: 'regex',
+      fileMatch: [
+        '^assets/scripts/Makefile$',
+        '^templates/web/index\\.html$',
+      ],
+      matchStrings: [
+        'HTMX_VERSION:=(?<currentValue>\\d+\\.\\d+\\.\\d+)',
+        'htmx-(?<currentValue>\\d+\\.\\d+\\.\\d+)',
+      ],
+      depNameTemplate: 'htmx',
+      packageNameTemplate: 'bigskysoftware/htmx',
+      datasourceTemplate: 'github-tags',
+    },
+    {
+      customType: 'regex',
+      fileMatch: [
+        '^assets/scripts/Makefile$',
+        '^templates/web/index\\.html$',
+      ],
+      matchStrings: [
+        'HYPERSCRIPT_VERSION:=(?<currentValue>\\d+\\.\\d+\\.\\d+)',
+        'hyperscript-(?<currentValue>\\d+\\.\\d+\\.\\d+)',
+      ],
+      depNameTemplate: 'hyperscript',
+      packageNameTemplate: 'bigskysoftware/_hyperscript',
+      datasourceTemplate: 'github-tags',
+    },
   ],
 }
