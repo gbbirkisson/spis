@@ -2,13 +2,19 @@
 name: toolchain
 description: "Install toolchain"
 
+inputs:
+  cache-key:
+    description: "Cache key for rust-cache"
+    required: false
+    default: "release"
+
 runs:
   using: "composite"
   steps:
     - name: Setup rust caching
       uses: Swatinem/rust-cache@v2
       with:
-        shared-key: toolchains
+        shared-key: ${{ inputs.cache-key }}
 
     - name: "Set environment variables used by toolchain"
       shell: bash
@@ -20,6 +26,9 @@ runs:
     - name: Install rust toolchain
       uses: dtolnay/rust-toolchain@stable
       with:
+        components: |
+          clippy
+          rustfmt
         targets: |
           x86_64-unknown-linux-gnu,
           armv7-unknown-linux-gnueabihf,
@@ -31,7 +40,12 @@ runs:
         version: 1.0
         packages: gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu
 
-    - name: Install cargo dependencies
-      shell: bash
-      run: |
-        make toolchain
+    - name: Install sqlx-cli
+      uses: taiki-e/cache-cargo-install-action@v3
+      with:
+        tool: sqlx-cli@0.8.6
+
+    - name: Install cargo-tarpaulin
+      uses: taiki-e/cache-cargo-install-action@v3
+      with:
+        tool: cargo-tarpaulin@0.35.0

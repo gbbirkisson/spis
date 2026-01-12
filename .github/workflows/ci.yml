@@ -24,6 +24,8 @@ jobs:
 
       - name: Install rust toolchain
         uses: ./.github/actions/toolchain
+        with:
+          cache-key: ${{ matrix.target }}
 
       - name: Run ${{ matrix.target }}
         run: make ${{ matrix.target }}

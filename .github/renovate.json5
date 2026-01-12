@@ -55,5 +55,16 @@
       packageNameTemplate: 'rust-lang/rust',
       datasourceTemplate: 'github-releases',
     },
+    {
+      customType: 'regex',
+      fileMatch: [
+        '^Makefile$',
+        '^\\.github/actions/toolchain/action\\.yml$',
+      ],
+      matchStrings: [
+        '(?<depName>sqlx-cli|cargo-tarpaulin)@(?<currentValue>\\d+\\.\\d+\\.\\d+)',
+      ],
+      datasourceTemplate: 'crate',
+    },
   ],
 }
