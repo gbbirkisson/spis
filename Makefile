@@ -35,9 +35,11 @@ release/spis-${AARCH64}: ${SOURCES}
 
 .PHONY: toolchain
 toolchain:
+	ln -sf AGENTS.md CLAUDE.md
+	ln -sf AGENTS.md GEMINI.md
 	rustup show
-	cargo install sqlx-cli@0.8.0
-	cargo install cargo-tarpaulin@0.31.0
+	cargo install --locked sqlx-cli@0.8.0
+	cargo install --locked cargo-tarpaulin@0.31.0
 	cargo install --locked watchexec-cli
 
 .PHONY: dev-clippy
