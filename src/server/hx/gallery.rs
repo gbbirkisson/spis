@@ -1,18 +1,16 @@
 use crate::db;
-use crate::server::{Config, Features};
+use crate::server::AppState;
 use chrono::Datelike;
 
 use super::Cursor;
+use super::GalleryState;
 use super::Media;
-use super::State;
+use super::render::RenderResult;
 use super::render::ServerError;
-use super::render::{Response, TemplatedResponse};
-use actix_web::get;
-use actix_web::web::Data;
-use actix_web::web::Query;
+use super::render::TemplatedResponse;
 use askama::Template;
-use sqlx::Pool;
-use sqlx::Sqlite;
+use axum::extract::{Query, State};
+use axum::{Router, routing::get};
 
 const PAGE_SIZE: usize = 200;
 
@@ -49,13 +47,15 @@ enum BarButton {
 #[template(path = "web/gallery/gallery.html")]
 struct HxGallery<'a> {
     bar_buttons: &'a Vec<BarButton>,
-    features: &'a Features,
+    features: &'a crate::server::Features,
     media: &'a Vec<Media>,
-    state: &'a State,
+    state: &'a GalleryState,
 }
 
-pub(super) async fn render(pool: &Pool<Sqlite>, config: &Config, state: State) -> Response {
+pub(super) async fn render(app_state: &AppState, state: GalleryState) -> RenderResult {
     let now = chrono::Utc::now();
+    let pool = &app_state.pool;
+    let config = &app_state.config;
 
     #[allow(clippy::cast_sign_loss)]
     let current_year = now.year() as usize;
@@ -64,10 +64,7 @@ pub(super) async fn render(pool: &Pool<Sqlite>, config: &Config, state: State) -
 
     let new_to_old = state.new_to_old.unwrap_or(true);
 
-    // let mut buttons = vec![BarButton::Favorite(state.favorite.unwrap_or(false))];
     let mut buttons = Vec::with_capacity(18);
-    // vec![];
-    // buttons.push(BarButton::Order(new_to_old));
 
     if state.year.is_none() {
         for i in (current_year - 14..=current_year).rev() {
@@ -144,26 +141,28 @@ pub(super) async fn render(pool: &Pool<Sqlite>, config: &Config, state: State) -
     .render_response()
 }
 
-#[get("")]
-async fn root(pool: Data<Pool<Sqlite>>, config: Data<Config>, state: Query<State>) -> Response {
-    render(&pool, &config, state.into_inner()).await
+async fn root(
+    State(app_state): State<AppState>,
+    Query(state): Query<GalleryState>,
+) -> RenderResult {
+    render(&app_state, state).await
 }
 
 #[derive(Template)]
 #[template(path = "web/gallery/list.html")]
 struct HxMore<'a> {
-    features: &'a Features,
+    features: &'a crate::server::Features,
     media: &'a Vec<Media>,
 }
 
-#[get("/more")]
 async fn more(
-    pool: Data<Pool<Sqlite>>,
-    config: Data<Config>,
-    state: Query<State>,
-    cursor: Query<Cursor>,
-) -> Response {
-    let media = db::media_list(&pool, (&*state, &*cursor), &*state, PAGE_SIZE)
+    State(app_state): State<AppState>,
+    Query(state): Query<GalleryState>,
+    Query(cursor): Query<Cursor>,
+) -> RenderResult {
+    let pool = &app_state.pool;
+    let config = &app_state.config;
+    let media = db::media_list(pool, (&state, &cursor), &state, PAGE_SIZE)
         .await
         .map_err(ServerError::DBError)?
         .into_iter()
@@ -175,4 +174,10 @@ async fn more(
         media: &media,
     }
     .render_response()
+}
+
+pub fn create_router() -> Router<AppState> {
+    Router::new()
+        .route("/", get(root))
+        .route("/more", get(more))
 }

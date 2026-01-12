@@ -1,34 +1,35 @@
 use crate::db;
-use crate::server::{Config, Features};
+use crate::server::AppState;
 
+use super::GalleryState;
 use super::Media;
-use super::State;
-use super::render::{Response, ServerError, TemplatedResponse};
-use actix_web::web::Data;
-use actix_web::web::{self, Query};
-use actix_web::{delete, get, put};
+use super::render::{RenderResult, ServerError, TemplatedResponse};
 use askama::Template;
-use sqlx::{Pool, Sqlite};
+use axum::extract::{Path, Query, State};
+use axum::{
+    Router,
+    routing::{delete, get, put},
+};
 use uuid::Uuid;
 
 #[derive(Template)]
 #[template(path = "web/preview/preview.html")]
 struct HxRoot<'a> {
     archive_confirm: bool,
-    features: &'a Features,
+    features: &'a crate::server::Features,
     prev: Option<Media>,
     media: Option<Media>,
     next: Option<Media>,
 }
 
-#[get("/{idx}")]
 async fn root(
-    pool: Data<Pool<Sqlite>>,
-    config: Data<Config>,
-    state: Query<State>,
-    uuid: web::Path<Uuid>,
-) -> Response {
-    let res = db::media_get(&pool, &*state, &*state, &uuid)
+    State(app_state): State<AppState>,
+    Query(state): Query<GalleryState>,
+    Path(uuid): Path<Uuid>,
+) -> RenderResult {
+    let pool = &app_state.pool;
+    let config = &app_state.config;
+    let res = db::media_get(pool, &state, &state, &uuid)
         .await
         .map_err(ServerError::DBError)?;
 
@@ -42,20 +43,19 @@ async fn root(
     .render_response()
 }
 
-#[put("/{idx}/favorite/{value}")]
 async fn favorite(
-    pool: Data<Pool<Sqlite>>,
-    config: Data<Config>,
-    state: Query<State>,
-    path: web::Path<(Uuid, bool)>,
-) -> Response {
-    let (uuid, value) = path.into_inner();
+    State(app_state): State<AppState>,
+    Query(state): Query<GalleryState>,
+    Path((uuid, value)): Path<(Uuid, bool)>,
+) -> RenderResult {
+    let pool = &app_state.pool;
+    let config = &app_state.config;
 
-    db::media_favorite(&pool, &uuid, value)
+    db::media_favorite(pool, &uuid, value)
         .await
         .map_err(ServerError::DBError)?;
 
-    let res = db::media_get(&pool, &*state, &*state, &uuid)
+    let res = db::media_get(pool, &state, &state, &uuid)
         .await
         .map_err(ServerError::DBError)?;
 
@@ -69,14 +69,15 @@ async fn favorite(
     .render_response()
 }
 
-#[delete("/{idx}")]
 async fn archive(
-    pool: Data<Pool<Sqlite>>,
-    config: Data<Config>,
-    state: Query<State>,
-    uuid: web::Path<Uuid>,
-) -> Response {
-    let res = db::media_get(&pool, &*state, &*state, &uuid)
+    State(app_state): State<AppState>,
+    Query(state): Query<GalleryState>,
+    Path(uuid): Path<Uuid>,
+) -> RenderResult {
+    let pool = &app_state.pool;
+    let config = &app_state.config;
+
+    let res = db::media_get(pool, &state, &state, &uuid)
         .await
         .map_err(ServerError::DBError)?;
 
@@ -90,13 +91,14 @@ async fn archive(
     .render_response()
 }
 
-#[delete("/{idx}/confirm")]
 async fn archive_confirm(
-    pool: Data<Pool<Sqlite>>,
-    config: Data<Config>,
-    uuid: web::Path<Uuid>,
-) -> Response {
-    db::media_archive(&pool, &uuid, true)
+    State(app_state): State<AppState>,
+    Path(uuid): Path<Uuid>,
+) -> RenderResult {
+    let pool = &app_state.pool;
+    let config = &app_state.config;
+
+    db::media_archive(pool, &uuid, true)
         .await
         .map_err(ServerError::DBError)?;
 
@@ -108,4 +110,11 @@ async fn archive_confirm(
         next: None,
     }
     .render_response()
+}
+
+pub fn create_router() -> Router<AppState> {
+    Router::new()
+        .route("/{idx}", get(root).delete(archive))
+        .route("/{idx}/favorite/{value}", put(favorite))
+        .route("/{idx}/confirm", delete(archive_confirm))
 }

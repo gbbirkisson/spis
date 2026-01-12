@@ -328,8 +328,7 @@ async fn run(config: Spis) -> Result<()> {
         },
         pathfinder: (&config).try_into()?,
     };
-    let server = server::run(listener, pool, config).expect("Failed to create server");
-    server.await?;
+    server::run(listener, pool, config).await?;
 
     Ok(())
 }

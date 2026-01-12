@@ -1,42 +1,38 @@
+use crate::server::AppState;
+use axum::{
+    Router,
+    body::Body,
+    http::{HeaderValue, StatusCode, header},
+    response::{IntoResponse, Response},
+    routing::get,
+};
+use std::path::Path;
+
 static ASSETS: include_dir::Dir<'_> = include_dir::include_dir!("$CARGO_MANIFEST_DIR/assets");
 
-fn find_files(name: &str) -> Vec<&include_dir::File<'_>> {
-    ASSETS
-        .find(name)
-        .unwrap_or_else(|_| panic!("Could not find {name}"))
-        .map(|f| {
-            f.as_file()
-                .unwrap_or_else(|| panic!("Could not convert to file: {name}"))
-        })
-        .collect()
+async fn serve_asset(axum::extract::Path(path): axum::extract::Path<String>) -> impl IntoResponse {
+    let path = path.trim_start_matches('/');
+
+    let Some(file) = ASSETS.get_file(path) else {
+        return StatusCode::NOT_FOUND.into_response();
+    };
+
+    let mime_type = match Path::new(path).extension().and_then(|ext| ext.to_str()) {
+        Some("json") => "application/json",
+        Some("js") => "application/javascript",
+        Some("png") => "image/png",
+        Some("css") => "text/css",
+        Some("ttf") => "font/ttf",
+        Some("woff2") => "font/woff2",
+        _ => "application/octet-stream",
+    };
+
+    Response::builder()
+        .header(header::CONTENT_TYPE, HeaderValue::from_static(mime_type))
+        .body(Body::from(file.contents()))
+        .expect("Failed to build response")
 }
 
-fn create_route(content_type: &str, file: &'static include_dir::File) -> actix_web::HttpResponse {
-    actix_web::HttpResponse::Ok()
-        .content_type(content_type)
-        .body(file.contents())
-}
-
-pub fn create_service(path: &str) -> actix_web::Scope {
-    let mut scope = actix_web::web::scope(path);
-
-    let files = vec![
-        ("*.json", "application/json"),
-        ("*.js", "application/javascript"),
-        ("*.png", "image/png"),
-        ("*.css", "text/css"),
-        ("*.ttf", "font/ttf"),
-        ("*.woff2", "font/woff2"),
-    ];
-
-    for (file_regex, content_type) in files {
-        for file in find_files(file_regex) {
-            scope = scope.route(
-                &format!("/{}", file.path().display()),
-                actix_web::web::get().to(move || async move { create_route(content_type, file) }),
-            );
-        }
-    }
-
-    scope
+pub fn create_router() -> Router<AppState> {
+    Router::new().route("/{*path}", get(serve_asset))
 }

@@ -54,7 +54,7 @@ Contains SQL files for database schema versioning. Managed via `sqlx`.
 * **After each change run**:
 
     ```bash
-    make lint
+    make ci
     ```
 *   **Commit Messages:**
     This project enforces **Conventional Commits** (e.g., `feat: ...`, `fix: ...`).
