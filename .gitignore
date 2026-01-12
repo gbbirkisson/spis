@@ -3,3 +3,5 @@ target
 release
 cobertura.xml
 .helix
+GEMINI.md
+CLAUDE.md
