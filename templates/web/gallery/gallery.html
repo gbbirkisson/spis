@@ -1,12 +1,12 @@
-<div id="hx-main" class="main" hx-include="#hx-bar">
+<main id="hx-main" class="main" hx-include="#hx-bar">
   <div id="hx-media-preview">
   </div>
-  <div id="hx-bar" class="bar">
+  <nav id="hx-bar" class="bar" aria-label="Gallery filters">
     {% include "web/bar/bar.html" %}
-  </div>
-  <div class="media-gallery">
+  </nav>
+  <section class="media-gallery">
     <ul class="media-list">
       {% include "web/gallery/list.html" %}
     </ul>
-  </div>
-</div>
+  </section>
+</main>
