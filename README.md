@@ -63,7 +63,6 @@ me a coffee ☕
 * [Changelog](#changelog)
 * [Development](#development)
     * [Setup toolchain](#setup-toolchain)
-    * [Install pre-commit hooks](#install-pre-commit-hooks)
     * [Get some test media](#get-some-test-media)
     * [Running](#running-1)
 
@@ -290,12 +289,6 @@ $ make toolchain
 
 # You need nginx installed on your system
 $ sudo apt install nginx
-```
-
-### Install pre-commit hooks
-
-```console
-$ pre-commit install --hook-type commit-msg
 ```
 
 ### Get some test media
