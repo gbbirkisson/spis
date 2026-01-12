@@ -97,6 +97,12 @@ template: ${DATABASE} ${MEDIA_DIR} ${THUMBNAIL_DIR}
 		docker-compose > examples/docker/docker-compose.yml
 	git diff --exit-code
 
+.PHONY: js-libs
+js-libs:
+	$(MAKE) -C assets/scripts
+	git add -A
+	git diff --cached --exit-code
+
 .PHONY: docker-build
 docker-build: release/spis-${X86_64}
 	docker build -t spis-local -f docker/Dockerfile .
