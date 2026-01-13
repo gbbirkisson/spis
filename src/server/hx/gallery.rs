@@ -13,6 +13,7 @@ use axum::extract::{Query, State};
 use axum::{Router, routing::get};
 
 const PAGE_SIZE: usize = 200;
+const YEARS: usize = 14;
 
 mod filters {
     use core::fmt;
@@ -67,7 +68,7 @@ pub(super) async fn render(app_state: &AppState, state: GalleryState) -> RenderR
     let mut buttons = Vec::with_capacity(18);
 
     if state.year.is_none() {
-        for i in (current_year - 14..=current_year).rev() {
+        for i in (current_year - YEARS..=current_year).rev() {
             buttons.push(BarButton::Year(false, format!("{i}")));
         }
     } else if let Some(year) = state.year {

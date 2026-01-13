@@ -3,15 +3,15 @@
 
   {% when BarButton::Favorite with (active) %}
   <div hx-get="/hx/bar/favorite" hx-target="#hx-main" hx-swap="outerHTML"
-    class="link bar-filter-link{% if active %}-selected{% endif %}"><i class="fa-solid fa-heart icon-white"></i></div>
+    class="link bar-filter-link{% if active %} active{% endif %}"><i class="fa-solid fa-heart icon-white"></i></div>
 
   {% when BarButton::Year with (active, year) %}
   <div hx-get="/hx/bar/year/{{ year }}" hx-target="#hx-main" hx-swap="outerHTML"
-    class="link bar-filter-link{% if active %}-selected{% endif %}">{{ year }}</div>
+    class="link bar-filter-link{% if active %} active{% endif %}">{{ year }}</div>
 
   {% when BarButton::Month with (active, month_nr, month_text) %}
   <div hx-get="/hx/bar/month/{{ month_nr }}" hx-target="#hx-main" hx-swap="outerHTML"
-    class="link bar-filter-link{% if active %}-selected{% endif %}">{{ month_text }}</div>
+    class="link bar-filter-link{% if active %} active{% endif %}">{{ month_text }}</div>
 
   {% when BarButton::Order with (new_to_old) %}
   <div hx-get="/hx/bar/order" hx-target="#hx-main" hx-swap="outerHTML" class="link bar-filter-link"><i

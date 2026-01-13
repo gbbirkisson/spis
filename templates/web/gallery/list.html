@@ -2,13 +2,14 @@
 {% let cursor = media|cursor %}
 {% if count > 0 %}
 {% for media in media %}
-<li id="{{ media.uuid }}" class="link" hx-get="/hx/preview/{{ media.uuid }}" hx-trigger="click"
+<li id="{{ media.uuid }}" class="media-item link" hx-get="/hx/preview/{{ media.uuid }}" hx-trigger="click"
   hx-target="#hx-media-preview" hx-swap="outerHTML">
-  <img src="{{ media.thumbnail }}" class="media-thumbnail" loading="lazy">
+  <img src="{{ media.thumbnail }}" class="media-thumbnail" loading="lazy" aria-label="View media">
 
   {% if features.favorite_allow %}
   <div id="fav-{{ media.uuid }}" class="media-thumbnail-fav {% if media.favorite %}visible{% else %}hidden{% endif %}">
-    <i class="fa-solid fa-heart icon-pink"></i></div>
+    <i class="fa-solid fa-heart icon-pink"></i>
+  </div>
   {% endif %}
 
   {% if media.video %}
