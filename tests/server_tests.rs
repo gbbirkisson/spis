@@ -204,7 +204,7 @@ async fn test_assets() {
 
     // 3. nested file: fa/css/brands.min.css (text/css)
     let response = client
-        .get(format!("{}/assets/fa/css/brands.min.css", addr))
+        .get(format!("{}/assets/fa/css/all.min.css", addr))
         .send()
         .await
         .expect("Request failed");
