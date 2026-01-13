@@ -115,6 +115,8 @@ Options:
           Disable feature follow symlinks [env: SPIS_FEATURE_FOLLOW_SYMLINKS=]
       --feature-allow-no-exif
           Disable feature no exif [env: SPIS_FEATURE_NO_EXIF=]
+      --slideshow-duration-seconds <SLIDESHOW_DURATION_SECONDS>
+          Slideshow duration in seconds [env: SPIS_SLIDESHOW_DURATION_SECONDS=] [default: 5]
   -h, --help
           Print help
   -V, --version

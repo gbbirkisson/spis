@@ -26,6 +26,7 @@ pub struct Config {
 pub struct Features {
     pub archive_allow: bool,
     pub favorite_allow: bool,
+    pub slideshow_duration: usize,
 }
 
 #[derive(Clone)]

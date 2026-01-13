@@ -74,6 +74,10 @@ pub struct Spis {
     #[clap(long, env = "SPIS_FEATURE_NO_EXIF", default_value = "true", action=ArgAction::SetFalse)]
     pub feature_allow_no_exif: bool,
 
+    /// Slideshow duration in seconds
+    #[clap(long, env = "SPIS_SLIDESHOW_DURATION_SECONDS", default_value = "5")]
+    pub slideshow_duration_seconds: usize,
+
     #[command(subcommand)]
     command: Option<SpisCommand>,
 }
@@ -325,6 +329,7 @@ async fn run(config: Spis) -> Result<()> {
         features: server::Features {
             archive_allow: config.feature_archive,
             favorite_allow: config.feature_favorite,
+            slideshow_duration: config.slideshow_duration_seconds,
         },
         pathfinder: (&config).try_into()?,
     };
