@@ -60,6 +60,10 @@ dev-nginx: ${DATABASE} ${MEDIA_DIR} ${THUMBNAIL_DIR}
 dev:
 	$(MAKE) --no-print-directory -j 2 dev-nginx dev-spis
 
+.PHONY: dev-clean
+dev-clean:
+	rm -rf data/spis.db data/thumbnails
+
 .PHONY: lint-fmt
 lint-fmt:
 	cargo fmt -- --check
