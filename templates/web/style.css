@@ -222,6 +222,40 @@ ul {
   background-color: rgba(255,255,255,0.2);
 }
 
+/* Info Dialog */
+.info-dialog {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--bg-dark);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  z-index: 220;
+  max-width: 90%;
+  min-width: 300px;
+  width: fit-content;
+  color: var(--text-color);
+  font-family: monospace;
+}
+
+.info-row {
+  margin-bottom: 10px;
+}
+
+.info-label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 4px;
+  color: #888;
+}
+
+.info-value {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
 /* Icons */
 .icon-pink { color: var(--icon-pink); }
 .icon-white { color: var(--icon-white); }
