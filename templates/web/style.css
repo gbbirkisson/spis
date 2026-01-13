@@ -7,10 +7,10 @@
   --icon-red: #ff5252;
   --icon-white: #ffffff;
   --icon-blue: #0047ab;
-  --border-radius: 12px;
+  --border-radius: 4px;
   --transition-speed: 0.3s;
   --bar-height: 60px;
-  --grid-gap: 12px;
+  --grid-gap: 4px;
 }
 
 body {
@@ -267,7 +267,7 @@ ul {
 @media screen and (max-width: 768px) {
   :root {
     --bar-height: 50px;
-    --grid-gap: 8px;
+    --grid-gap: 2px;
   }
 
   .bar-inner {
