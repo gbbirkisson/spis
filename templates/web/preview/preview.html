@@ -1,47 +1,78 @@
 {% match media %}
 {% when Some with (media) %}
-<div id="hx-media-preview" class="media-preview" _="on load add .noscroll to body">
+<div id="hx-media-preview" class="media-preview">
+  {% if slideshow %}
+  <div id="progress-{{ media.uuid }}"
+    style="position: absolute; top: 0; left: 0; height: 4px; background-color: var(--icon-blue); width: 0%; z-index: 250; pointer-events: none;">
+  </div>
+  {% endif %}
   <div id="hx-media-preview-content" class="media-preview-content" _="
-           on touchstart
-             set my.swipeAllowed to event.touches.length == 1 and (no window.visualViewport or window.visualViewport.scale == 1)
-             if my.swipeAllowed
-                set my.startY to event.changedTouches[0].clientY
+          on load
+            add .noscroll to body
+          end
+
+          {% if slideshow %}
+            {% if media.video %}
+            on timeupdate from .img-preview
+               set #progress-{{ media.uuid }}.style.width to ((target.currentTime / target.duration) * 100) + '%'
+            end
+            on ended from .img-preview
+              if my.isConnected trigger
+                click on #next-btn
+              end
+            end
+            {% else %}
+            on load
+              set #progress-{{ media.uuid }}.style.transition to 'width {{ features.slideshow_duration }}s linear'
+              then set #progress-{{ media.uuid }}.style.width to '100%'
+              wait {{ features.slideshow_duration }}s then
+              if my.isConnected trigger
+                click on #next-btn
+              end
+            end
+            {% endif %}
+          {% endif %}
+
+          on touchstart
+            set my.swipeAllowed to event.touches.length == 1 and (no window.visualViewport or window.visualViewport.scale == 1)
+            if my.swipeAllowed
+              set my.startY to event.changedTouches[0].clientY
+              set my.swiped to false
+              set my.style.transition to 'none'
+            end
+          end
+
+          on touchmove
+            if my.swipeAllowed
+              set diff to my.startY - event.changedTouches[0].clientY
+              set my.style.transform to 'translateY(' + (diff * -0.3) + 'px)'
+            end
+          end
+
+          on touchend
+            if my.swipeAllowed
+              set diff to my.startY - event.changedTouches[0].clientY
+              if diff > 120
+                set my.swiped to true
+                trigger click on #next-btn
+              else if diff < -120
+                set my.swiped to true
+                trigger click on #prev-btn
+              else
                 set my.swiped to false
-                set my.style.transition to 'none'
-             end
-           end
+                transition *transform to 'translateY(0)' over 200ms
+              end
+            end
+          end
 
-           on touchmove
-             if my.swipeAllowed
-                set diff to my.startY - event.changedTouches[0].clientY
-                set my.style.transform to 'translateY(' + (diff * -0.3) + 'px)'
-             end
-           end
-
-           on touchend
-             if my.swipeAllowed
-               set diff to my.startY - event.changedTouches[0].clientY
-               if diff > 120
-                 set my.swiped to true
-                 trigger click on #next-btn
-               else if diff < -120
-                 set my.swiped to true
-                 trigger click on #prev-btn
-               else
-                 set my.swiped to false
-                 transition *transform to 'translateY(0)' over 200ms
-               end
-             end
-           end
-
-           on click
-             if my.swiped halt end
-             hide #hx-media-preview with *opacity
-             then wait 200ms
-             then hide #hx-media-preview with *visibility
-             then remove #hx-media-preview-content
-             then remove .noscroll from body
-           end">
+          on click
+            if my.swiped halt end
+            hide #hx-media-preview with *opacity
+            then wait 200ms
+            then hide #hx-media-preview with *visibility
+            then remove #hx-media-preview-content
+            then remove .noscroll from body
+          end">
     {% if media.video %}
     <video class="img-preview" autoplay controls>
       <source type="video/mp4" src="{{ media.url }}">
@@ -53,12 +84,12 @@
   <div class="media-action">
     <!-- Archive button -->
     {% if features.archive_allow %}
-    <div class="link" id="del-{{ media.uuid }}" {% if archive_confirm %}
-      _='on htmx:afterRequest remove #{"{{ media.uuid }}"}' hx-delete="/hx/preview/{{ media.uuid }}/confirm" {% else %}
-      hx-delete="/hx/preview/{{ media.uuid }}" {% endif %} hx-trigger="click, keyup[key=='Delete'] from:body"
-      hx-target="#hx-media-preview" hx-swap="outerHTML" role="button" aria-label="Archive image">
+    <div class="link" id="del-{{ media.uuid }}" {% if archive %} _='on htmx:afterRequest remove #{"{{ media.uuid }}"}'
+      hx-delete="/hx/preview/{{ media.uuid }}" {% else %} hx-get="/hx/preview/{{ media.uuid }}?archive=true" {% endif %}
+      hx-trigger="click, keyup[key=='Delete'] from:body" hx-target="#hx-media-preview" hx-swap="outerHTML" role="button"
+      aria-label="Archive image">
       <div class="media-action-button"><i
-          class="fa-regular fa-trash-can {% if archive_confirm %}icon-red{% else %}icon-white{% endif %}"></i></div>
+          class="fa-regular fa-trash-can {% if archive %}icon-red{% else %}icon-white{% endif %}"></i></div>
     </div>
     {% endif %}
 
@@ -70,7 +101,7 @@
     <!-- Favorite button -->
     {% if features.favorite_allow %}
     <div class="link" _="on htmx:afterRequest toggle between .hidden and .visible on #fav-{{ media.uuid }}"
-      hx-put="/hx/preview/{{ media.uuid }}/favorite/{{ !media.favorite }}"
+      hx-put="/hx/preview/{{ media.uuid }}/favorite/{{ !media.favorite }}{% if slideshow %}?slideshow=true{% endif %}"
       hx-trigger="click, keyup[key=='Enter'] from:body" hx-target="#hx-media-preview" hx-swap="outerHTML" role="button"
       aria-label="Toggle favorite">
       {% if media.favorite %}
@@ -81,10 +112,23 @@
     </div>
     {% endif %}
 
+    <!-- Slideshow button -->
+    {% if slideshow %}
+    <div class="link" hx-get="/hx/preview/{{ media.uuid }}" hx-trigger="click, keyup[key=='s'] from:body"
+      hx-target="#hx-media-preview" hx-swap="outerHTML" role="button" aria-label="Stop Slideshow">
+      <div class="media-action-button"><i class="fa-solid fa-stop fa-beat-fade icon-blue"></i></div>
+    </div>
+    {% else %}
+    <div class="link" hx-get="/hx/preview/{{ media.uuid }}?slideshow=true" hx-trigger="click, keyup[key=='s'] from:body"
+      hx-target="#hx-media-preview" hx-swap="outerHTML" role="button" aria-label="Start Slideshow">
+      <div class="media-action-button"><i class="fa-solid fa-play"></i></div>
+    </div>
+    {% endif %}
+
     <!-- Prev button -->
     {% match prev %}
     {% when Some with (prev) %}
-    <div id="prev-btn" class="link" hx-get="/hx/preview/{{ prev.uuid }}"
+    <div id="prev-btn" class="link" hx-get="/hx/preview/{{ prev.uuid }}{% if slideshow %}?slideshow=true{% endif %}"
       hx-trigger="click, keyup[key=='ArrowUp'] from:body" hx-target="#hx-media-preview" hx-swap="outerHTML"
       role="button" aria-label="Previous image">
       <div class="media-action-button"><i class="fa-solid fa-chevron-up icon-white"></i></div>
@@ -96,7 +140,7 @@
     <!-- Next button -->
     {% match next %}
     {% when Some with (next) %}
-    <div id="next-btn" class="link" hx-get="/hx/preview/{{ next.uuid }}"
+    <div id="next-btn" class="link" hx-get="/hx/preview/{{ next.uuid }}{% if slideshow %}?slideshow=true{% endif %}"
       hx-trigger="click, keyup[key=='ArrowDown'] from:body" hx-target="#hx-media-preview" hx-swap="outerHTML"
       role="button" aria-label="Next image">
       <div class="media-action-button"><i class="fa-solid fa-chevron-down icon-white"></i></div>

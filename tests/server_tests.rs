@@ -135,20 +135,20 @@ async fn test_preview_endpoints() {
         .expect("Request failed");
     assert!(response.status().is_success());
 
-    // archive (delete - request confirmation)
+    // archive (request confirmation)
     let response = client
-        .delete(format!("{}/hx/preview/{}", addr, uuid))
+        .get(format!("{}/hx/preview/{}?archive=true", addr, uuid))
         .send()
         .await
         .expect("Request failed");
     assert!(response.status().is_success());
-    // Should show confirmation
+    // Should show confirmation (red icon)
     let text = response.text().await.unwrap();
-    assert!(text.contains("confirm")); // Assuming "confirm" is in the HTML for the button
+    assert!(text.contains("icon-red"));
 
-    // confirm archive (delete /confirm)
+    // confirm archive (delete)
     let response = client
-        .delete(format!("{}/hx/preview/{}/confirm", addr, uuid))
+        .delete(format!("{}/hx/preview/{}", addr, uuid))
         .send()
         .await
         .expect("Request failed");

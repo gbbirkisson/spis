@@ -6,6 +6,7 @@
   --icon-pink: #ff80ab;
   --icon-red: #ff5252;
   --icon-white: #ffffff;
+  --icon-blue: #0047ab;
   --border-radius: 12px;
   --transition-speed: 0.3s;
   --bar-height: 60px;
@@ -260,6 +261,7 @@ ul {
 .icon-pink { color: var(--icon-pink); }
 .icon-white { color: var(--icon-white); }
 .icon-red { color: var(--icon-red); }
+.icon-blue { color: var(--icon-blue); }
 
 /* Mobile */
 @media screen and (max-width: 768px) {

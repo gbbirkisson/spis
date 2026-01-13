@@ -8,23 +8,32 @@ use askama::Template;
 use axum::extract::{Path, Query, State};
 use axum::{
     Router,
-    routing::{delete, get, put},
+    routing::{get, put},
 };
+use serde::Deserialize;
 use uuid::Uuid;
 
 #[derive(Template)]
 #[template(path = "web/preview/preview.html")]
 struct HxRoot<'a> {
-    archive_confirm: bool,
+    archive: bool,
+    slideshow: bool,
     features: &'a crate::server::Features,
     prev: Option<Media>,
     media: Option<Media>,
     next: Option<Media>,
 }
 
+#[derive(Deserialize, Default, Debug, Clone)]
+pub(super) struct PreviewState {
+    slideshow: Option<bool>,
+    archive: Option<bool>,
+}
+
 async fn root(
     State(app_state): State<AppState>,
     Query(state): Query<GalleryState>,
+    Query(preview): Query<PreviewState>,
     Path(uuid): Path<Uuid>,
 ) -> RenderResult {
     let pool = &app_state.pool;
@@ -34,7 +43,8 @@ async fn root(
         .map_err(ServerError::DBError)?;
 
     HxRoot {
-        archive_confirm: false,
+        archive: preview.archive.unwrap_or_default(),
+        slideshow: preview.slideshow.unwrap_or_default(),
         features: &config.features,
         prev: res.0.map(|m| (m, &config.pathfinder).into()),
         media: res.1.map(|m| (m, &config.pathfinder).into()),
@@ -46,6 +56,7 @@ async fn root(
 async fn favorite(
     State(app_state): State<AppState>,
     Query(state): Query<GalleryState>,
+    Query(preview): Query<PreviewState>,
     Path((uuid, value)): Path<(Uuid, bool)>,
 ) -> RenderResult {
     let pool = &app_state.pool;
@@ -60,7 +71,8 @@ async fn favorite(
         .map_err(ServerError::DBError)?;
 
     HxRoot {
-        archive_confirm: false,
+        archive: preview.archive.unwrap_or_default(),
+        slideshow: preview.slideshow.unwrap_or_default(),
         features: &config.features,
         prev: res.0.map(|m| (m, &config.pathfinder).into()),
         media: res.1.map(|m| (m, &config.pathfinder).into()),
@@ -69,32 +81,7 @@ async fn favorite(
     .render_response()
 }
 
-async fn archive(
-    State(app_state): State<AppState>,
-    Query(state): Query<GalleryState>,
-    Path(uuid): Path<Uuid>,
-) -> RenderResult {
-    let pool = &app_state.pool;
-    let config = &app_state.config;
-
-    let res = db::media_get(pool, &state, &state, &uuid)
-        .await
-        .map_err(ServerError::DBError)?;
-
-    HxRoot {
-        archive_confirm: true,
-        features: &config.features,
-        prev: res.0.map(|m| (m, &config.pathfinder).into()),
-        media: res.1.map(|m| (m, &config.pathfinder).into()),
-        next: res.2.map(|m| (m, &config.pathfinder).into()),
-    }
-    .render_response()
-}
-
-async fn archive_confirm(
-    State(app_state): State<AppState>,
-    Path(uuid): Path<Uuid>,
-) -> RenderResult {
+async fn archive(State(app_state): State<AppState>, Path(uuid): Path<Uuid>) -> RenderResult {
     let pool = &app_state.pool;
     let config = &app_state.config;
 
@@ -103,7 +90,8 @@ async fn archive_confirm(
         .map_err(ServerError::DBError)?;
 
     HxRoot {
-        archive_confirm: false,
+        archive: false,
+        slideshow: false,
         features: &config.features,
         prev: None,
         media: None,
@@ -116,5 +104,4 @@ pub fn create_router() -> Router<AppState> {
     Router::new()
         .route("/{idx}", get(root).delete(archive))
         .route("/{idx}/favorite/{value}", put(favorite))
-        .route("/{idx}/confirm", delete(archive_confirm))
 }

@@ -41,6 +41,7 @@ pub async fn spawn_server() -> (String, Pool<Sqlite>, NamedTempFile) {
         features: Features {
             archive_allow: true,
             favorite_allow: true,
+            slideshow_duration: 10,
         },
         pathfinder,
     };
