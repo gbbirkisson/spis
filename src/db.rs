@@ -190,6 +190,7 @@ pub struct Filter {
     pub favorite: Option<bool>,
     pub taken_after: Option<DateTime<Utc>>,
     pub taken_before: Option<DateTime<Utc>>,
+    pub collection: Option<String>,
 }
 
 impl Display for Filter {
@@ -208,13 +209,17 @@ impl Display for Filter {
             f.write_str(" AND taken_at < ?")?;
         }
 
+        if self.collection.is_some() {
+            f.write_str(" AND path LIKE '%' || ? || '%'")?;
+        }
+
         Ok(())
     }
 }
 
 impl Filter {
     fn bind<'a>(
-        &self,
+        &'a self,
         query: QueryAs<'a, Sqlite, MediaRow, SqliteArguments<'a>>,
     ) -> QueryAs<'a, Sqlite, MediaRow, SqliteArguments<'a>> {
         let mut query = query.bind(self.archived);
@@ -229,6 +234,10 @@ impl Filter {
 
         if let Some(taken_before) = self.taken_before {
             query = query.bind(taken_before);
+        }
+
+        if let Some(collection) = &self.collection {
+            query = query.bind(collection);
         }
 
         query
@@ -312,4 +321,49 @@ WHERE RN IN (
         }
         _ => Err(color_eyre::eyre::eyre!("Media query returned bad result")),
     }
+}
+
+pub async fn collections_search(
+    pool: &SqlitePool,
+    media_dir: &str,
+    search_term: &str,
+) -> Result<Vec<String>> {
+    let mut search_pattern = String::from("%");
+    for c in search_term.chars().filter(|c| !c.is_whitespace()) {
+        search_pattern.push(c);
+        search_pattern.push('%');
+    }
+
+    let offset = i32::try_from(media_dir.len()).expect("Failed to convert media_dir length")
+        + if media_dir.ends_with('/') { 1 } else { 2 };
+
+    let mut res = sqlx::query_scalar::<_, String>(
+        r"
+WITH RECURSIVE
+  folders(folder, rest) AS (
+    SELECT '', SUBSTR(path, ?1)
+    FROM media
+    UNION ALL
+    SELECT folder || SUBSTR(rest, 1, INSTR(rest, '/')),
+           SUBSTR(rest, INSTR(rest, '/') + 1)
+    FROM folders
+    WHERE INSTR(rest, '/') > 0
+  )
+SELECT DISTINCT folder
+FROM folders
+WHERE folder != ''
+  AND LOWER(folder) LIKE LOWER(?2)
+ORDER BY LENGTH(folder), folder COLLATE NOCASE
+        ",
+    )
+    .bind(offset)
+    .bind(search_pattern)
+    .fetch_all(pool)
+    .await?;
+
+    if search_term == "/" {
+        res.insert(0, "/".to_string());
+    }
+
+    Ok(res)
 }

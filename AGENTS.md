@@ -58,3 +58,13 @@ Contains SQL files for database schema versioning. Managed via `sqlx`.
     ```
 *   **Commit Messages:**
     This project enforces **Conventional Commits** (e.g., `feat: ...`, `fix: ...`).
+
+## Working with SQLITE
+
+The database schema is defined in @migrations. And to run arbitrary sql queries you can use the
+`sqlite3` cli, for example:
+
+```
+sqlite3 data/spis.db "SELECT * FROM media"
+```
+

@@ -35,11 +35,13 @@ mod filters {
     }
 }
 
+#[derive(Debug)]
 enum BarButton {
     Favorite(bool),
     Year(bool, String),
     Month(bool, u8, String),
     Order(bool),
+    Collection(bool),
     Clear,
     Empty,
 }
@@ -67,51 +69,53 @@ pub(super) async fn render(app_state: &AppState, state: GalleryState) -> RenderR
 
     let mut buttons = Vec::with_capacity(18);
 
-    if state.year.is_none() {
-        for i in (current_year - YEARS..=current_year).rev() {
-            buttons.push(BarButton::Year(false, format!("{i}")));
-        }
-    } else if let Some(year) = state.year {
-        if year == current_year {
-            buttons.push(BarButton::Empty);
-        } else {
-            buttons.push(BarButton::Year(false, format!("{}", year + 1)));
-        }
-
-        if new_to_old {
-            buttons.push(BarButton::Year(true, format!("{year}")));
-        }
-
-        for (month_nr, month_text) in vec![
-            (12, "Dec"),
-            (11, "Nov"),
-            (10, "Oct"),
-            (9, "Sep"),
-            (8, "Aug"),
-            (7, "Jul"),
-            (6, "Jun"),
-            (5, "May"),
-            (4, "Apr"),
-            (3, "Mar"),
-            (2, "Feb"),
-            (1, "Jan"),
-        ] {
-            if year == current_year && month_nr > current_month {
+    if state.collection.is_none() {
+        if state.year.is_none() {
+            for i in (current_year - YEARS..=current_year).rev() {
+                buttons.push(BarButton::Year(false, format!("{i}")));
+            }
+        } else if let Some(year) = state.year {
+            if year == current_year {
                 buttons.push(BarButton::Empty);
             } else {
-                buttons.push(BarButton::Month(
-                    Some(month_nr) == state.month,
-                    month_nr,
-                    (*month_text).to_string(),
-                ));
+                buttons.push(BarButton::Year(false, format!("{}", year + 1)));
             }
-        }
 
-        if !new_to_old {
-            buttons.push(BarButton::Year(true, format!("{year}")));
-        }
+            if new_to_old {
+                buttons.push(BarButton::Year(true, format!("{year}")));
+            }
 
-        buttons.push(BarButton::Year(false, format!("{}", year - 1)));
+            for (month_nr, month_text) in vec![
+                (12, "Dec"),
+                (11, "Nov"),
+                (10, "Oct"),
+                (9, "Sep"),
+                (8, "Aug"),
+                (7, "Jul"),
+                (6, "Jun"),
+                (5, "May"),
+                (4, "Apr"),
+                (3, "Mar"),
+                (2, "Feb"),
+                (1, "Jan"),
+            ] {
+                if year == current_year && month_nr > current_month {
+                    buttons.push(BarButton::Empty);
+                } else {
+                    buttons.push(BarButton::Month(
+                        Some(month_nr) == state.month,
+                        month_nr,
+                        (*month_text).to_string(),
+                    ));
+                }
+            }
+
+            if !new_to_old {
+                buttons.push(BarButton::Year(true, format!("{year}")));
+            }
+
+            buttons.push(BarButton::Year(false, format!("{}", year - 1)));
+        }
     }
 
     if !new_to_old {
@@ -125,6 +129,8 @@ pub(super) async fn render(app_state: &AppState, state: GalleryState) -> RenderR
         (Some(true), _) | (_, Some(_)) => buttons.push(BarButton::Clear),
         (_, _) => buttons.push(BarButton::Empty),
     }
+
+    buttons.push(BarButton::Collection(state.collection.is_some()));
 
     let media = db::media_list(pool, &state, &state, PAGE_SIZE)
         .await

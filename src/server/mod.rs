@@ -19,6 +19,7 @@ pub enum Listener {
 }
 
 pub struct Config {
+    pub root_path: String,
     pub pathfinder: PathFinder,
     pub features: Features,
 }
