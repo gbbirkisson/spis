@@ -37,16 +37,19 @@
       ],
     },
     {
-      matchUpdateTypes: ['minor', 'patch'],
+      matchUpdateTypes: [
+        'minor',
+        'patch',
+      ],
       matchCurrentVersion: '!/^0/',
       automerge: true,
-    }
+    },
   ],
   customManagers: [
     {
       customType: 'regex',
-      fileMatch: [
-        '^rust-toolchain\\.toml?$',
+      managerFilePatterns: [
+        '/^rust-toolchain\\.toml?$/',
       ],
       matchStrings: [
         'channel\\s*=\\s*"(?<currentValue>\\d+\\.\\d+\\.\\d+)"',
@@ -57,9 +60,9 @@
     },
     {
       customType: 'regex',
-      fileMatch: [
-        '^Makefile$',
-        '^\\.github/actions/toolchain/action\\.yml$',
+      managerFilePatterns: [
+        '/^Makefile$/',
+        '/^\\.github/actions/toolchain/action\\.yml$/',
       ],
       matchStrings: [
         '(?<depName>sqlx-cli|cargo-tarpaulin)@(?<currentValue>\\d+\\.\\d+\\.\\d+)',
@@ -68,9 +71,9 @@
     },
     {
       customType: 'regex',
-      fileMatch: [
-        '^assets/scripts/Makefile$',
-        '^templates/web/index\\.html$',
+      managerFilePatterns: [
+        '/^assets/scripts/Makefile$/',
+        '/^templates/web/index\\.html$/',
       ],
       matchStrings: [
         'HTMX_VERSION:=(?<currentValue>\\d+\\.\\d+\\.\\d+)',
@@ -82,9 +85,9 @@
     },
     {
       customType: 'regex',
-      fileMatch: [
-        '^assets/scripts/Makefile$',
-        '^templates/web/index\\.html$',
+      managerFilePatterns: [
+        '/^assets/scripts/Makefile$/',
+        '/^templates/web/index\\.html$/',
       ],
       matchStrings: [
         'HYPERSCRIPT_VERSION:=(?<currentValue>\\d+\\.\\d+\\.\\d+)',
