@@ -217,10 +217,16 @@ ul {
   font-size: 20px;
   border-radius: 50%;
   transition: background-color 0.2s;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.media-action-button i {
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8));
 }
 
 .media-action-button:hover {
-  background-color: rgba(255,255,255,0.2);
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Info Dialog */
