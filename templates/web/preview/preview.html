@@ -129,8 +129,8 @@
     {% match prev %}
     {% when Some with (prev) %}
     <div id="prev-btn" class="link" hx-get="/hx/preview/{{ prev.uuid }}{% if slideshow %}?slideshow=true{% endif %}"
-      hx-trigger="click, keyup[key=='ArrowUp'] from:body" hx-target="#hx-media-preview" hx-swap="outerHTML"
-      role="button" aria-label="Previous image">
+      hx-trigger="click, keyup[key=='ArrowUp'] from:body, keyup[key=='ArrowLeft'] from:body"
+      hx-target="#hx-media-preview" hx-swap="outerHTML" role="button" aria-label="Previous image">
       <div class="media-action-button"><i class="fa-solid fa-chevron-up icon-white"></i></div>
     </div>
     {% when None %}
@@ -141,8 +141,8 @@
     {% match next %}
     {% when Some with (next) %}
     <div id="next-btn" class="link" hx-get="/hx/preview/{{ next.uuid }}{% if slideshow %}?slideshow=true{% endif %}"
-      hx-trigger="click, keyup[key=='ArrowDown'] from:body" hx-target="#hx-media-preview" hx-swap="outerHTML"
-      role="button" aria-label="Next image">
+      hx-trigger="click, keyup[key=='ArrowDown'] from:body, keyup[key=='ArrowRight'] from:body"
+      hx-target="#hx-media-preview" hx-swap="outerHTML" role="button" aria-label="Next image">
       <div class="media-action-button"><i class="fa-solid fa-chevron-down icon-white"></i></div>
     </div>
     {% when None %}
