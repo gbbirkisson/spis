@@ -38,6 +38,7 @@ pub async fn spawn_server() -> (String, Pool<Sqlite>, NamedTempFile) {
 
     let pathfinder = PathFinder::new("", "", "", "");
     let config = Config {
+        root_path: "/tmp".to_string(),
         features: Features {
             archive_allow: true,
             favorite_allow: true,

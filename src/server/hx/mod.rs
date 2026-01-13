@@ -40,6 +40,7 @@ impl From<(MediaRow, &PathFinder)> for Media {
 #[derive(Deserialize, Default, Debug, Clone)]
 pub(super) struct GalleryState {
     favorite: Option<bool>,
+    collection: Option<String>,
     year: Option<usize>,
     month: Option<u8>,
     new_to_old: Option<bool>,
@@ -85,6 +86,7 @@ impl From<&GalleryState> for Filter {
             favorite,
             taken_after: start,
             taken_before: end,
+            collection: value.collection.clone(),
         }
     }
 }

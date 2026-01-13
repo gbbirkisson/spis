@@ -28,4 +28,10 @@
   <input name="new_to_old" value="{{ new_to_old }}" type="hidden" />
   {% when None %}
   {% endmatch %}
+
+  {% match state.collection %}
+  {% when Some with (collection) %}
+  <input name="collection" value="{{ collection }}" type="hidden" />
+  {% when None %}
+  {% endmatch %}
 </div>

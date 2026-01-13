@@ -326,6 +326,11 @@ async fn run(config: Spis) -> Result<()> {
     };
 
     let config = Config {
+        root_path: config
+            .media_dir
+            .to_str()
+            .ok_or_eyre("failed to convert media dir to str")?
+            .to_string(),
         features: server::Features {
             archive_allow: config.feature_archive,
             favorite_allow: config.feature_favorite,

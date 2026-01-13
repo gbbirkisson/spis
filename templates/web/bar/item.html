@@ -1,28 +1,68 @@
-<li class="bar-filter-item">
-  {% match button %}
+{% match button %}
 
-  {% when BarButton::Favorite with (active) %}
+{% when BarButton::Favorite with (active) %}
+<li class="bar-filter-item">
   <div hx-get="/hx/bar/favorite" hx-target="#hx-main" hx-swap="outerHTML"
     class="link bar-filter-link{% if active %} active{% endif %}"><i class="fa-solid fa-heart icon-white"></i></div>
+</li>
 
-  {% when BarButton::Year with (active, year) %}
+{% when BarButton::Year with (active, year) %}
+<li class="bar-filter-item">
   <div hx-get="/hx/bar/year/{{ year }}" hx-target="#hx-main" hx-swap="outerHTML"
     class="link bar-filter-link{% if active %} active{% endif %}">{{ year }}</div>
+</li>
 
-  {% when BarButton::Month with (active, month_nr, month_text) %}
+{% when BarButton::Month with (active, month_nr, month_text) %}
+<li class="bar-filter-item">
   <div hx-get="/hx/bar/month/{{ month_nr }}" hx-target="#hx-main" hx-swap="outerHTML"
     class="link bar-filter-link{% if active %} active{% endif %}">{{ month_text }}</div>
+</li>
 
-  {% when BarButton::Order with (new_to_old) %}
+{% when BarButton::Order with (new_to_old) %}
+<li class="bar-filter-item">
   <div hx-get="/hx/bar/order" hx-target="#hx-main" hx-swap="outerHTML" class="link bar-filter-link"><i
       class="fa-solid fa-arrow-{% if new_to_old %}up-9-1{% else %}down-1-9{% endif %}"></i></div>
+</li>
 
-  {% when BarButton::Clear %}
+{% when BarButton::Clear %}
+<li class="bar-filter-item">
   <div hx-get="/hx/bar/clear" hx-target="#hx-main" hx-swap="outerHTML" class="link bar-filter-link"><i
       class="fa-solid fa-xmark"></i></div>
-
-  {% when BarButton::Empty %}
-  <div><i></i></div>
-
-  {% endmatch %}
 </li>
+
+{% when BarButton::Collection with (collections) %}
+<li class="bar-filter-item">
+  <div hx-get="/hx/bar/collection" hx-target="#hx-main" hx-swap="outerHTML" class="link bar-filter-link"><i
+      class="fa-solid fa-{% if collections %}folder-open{% else %}folder{% endif %}"></i></div>
+</li>
+
+{% match state.collection %}
+{% when Some with (collection) %}
+<li class="bar-filter-item bar-search-container" _="
+  on focusout
+    if event.relatedTarget is null or I.contains(event.relatedTarget) == false
+    put '' into #search-results
+  end
+
+  on keyup(Escape) from .bar-search-input
+    put '' into #search-results
+  end">
+  <input type="text"
+         name="query"
+         placeholder="{{ collection }}"
+         class="bar-search-input"
+         hx-get="/hx/bar/search"
+         hx-trigger="keyup changed delay:500ms"
+         hx-target="#search-results"
+         autocomplete="off">
+  <div id="search-results" class="bar-search-results"></div>
+</li>
+{% when None %}
+{% endmatch %}
+
+{% when BarButton::Empty %}
+<li class="bar-filter-item">
+  <div><i></i></div>
+</li>
+
+{% endmatch %}

@@ -1,0 +1,6 @@
+{% for result in results %}
+<button class="bar-search-result-item" hx-get="/hx/bar/collection?pick={{ result }}" hx-target="#hx-main"
+  hx-swap="outerHTML" hx-trigger="click">
+  {{ result }}
+</button>
+{% endfor %}
