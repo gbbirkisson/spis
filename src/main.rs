@@ -67,6 +67,10 @@ pub struct SpisArgs {
     #[clap(long, env = "SPIS_FEATURE_ARCHIVE", action=ArgAction::SetFalse)]
     pub feature_archive: Option<bool>,
 
+    /// Enable delete on archive (default: false)
+    #[clap(long, env = "SPIS_FEATURE_DELETE_ON_ARCHIVE", action=ArgAction::SetTrue)]
+    pub feature_delete_on_archive: Option<bool>,
+
     /// Disable feature follow symlinks (default: true)
     #[clap(long, env = "SPIS_FEATURE_FOLLOW_SYMLINKS", action=ArgAction::SetFalse)]
     pub feature_follow_symlinks: Option<bool>,
@@ -155,6 +159,7 @@ pub struct ListenerConfig {
 pub struct FeaturesConfig {
     pub favorite: Option<bool>,
     pub archive: Option<bool>,
+    pub delete_on_archive: Option<bool>,
     pub follow_symlinks: Option<bool>,
     pub allow_no_exif: Option<bool>,
 }
@@ -176,6 +181,7 @@ pub struct Spis {
     pub listener: ServerListener,
     pub feature_favorite: bool,
     pub feature_archive: bool,
+    pub feature_delete_on_archive: bool,
     pub feature_follow_symlinks: bool,
     pub feature_allow_no_exif: bool,
     pub slideshow_duration_seconds: usize,
@@ -342,6 +348,10 @@ impl Spis {
         let features = config.features.unwrap_or_default();
         let feature_favorite = features.favorite.or(args.feature_favorite).unwrap_or(true);
         let feature_archive = features.archive.or(args.feature_archive).unwrap_or(true);
+        let feature_delete_on_archive = features
+            .delete_on_archive
+            .or(args.feature_delete_on_archive)
+            .unwrap_or(false);
         let feature_follow_symlinks = features
             .follow_symlinks
             .or(args.feature_follow_symlinks)
@@ -369,6 +379,7 @@ impl Spis {
             listener,
             feature_favorite,
             feature_archive,
+            feature_delete_on_archive,
             feature_follow_symlinks,
             feature_allow_no_exif,
             slideshow_duration_seconds,
@@ -524,6 +535,7 @@ async fn run(config: Spis) -> Result<()> {
             .to_string(),
         features: server::Features {
             archive_allow: config.feature_archive,
+            delete_on_archive: config.feature_delete_on_archive,
             favorite_allow: config.feature_favorite,
             slideshow_duration: config.slideshow_duration_seconds,
             custom_commands: config

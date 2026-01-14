@@ -5,7 +5,7 @@ use spis::{
 };
 use sqlx::{Pool, Sqlite};
 use std::net::TcpListener;
-use std::sync::{Arc, Once};
+use std::sync::Once;
 use tempfile::NamedTempFile;
 use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 
@@ -30,6 +30,20 @@ pub async fn setup_db() -> (Pool<Sqlite>, NamedTempFile) {
 }
 
 pub async fn spawn_server() -> (String, Pool<Sqlite>, NamedTempFile) {
+    spawn_server_with_features(Features {
+        archive_allow: true,
+        delete_on_archive: false,
+        favorite_allow: true,
+        slideshow_duration: 10,
+        custom_commands: Vec::with_capacity(0),
+    })
+    .await
+}
+
+#[allow(dead_code)]
+pub async fn spawn_server_with_features(
+    features: Features,
+) -> (String, Pool<Sqlite>, NamedTempFile) {
     init_tracing();
     let (pool, db_file) = setup_db().await;
 
@@ -39,12 +53,7 @@ pub async fn spawn_server() -> (String, Pool<Sqlite>, NamedTempFile) {
     let pathfinder = PathFinder::new("", "", "", "");
     let config = Config {
         root_path: "/tmp".to_string(),
-        features: Features {
-            archive_allow: true,
-            favorite_allow: true,
-            slideshow_duration: 10,
-            custom_commands: Vec::with_capacity(0),
-        },
+        features,
         pathfinder,
     };
 
@@ -58,6 +67,7 @@ pub async fn spawn_server() -> (String, Pool<Sqlite>, NamedTempFile) {
     (format!("http://127.0.0.1:{port}"), pool, db_file)
 }
 
+#[allow(dead_code)]
 pub async fn insert_dummy_media(pool: &Pool<Sqlite>, count: i32) -> Vec<uuid::Uuid> {
     let mut uuids = Vec::new();
     for i in 0..count {

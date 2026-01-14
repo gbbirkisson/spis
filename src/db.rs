@@ -323,6 +323,18 @@ WHERE RN IN (
     }
 }
 
+pub async fn media_get_path(pool: &SqlitePool, uuid: &uuid::Uuid) -> Result<Option<String>> {
+    let res = sqlx::query_scalar::<_, String>(
+        r"
+        SELECT path FROM media WHERE id = ?
+        ",
+    )
+    .bind(uuid)
+    .fetch_optional(pool)
+    .await?;
+    Ok(res)
+}
+
 pub async fn collections_search(
     pool: &SqlitePool,
     media_dir: &str,

@@ -29,6 +29,7 @@ pub struct Config {
 
 pub struct Features {
     pub archive_allow: bool,
+    pub delete_on_archive: bool,
     pub favorite_allow: bool,
     pub slideshow_duration: usize,
     pub custom_commands: Vec<CustomCommand>,
