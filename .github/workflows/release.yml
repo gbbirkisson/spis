@@ -17,7 +17,7 @@ jobs:
 
   build-bins:
     name: Build binary ${{ matrix.target }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: ci
 
     strategy:
@@ -47,7 +47,7 @@ jobs:
 
   release-bins:
     name: Release binaries
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build-bins
 
     steps:
@@ -64,13 +64,13 @@ jobs:
       - name: Upload artifacts to release
         uses: AButler/upload-release-assets@v3.0
         with:
-          files: 'release/*'
+          files: "release/*"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           release-tag: ${{ env.VERSION }}
 
   release-docker:
     name: Release docker
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build-bins
 
     steps:
@@ -115,7 +115,7 @@ jobs:
 
   deploy:
     name: Deploy to fly.io
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: release-docker
 
     steps:

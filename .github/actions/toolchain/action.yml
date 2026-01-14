@@ -28,11 +28,13 @@ runs:
       with:
         components: |
           clippy
+          rust-src
+          rust-std
           rustfmt
         targets: |
-          x86_64-unknown-linux-gnu,
-          armv7-unknown-linux-gnueabihf,
           aarch64-unknown-linux-gnu
+          armv7-unknown-linux-gnueabihf,
+          x86_64-unknown-linux-gnu,
 
     - name: Install cross compilation dependencies
       uses: awalsh128/cache-apt-pkgs-action@latest
