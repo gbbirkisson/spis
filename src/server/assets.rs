@@ -33,6 +33,20 @@ async fn serve_asset(axum::extract::Path(path): axum::extract::Path<String>) -> 
         .expect("Failed to build response")
 }
 
+pub async fn serve_sw() -> impl IntoResponse {
+    let Some(file) = ASSETS.get_file("sw.js") else {
+        return StatusCode::NOT_FOUND.into_response();
+    };
+
+    Response::builder()
+        .header(
+            header::CONTENT_TYPE,
+            HeaderValue::from_static("application/javascript"),
+        )
+        .body(Body::from(file.contents()))
+        .expect("Failed to build response")
+}
+
 pub fn create_router() -> Router<AppState> {
     Router::new().route("/{*path}", get(serve_asset))
 }

@@ -89,7 +89,7 @@
       hx-trigger="click, keyup[key=='Delete'] from:body" hx-target="#hx-media-preview" hx-swap="outerHTML" role="button"
       aria-label="Archive image">
       <div class="media-action-button"><i
-          class="fa-regular fa-trash-can {% if archive %}icon-red{% else %}icon-white{% endif %}"></i></div>
+          class="fa-solid fa-trash {% if archive %}fa-shake icon-red{% else %}icon-white{% endif %}"></i></div>
     </div>
     {% endif %}
 
@@ -118,8 +118,9 @@
       hx-trigger="click{% if let Some(key) = cmd.hotkey %}, keyup[key=='{{ key }}'] from:body{% endif %}"
       hx-target="#hx-media-preview" hx-swap="outerHTML" role="button" aria-label="{{ cmd.name }}">
       <div class="media-action-button">
-        <i
-          class="{{ cmd.fa_icon }} {% if active_command.as_ref() == Some(cmd.name) %}fa-beat-fade icon-green {% else %}icon-white{% endif %}"></i>
+        <i class="{{ cmd.fa_icon }} {% if active_command.as_ref() == Some(cmd.name) %}fa-bounce icon-green {% else %}icon-white{% endif %}"
+          {% if active_command.as_ref()==Some(cmd.name) %}
+          _="on load wait 4s remove .fa-bounce .icon-green then add .icon-white" {% endif %}></i>
       </div>
     </div>
     {% endfor %}
@@ -147,7 +148,6 @@
       <div class="media-action-button"><i class="fa-solid fa-chevron-up icon-white"></i></div>
     </div>
     {% when None %}
-    <div class="media-action-button"></div>
     {% endmatch %}
 
     <!-- Next button -->
@@ -159,7 +159,6 @@
       <div class="media-action-button"><i class="fa-solid fa-chevron-down icon-white"></i></div>
     </div>
     {% when None %}
-    <div class="media-action-button"></div>
     {% endmatch %}
 
     <!-- Exit button -->

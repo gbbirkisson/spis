@@ -12,7 +12,7 @@ use askama::Template;
 use axum::extract::{Query, State};
 use axum::{Router, routing::get};
 
-const PAGE_SIZE: usize = 200;
+const PAGE_SIZE: usize = 400;
 const YEARS: usize = 14;
 
 mod filters {

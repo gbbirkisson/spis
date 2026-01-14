@@ -20,6 +20,12 @@
   <script src="/assets/scripts/dev-ws.js"></script>
   {% endif %}
 
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
+
   <style>
     {% include "style.css" %}
   </style>

@@ -9,4 +9,12 @@
       {% include "web/gallery/list.html" %}
     </ul>
   </section>
+  <div class="scroll-to-top"
+       _="on click window.scrollTo({top: 0, behavior: 'smooth'})
+          on scroll from window
+            if window.scrollY > 300 then add .visible else remove .visible end
+          end"
+       aria-label="Scroll to top">
+    <i class="fa-solid fa-arrow-up"></i>
+  </div>
 </main>

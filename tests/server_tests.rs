@@ -231,3 +231,22 @@ async fn test_assets() {
         .expect("Request failed");
     assert_eq!(response.status(), reqwest::StatusCode::NOT_FOUND);
 }
+
+#[tokio::test]
+async fn test_sw() {
+    let (addr, _pool, _file) = common::spawn_server().await;
+    let client = reqwest::Client::new();
+
+    let response = client
+        .get(format!("{}/sw.js", addr))
+        .send()
+        .await
+        .expect("Request failed");
+    assert!(response.status().is_success());
+    assert_eq!(
+        response.headers().get("content-type").unwrap(),
+        "application/javascript"
+    );
+    let text = response.text().await.expect("Failed to get text");
+    assert!(text.contains("CACHE_NAME"));
+}
