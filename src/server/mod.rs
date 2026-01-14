@@ -52,6 +52,7 @@ pub async fn run(listener: Listener, pool: Pool<Sqlite>, config: Config) -> Resu
 
     let app = Router::new()
         .route("/", get(|| async { Redirect::permanent("/hx") }))
+        .route("/sw.js", get(assets::serve_sw))
         .nest("/hx", hx::create_router())
         .nest("/assets", assets::create_router());
 
