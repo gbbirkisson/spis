@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.2](https://github.com/gbbirkisson/spis/compare/v0.11.1...v0.11.2) (2026-01-14)
+
+
+### Bug Fixes
+
+* some UI tweaks ([#549](https://github.com/gbbirkisson/spis/issues/549)) ([6eda918](https://github.com/gbbirkisson/spis/commit/6eda91874375c8481399e084c46216d7573102ae))
+
 ## [0.11.1](https://github.com/gbbirkisson/spis/compare/v0.11.0...v0.11.1) (2026-01-14)
 
 
