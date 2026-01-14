@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.11.0](https://github.com/gbbirkisson/spis/compare/v0.10.0...v0.11.0) (2026-01-14)
+
+
+### Features
+
+* add info button in UI ([#538](https://github.com/gbbirkisson/spis/issues/538)) ([2ce83b4](https://github.com/gbbirkisson/spis/commit/2ce83b41c93e801b6739fa519c935c3c81ecbc24))
+* add slideshow functionality ([#539](https://github.com/gbbirkisson/spis/issues/539)) ([1218819](https://github.com/gbbirkisson/spis/commit/12188191d6431454b689306936b667cf8e108ee9))
+* **ci:** add some proper tests ([#533](https://github.com/gbbirkisson/spis/issues/533)) ([b01cdb5](https://github.com/gbbirkisson/spis/commit/b01cdb5dc75da885b845f789fcc69c15bb2f957a))
+* implement custom commands ([#545](https://github.com/gbbirkisson/spis/issues/545)) ([6b0adff](https://github.com/gbbirkisson/spis/commit/6b0adff207cc9bd75954d5f3e5c32c48d2eb90c7))
+* support collections ([#544](https://github.com/gbbirkisson/spis/issues/544)) ([975b173](https://github.com/gbbirkisson/spis/commit/975b1731c7844ddaeb398a97fd16c333399c3766))
+* switch server framework from actix to axum ([#530](https://github.com/gbbirkisson/spis/issues/530)) ([b1313ab](https://github.com/gbbirkisson/spis/commit/b1313ab6323b73b384ea1b220f97d22f07ba71c0))
+* ui facelift ([#537](https://github.com/gbbirkisson/spis/issues/537)) ([29f147b](https://github.com/gbbirkisson/spis/commit/29f147b0331da74528375efaa8fa972407293810))
+
+
+### Bug Fixes
+
+* add AGENTS.md ([#529](https://github.com/gbbirkisson/spis/issues/529)) ([e6800b6](https://github.com/gbbirkisson/spis/commit/e6800b61b5709e9023b738bafe2b894069ff991e))
+* button ergonomics ([#541](https://github.com/gbbirkisson/spis/issues/541)) ([67300e1](https://github.com/gbbirkisson/spis/commit/67300e115dd20c4948f2b6c9b2893d4060d24f8a))
+* **ci:** remove pre-commit ([#526](https://github.com/gbbirkisson/spis/issues/526)) ([1711d54](https://github.com/gbbirkisson/spis/commit/1711d5451dc21a3202c1ecebdf8a299f75fad27a))
+* **ci:** speedup toolchain setup ([#531](https://github.com/gbbirkisson/spis/issues/531)) ([f058c8d](https://github.com/gbbirkisson/spis/commit/f058c8d66b52b3d514b4cb010b56782638fa795e))
+* **ci:** update fly.io config ([#527](https://github.com/gbbirkisson/spis/issues/527)) ([fdbe7b9](https://github.com/gbbirkisson/spis/commit/fdbe7b9173df838db2be95e25c56fd11b3199feb))
+* **config:** migrate config .github/renovate.json5 ([#542](https://github.com/gbbirkisson/spis/issues/542)) ([6199a68](https://github.com/gbbirkisson/spis/commit/6199a68b69a49f5bd4dd41da4f37fe168ee82ab8))
+* **deps:** update dependency htmx to v2.0.8 ([#535](https://github.com/gbbirkisson/spis/issues/535)) ([22336bb](https://github.com/gbbirkisson/spis/commit/22336bb36ef03cb706acdd5c36c66ce1d0be2196))
+* **deps:** update fontawesome to 7.1.0 ([#543](https://github.com/gbbirkisson/spis/issues/543)) ([b1c3262](https://github.com/gbbirkisson/spis/commit/b1c32624905e1114cfe2f2309ecfad6c0c32c81f))
+* **deps:** update js libs ([#534](https://github.com/gbbirkisson/spis/issues/534)) ([63008c8](https://github.com/gbbirkisson/spis/commit/63008c80dac9d30f89db920cc8512a333c90a4da))
+* **deps:** update rust crate tower to v0.5.3 ([#536](https://github.com/gbbirkisson/spis/issues/536)) ([57e85d6](https://github.com/gbbirkisson/spis/commit/57e85d687a9cef08c7e68a9c3ff53be88bbd1a14))
+* spacing in gallery grid ([#540](https://github.com/gbbirkisson/spis/issues/540)) ([da84988](https://github.com/gbbirkisson/spis/commit/da84988bb30d123ae11d53e8f509cdad2eb4dd19))
+* update templates ([#532](https://github.com/gbbirkisson/spis/issues/532)) ([1f9562b](https://github.com/gbbirkisson/spis/commit/1f9562b1e65e4974449c3c8ad2e67e955814cc8b))
+
 ## [0.10.0](https://github.com/gbbirkisson/spis/compare/v0.9.14...v0.10.0) (2026-01-06)
 
 
