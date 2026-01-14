@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.11.3](https://github.com/gbbirkisson/spis/compare/v0.11.2...v0.11.3) (2026-01-14)
+
+
+### Bug Fixes
+
+* feature flags configuration ([#555](https://github.com/gbbirkisson/spis/issues/555)) ([1d5c2e4](https://github.com/gbbirkisson/spis/commit/1d5c2e4b9d3f68537bbd514f6e64150dc34c9cbd))
+* more useful command templating ([#552](https://github.com/gbbirkisson/spis/issues/552)) ([b911caa](https://github.com/gbbirkisson/spis/commit/b911caa650cb5b52e6bb46ea8e222791e04ad253))
+* remove debug statement ([#554](https://github.com/gbbirkisson/spis/issues/554)) ([ce161ed](https://github.com/gbbirkisson/spis/commit/ce161ed408a8507ed58fd4106229b49116cbab12))
+
 ## [0.11.2](https://github.com/gbbirkisson/spis/compare/v0.11.1...v0.11.2) (2026-01-14)
 
 
