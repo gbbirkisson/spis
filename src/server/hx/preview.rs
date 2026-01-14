@@ -108,8 +108,6 @@ async fn command(
         next: res.2.map(|m| (m, &config.pathfinder).into()),
     };
 
-    dbg!(&res.active_command, &cmd);
-
     if let Some(media) = &res.media {
         app_state
             .cmd_runner
