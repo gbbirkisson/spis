@@ -8,6 +8,8 @@ use uuid::Uuid;
 use crate::server::AppState;
 use crate::{PathFinder, db::Filter, db::MediaRow, db::Order};
 
+use std::path::Path;
+
 mod bar;
 mod gallery;
 mod preview;
@@ -17,6 +19,7 @@ mod render;
 pub struct Media {
     pub uuid: Uuid,
     pub url: String,
+    pub name: String,
     pub thumbnail: String,
     pub path: String,
     pub favorite: bool,
@@ -26,9 +29,15 @@ pub struct Media {
 
 impl From<(MediaRow, &PathFinder)> for Media {
     fn from(value: (MediaRow, &PathFinder)) -> Self {
+        let name = Path::new(&value.0.path)
+            .file_name()
+            .and_then(|s| s.to_str())
+            .unwrap_or(&value.0.path)
+            .to_string();
         Self {
             uuid: value.0.id,
             url: value.1.media(&value.0.path),
+            name,
             thumbnail: value.1.thumbnail(&value.0.id),
             path: value.0.path,
             favorite: value.0.favorite,

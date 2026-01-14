@@ -34,6 +34,12 @@ allow_no_exif = true
 ## Add custom commands to the UI ##
 [[custom_command]]
 name = "echo"
-cmd = ["echo", "{path}"]
+cmd = ["echo", "{name}"]
 fa_icon = "fa-solid fa-bullhorn"
 hotkey = "e"
+
+[[custom_command]]
+name = "reprocess"
+cmd = ["{spis}", "process", "{path}"]
+fa_icon = "fa-solid fa-industry"
+hotkey = "p"
