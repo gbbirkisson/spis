@@ -301,60 +301,60 @@ impl Spis {
             SpisConfig::default()
         };
 
-        // Merge logic: Args > Config > Default
+        // Merge logic: Config > Args > Default
         let dirs = config.dirs.unwrap_or_default();
-        let media_dir = args
-            .media_dir
-            .or(dirs.media)
+        let media_dir = dirs
+            .media
+            .or(args.media_dir)
             .unwrap_or_else(|| PathBuf::from(""));
-        let data_dir = args
-            .data_dir
-            .or(dirs.data)
+        let data_dir = dirs
+            .data
+            .or(args.data_dir)
             .unwrap_or_else(|| PathBuf::from(""));
 
         let processing = config.processing.unwrap_or_default();
-        let processing_schedule = args
-            .processing_schedule
-            .or(processing.schedule)
+        let processing_schedule = processing
+            .schedule
+            .or(args.processing_schedule)
             .unwrap_or_else(|| "0 0 2 * * *".to_string());
-        let processing_run_on_start = args
-            .processing_run_on_start
-            .or(processing.run_on_start)
+        let processing_run_on_start = processing
+            .run_on_start
+            .or(args.processing_run_on_start)
             .unwrap_or(false);
 
         let api = config.api.unwrap_or_default();
-        let api_media_path = args
-            .api_media_path
-            .or(api.media_path)
+        let api_media_path = api
+            .media_path
+            .or(args.api_media_path)
             .unwrap_or_else(|| "/assets/media".to_string());
-        let api_thumbnail_path = args
-            .api_thumbnail_path
-            .or(api.thumbnail_path)
+        let api_thumbnail_path = api
+            .thumbnail_path
+            .or(args.api_thumbnail_path)
             .unwrap_or_else(|| "/assets/thumbnails".to_string());
 
         // Listener merging
         let listener_config = config.listener.unwrap_or_default();
         let listener = ServerListener {
-            server_address: args.listener.server_address.or(listener_config.address),
-            server_socket: args.listener.server_socket.or(listener_config.socket),
+            server_address: listener_config.address.or(args.listener.server_address),
+            server_socket: listener_config.socket.or(args.listener.server_socket),
         };
 
         let features = config.features.unwrap_or_default();
-        let feature_favorite = args.feature_favorite.or(features.favorite).unwrap_or(true);
-        let feature_archive = args.feature_archive.or(features.archive).unwrap_or(true);
-        let feature_follow_symlinks = args
-            .feature_follow_symlinks
-            .or(features.follow_symlinks)
+        let feature_favorite = features.favorite.or(args.feature_favorite).unwrap_or(true);
+        let feature_archive = features.archive.or(args.feature_archive).unwrap_or(true);
+        let feature_follow_symlinks = features
+            .follow_symlinks
+            .or(args.feature_follow_symlinks)
             .unwrap_or(true);
-        let feature_allow_no_exif = args
-            .feature_allow_no_exif
-            .or(features.allow_no_exif)
+        let feature_allow_no_exif = features
+            .allow_no_exif
+            .or(args.feature_allow_no_exif)
             .unwrap_or(true);
 
         let slideshow = config.slideshow.unwrap_or_default();
-        let slideshow_duration_seconds = args
-            .slideshow_duration_seconds
-            .or(slideshow.duration_seconds)
+        let slideshow_duration_seconds = slideshow
+            .duration_seconds
+            .or(args.slideshow_duration_seconds)
             .unwrap_or(5);
 
         let custom_commands = config.custom_command.unwrap_or_default();

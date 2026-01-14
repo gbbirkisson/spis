@@ -122,7 +122,9 @@ pub(super) async fn render(app_state: &AppState, state: GalleryState) -> RenderR
         buttons = buttons.into_iter().rev().collect();
     }
 
-    buttons.insert(0, BarButton::Favorite(state.favorite.unwrap_or(false)));
+    if app_state.config.features.favorite_allow {
+        buttons.insert(0, BarButton::Favorite(state.favorite.unwrap_or(false)));
+    }
     buttons.push(BarButton::Order(new_to_old));
 
     match (state.favorite, state.year) {

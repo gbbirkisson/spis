@@ -80,7 +80,7 @@ mobile.
 ## Configuration
 
 Configuration can be managed through CLI flags, environment variables, or a TOML configuration
-file. The precedence rule is: **CLI Flags/Env Vars > Config File > Defaults**.
+file. The precedence rule is: **Config File > CLI Flags/Env Vars > Defaults**.
 
 You can always run `spis help` to see how to configure the server:
 
