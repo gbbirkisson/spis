@@ -13,7 +13,7 @@ permissions:
 jobs:
   release-please:
     name: Run Release Please
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: google-github-actions/release-please-action@v4
         with:

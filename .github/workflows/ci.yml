@@ -11,7 +11,7 @@ on:
 jobs:
   ci:
     name: Run ${{ matrix.target }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     strategy:
       fail-fast: false
@@ -33,7 +33,7 @@ jobs:
       - name: Install rust toolchain
         uses: ./.github/actions/toolchain
         with:
-          cache-key: ${{ matrix.target }}
+          cache-key: ubuntu-22.04-${{ matrix.target }}
 
       - name: Run ${{ matrix.target }}
         run: make ${{ matrix.target }}
