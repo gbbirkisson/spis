@@ -1,0 +1,39 @@
+#:schema ./config.schema.json
+
+## Dir configuration ##
+# [dirs]
+# media = "/spis/media"
+# data = "/spis/data"
+
+## Server API paths paths ##
+[api]
+media_path = "/assets/media"
+thumbnail_path = "/assets/thumbnails"
+
+## Media processing ##
+[processing]
+schedule = "0 0 2 * * *"
+run_on_start = false
+
+## Listener configuration ##
+[listener]
+# address = "0.0.0.0:8080" # Listen to address (e.g., '0.0.0.0:8080')
+socket = "/tmp/spis.sock" # Listen to UNIX socket path
+
+## Feature flags ##
+[features]
+favorite = true
+archive = true
+follow_symlinks = true
+allow_no_exif = true
+
+## Slideshow ##
+# [slideshow]
+# duration_seconds = 5
+
+## Add custom commands to the UI ##
+[[custom_command]]
+name = "echo"
+cmd = ["echo", "{path}"]
+fa_icon = "fa-solid fa-bullhorn"
+hotkey = "e"

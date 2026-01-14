@@ -13,14 +13,15 @@ mod gallery;
 mod preview;
 mod render;
 
-struct Media {
-    uuid: Uuid,
-    url: String,
-    thumbnail: String,
-    path: String,
-    favorite: bool,
-    video: bool,
-    taken_at: DateTime<Utc>,
+#[derive(Clone)]
+pub struct Media {
+    pub uuid: Uuid,
+    pub url: String,
+    pub thumbnail: String,
+    pub path: String,
+    pub favorite: bool,
+    pub video: bool,
+    pub taken_at: DateTime<Utc>,
 }
 
 impl From<(MediaRow, &PathFinder)> for Media {

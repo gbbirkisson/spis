@@ -1,0 +1,144 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SPIS Configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dirs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "media": {
+          "type": "string",
+          "description": "Path to search for media files"
+        },
+        "data": {
+          "type": "string",
+          "description": "Path to store data (database, thumbnails)"
+        }
+      }
+    },
+    "processing": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schedule": {
+          "type": "string",
+          "description": "Cron schedule to run processing on",
+          "default": "0 0 2 * * *"
+        },
+        "run_on_start": {
+          "type": "boolean",
+          "description": "Run processing on startup",
+          "default": false
+        }
+      }
+    },
+    "api": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "media_path": {
+          "type": "string",
+          "description": "Path webserver will serve media on",
+          "default": "/assets/media"
+        },
+        "thumbnail_path": {
+          "type": "string",
+          "description": "Path webserver will serve thumbnails on",
+          "default": "/assets/thumbnails"
+        }
+      }
+    },
+    "listener": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "address": {
+          "type": "string",
+          "description": "Listen to address (e.g., '0.0.0.0:8080')"
+        },
+        "socket": {
+          "type": "string",
+          "description": "Listen to UNIX socket path"
+        }
+      },
+      "oneOf": [
+        { "required": ["address"] },
+        { "required": ["socket"] },
+        { "not": { "anyOf": [{ "required": ["address"] }, { "required": ["socket"] }] } }
+      ]
+    },
+    "features": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "favorite": {
+          "type": "boolean",
+          "description": "Enable favorite feature",
+          "default": true
+        },
+        "archive": {
+          "type": "boolean",
+          "description": "Enable archive feature",
+          "default": true
+        },
+        "follow_symlinks": {
+          "type": "boolean",
+          "description": "Follow symbolic links when scanning",
+          "default": true
+        },
+        "allow_no_exif": {
+          "type": "boolean",
+          "description": "Allow processing files without EXIF data",
+          "default": true
+        }
+      }
+    },
+    "slideshow": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "duration_seconds": {
+          "type": "integer",
+          "description": "Slideshow duration in seconds",
+          "default": 5,
+          "minimum": 1
+        }
+      }
+    },
+    "custom_command": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "cmd", "fa_icon"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Identifier of the command (lowercase, no spaces)",
+            "pattern": "^[a-z0-9_-]+$"
+          },
+          "cmd": {
+            "type": "array",
+            "description": "Command and arguments to execute",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fa_icon": {
+            "type": "string",
+            "description": "FontAwesome icon identifier for the command"
+          },
+          "hotkey": {
+            "type": "string",
+            "description": "Single lowercase character hotkey",
+            "pattern": "^[a-z]$",
+            "minLength": 1,
+            "maxLength": 1
+          }
+        }
+      }
+    }
+  }
+}

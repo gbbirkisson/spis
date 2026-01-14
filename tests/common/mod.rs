@@ -43,6 +43,7 @@ pub async fn spawn_server() -> (String, Pool<Sqlite>, NamedTempFile) {
             archive_allow: true,
             favorite_allow: true,
             slideshow_duration: 10,
+            custom_commands: Vec::with_capacity(0),
         },
         pathfinder,
     };

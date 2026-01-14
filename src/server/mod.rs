@@ -4,11 +4,14 @@ use sqlx::{Pool, Sqlite};
 use std::net::TcpListener;
 use std::sync::Arc;
 use tokio::net::UnixListener;
+use tokio::sync::mpsc::Sender;
 use tower_http::trace::TraceLayer;
 
-use crate::PathFinder;
+use crate::server::commands::CustomCommandTrigger;
+use crate::{CustomCommand, PathFinder};
 
 mod assets;
+mod commands;
 #[cfg(feature = "dev")]
 mod dev;
 mod hx;
@@ -28,18 +31,23 @@ pub struct Features {
     pub archive_allow: bool,
     pub favorite_allow: bool,
     pub slideshow_duration: usize,
+    pub custom_commands: Vec<CustomCommand>,
 }
 
 #[derive(Clone)]
 pub struct AppState {
     pub pool: Pool<Sqlite>,
     pub config: Arc<Config>,
+    pub cmd_runner: Sender<CustomCommandTrigger>,
 }
 
 pub async fn run(listener: Listener, pool: Pool<Sqlite>, config: Config) -> Result<()> {
+    let cmd_runner = commands::setup_custom_commands(config.features.custom_commands.clone());
+
     let state = AppState {
         pool,
         config: Arc::new(config),
+        cmd_runner,
     };
 
     let app = Router::new()

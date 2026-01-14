@@ -47,14 +47,8 @@
   on keyup(Escape) from .bar-search-input
     put '' into #search-results
   end">
-  <input type="text"
-         name="query"
-         placeholder="{{ collection }}"
-         class="bar-search-input"
-         hx-get="/hx/bar/search"
-         hx-trigger="keyup changed delay:500ms"
-         hx-target="#search-results"
-         autocomplete="off">
+  <input type="text" name="query" placeholder="{{ collection }}" class="bar-search-input" hx-get="/hx/bar/search"
+    hx-trigger="keyup changed delay:500ms" hx-target="#search-results" autocomplete="off">
   <div id="search-results" class="bar-search-results"></div>
 </li>
 {% when None %}

@@ -99,7 +99,7 @@ async fn search(
     let results =
         db::collections_search(&app_state.pool, &app_state.config.root_path, &search.query)
             .await
-            .map_err(ServerError::DBError)?;
+            .map_err(ServerError::DB)?;
     HxSearchResults { results }.render_response()
 }
 

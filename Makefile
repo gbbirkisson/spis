@@ -50,11 +50,11 @@ dev-clippy: ${DATABASE}
 .PHONY: dev-spis
 dev-spis: ${DATABASE} ${MEDIA_DIR} ${THUMBNAIL_DIR}
 	watchexec --stop-timeout=0 -r -e rs,toml,html,css -- \
-		cargo run --color always -F dev
+		cargo run --color always -F dev -- -c config.toml
 
 .PHONY: dev-nginx
 dev-nginx: ${DATABASE} ${MEDIA_DIR} ${THUMBNAIL_DIR}
-	bash -c 'RUST_LOG=error cargo run -q -- template nginx --full > /tmp/nginx.conf && nginx -g "daemon off;" -c /tmp/nginx.conf'
+	bash -c 'RUST_LOG=error cargo run -q -- -c config.toml template nginx --full > /tmp/nginx.conf && nginx -g "daemon off;" -c /tmp/nginx.conf'
 
 .PHONY: dev
 dev:
@@ -71,6 +71,10 @@ lint-fmt:
 .PHONY: lint-clippy
 lint-clippy: ${DATABASE}
 	cargo clippy -F dev -- --no-deps -D warnings
+
+.PHONY: lint-taplo
+lint-taplo:
+	taplo check config.toml
 
 .PHONY: lint
 lint: lint-fmt lint-clippy

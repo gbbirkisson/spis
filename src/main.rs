@@ -1,10 +1,11 @@
 use askama::Template;
-use clap::{ArgAction, Args, CommandFactory, Parser, Subcommand, error::ErrorKind};
+use clap::{ArgAction, Args as ClapArgs, CommandFactory, Parser, Subcommand, error::ErrorKind};
 use color_eyre::Result;
-use color_eyre::eyre::{Error, OptionExt, WrapErr, eyre};
+use color_eyre::eyre::{Error, OptionExt, WrapErr, ensure, eyre};
 use notify::Watcher;
-use spis::PathFinder;
+use serde::Deserialize;
 use spis::media::util::THUMBNAIL_FORMAT;
+use spis::{CustomCommand, PathFinder};
 use spis::{
     db,
     pipeline::{self, JOB_TRIGGER},
@@ -26,64 +27,164 @@ fn file_exists(s: &str) -> Result<PathBuf, String> {
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 #[allow(clippy::struct_excessive_bools)]
-pub struct Spis {
+pub struct SpisArgs {
+    /// Path to configuration file
+    #[clap(short, long, env = "SPIS_CONFIG_FILE", value_parser = file_exists)]
+    pub config: Option<PathBuf>,
+
     /// Path to search for media files
-    #[clap(long, env = "SPIS_MEDIA_DIR", default_value = "")]
-    pub media_dir: PathBuf,
+    #[clap(long, env = "SPIS_MEDIA_DIR")]
+    pub media_dir: Option<PathBuf>,
 
     /// Path to store data
-    #[clap(long, env = "SPIS_DATA_DIR", default_value = "")]
-    pub data_dir: PathBuf,
+    #[clap(long, env = "SPIS_DATA_DIR")]
+    pub data_dir: Option<PathBuf>,
 
-    /// Schedule to run processing on
-    #[clap(long, env = "SPIS_PROCESSING_SCHEDULE", default_value = "0 0 2 * * *")]
-    pub processing_schedule: String,
+    /// Schedule to run processing on (default: "0 0 2 * * *")
+    #[clap(long, env = "SPIS_PROCESSING_SCHEDULE")]
+    pub processing_schedule: Option<String>,
 
-    /// Run processing on start
-    #[clap(long, env = "SPIS_PROCESSING_RUN_ON_START", default_value = "false")]
-    pub processing_run_on_start: bool,
+    /// Run processing on start (default: false)
+    #[clap(long, env = "SPIS_PROCESSING_RUN_ON_START", action = ArgAction::SetTrue)]
+    pub processing_run_on_start: Option<bool>,
 
-    /// Path webserver will serve media on
-    #[clap(long, env = "SPIS_API_MEDIA_PATH", default_value = "/assets/media")]
-    pub api_media_path: String,
+    /// Path webserver will serve media on (default: "/assets/media")
+    #[clap(long, env = "SPIS_API_MEDIA_PATH")]
+    pub api_media_path: Option<String>,
 
-    /// Path webserver will serve thumbnails on
-    #[clap(
-        long,
-        env = "SPIS_API_THUMBNAIL_PATH",
-        default_value = "/assets/thumbnails"
-    )]
-    pub api_thumbnail_path: String,
+    /// Path webserver will serve thumbnails on (default: "/assets/thumbnails")
+    #[clap(long, env = "SPIS_API_THUMBNAIL_PATH")]
+    pub api_thumbnail_path: Option<String>,
 
     #[command(flatten)]
     pub listener: ServerListener,
 
-    /// Disable feature favorite
-    #[clap(long, env = "SPIS_FEATURE_FAVORITE", default_value = "true", action=ArgAction::SetFalse)]
-    pub feature_favorite: bool,
+    /// Disable feature favorite (default: true)
+    #[clap(long, env = "SPIS_FEATURE_FAVORITE", action=ArgAction::SetFalse)]
+    pub feature_favorite: Option<bool>,
 
-    /// Disable feature archive
-    #[clap(long, env = "SPIS_FEATURE_ARCHIVE", default_value = "true", action=ArgAction::SetFalse)]
-    pub feature_archive: bool,
+    /// Disable feature archive (default: true)
+    #[clap(long, env = "SPIS_FEATURE_ARCHIVE", action=ArgAction::SetFalse)]
+    pub feature_archive: Option<bool>,
 
-    /// Disable feature follow symlinks
-    #[clap(long, env = "SPIS_FEATURE_FOLLOW_SYMLINKS", default_value = "true", action=ArgAction::SetFalse)]
-    pub feature_follow_symlinks: bool,
+    /// Disable feature follow symlinks (default: true)
+    #[clap(long, env = "SPIS_FEATURE_FOLLOW_SYMLINKS", action=ArgAction::SetFalse)]
+    pub feature_follow_symlinks: Option<bool>,
 
-    /// Disable feature no exif
-    #[clap(long, env = "SPIS_FEATURE_NO_EXIF", default_value = "true", action=ArgAction::SetFalse)]
-    pub feature_allow_no_exif: bool,
+    /// Disable feature no exif (default: true)
+    #[clap(long, env = "SPIS_FEATURE_NO_EXIF", action=ArgAction::SetFalse)]
+    pub feature_allow_no_exif: Option<bool>,
 
-    /// Slideshow duration in seconds
-    #[clap(long, env = "SPIS_SLIDESHOW_DURATION_SECONDS", default_value = "5")]
-    pub slideshow_duration_seconds: usize,
+    /// Slideshow duration in seconds (default: 5)
+    #[clap(long, env = "SPIS_SLIDESHOW_DURATION_SECONDS")]
+    pub slideshow_duration_seconds: Option<usize>,
 
     #[command(subcommand)]
     command: Option<SpisCommand>,
 }
 
+#[derive(Deserialize, Debug, Default)]
+pub struct SpisConfig {
+    pub dirs: Option<DirsConfig>,
+    pub processing: Option<ProcessingConfig>,
+    pub api: Option<ApiConfig>,
+    pub listener: Option<ListenerConfig>,
+    pub features: Option<FeaturesConfig>,
+    pub slideshow: Option<SlideshowConfig>,
+    pub custom_command: Option<Vec<CustomCommandConfig>>,
+}
+
+#[derive(Deserialize, Debug, Default, Clone)]
+pub struct CustomCommandConfig {
+    pub name: String,
+    pub cmd: Vec<String>,
+    pub fa_icon: String,
+    pub hotkey: Option<char>,
+}
+
+impl TryFrom<CustomCommandConfig> for CustomCommand {
+    type Error = Error;
+
+    fn try_from(value: CustomCommandConfig) -> std::result::Result<Self, Self::Error> {
+        ensure!(
+            !value.name.contains(' '),
+            "command names cannot contain spaces"
+        );
+        ensure!(
+            value.name.to_lowercase() == value.name,
+            "command names must be lowercase"
+        );
+        ensure!(!value.cmd.is_empty(), "command cannot be empty");
+        if let Some(key) = value.hotkey {
+            ensure!(key.is_lowercase(), "hotkey must be a lowercase character");
+        }
+        Ok(Self {
+            name: value.name,
+            cmd: value.cmd,
+            fa_icon: value.fa_icon,
+            hotkey: value.hotkey,
+        })
+    }
+}
+
+#[derive(Deserialize, Debug, Default)]
+pub struct DirsConfig {
+    pub media: Option<PathBuf>,
+    pub data: Option<PathBuf>,
+}
+
+#[derive(Deserialize, Debug, Default)]
+pub struct ProcessingConfig {
+    pub schedule: Option<String>,
+    pub run_on_start: Option<bool>,
+}
+
+#[derive(Deserialize, Debug, Default)]
+pub struct ApiConfig {
+    pub media_path: Option<String>,
+    pub thumbnail_path: Option<String>,
+}
+
+#[derive(Deserialize, Debug, Default)]
+pub struct ListenerConfig {
+    pub address: Option<String>,
+    pub socket: Option<String>,
+}
+
+#[derive(Deserialize, Debug, Default)]
+pub struct FeaturesConfig {
+    pub favorite: Option<bool>,
+    pub archive: Option<bool>,
+    pub follow_symlinks: Option<bool>,
+    pub allow_no_exif: Option<bool>,
+}
+
+#[derive(Deserialize, Debug, Default)]
+pub struct SlideshowConfig {
+    pub duration_seconds: Option<usize>,
+}
+
+#[derive(Debug, Clone)]
+#[allow(clippy::struct_excessive_bools)]
+pub struct Spis {
+    pub media_dir: PathBuf,
+    pub data_dir: PathBuf,
+    pub processing_schedule: String,
+    pub processing_run_on_start: bool,
+    pub api_media_path: String,
+    pub api_thumbnail_path: String,
+    pub listener: ServerListener,
+    pub feature_favorite: bool,
+    pub feature_archive: bool,
+    pub feature_follow_symlinks: bool,
+    pub feature_allow_no_exif: bool,
+    pub slideshow_duration_seconds: usize,
+    pub custom_commands: Vec<CustomCommandConfig>,
+    pub command: Option<SpisCommand>,
+}
+
 #[derive(Subcommand, Default, Debug, Clone)]
-enum SpisCommand {
+pub enum SpisCommand {
     /// Runs the server [default]
     #[default]
     Run,
@@ -103,7 +204,7 @@ enum SpisCommand {
 }
 
 #[derive(Subcommand, Debug, Clone)]
-enum SpisTemplate {
+pub enum SpisTemplate {
     /// Template nginx configuration
     Nginx {
         /// Nginx port
@@ -142,7 +243,7 @@ enum SpisTemplate {
     },
 }
 
-#[derive(Args, Debug)]
+#[derive(ClapArgs, Debug, Deserialize, Clone, Default)]
 #[group(multiple = false)]
 pub struct ServerListener {
     /// Listen to address
@@ -161,7 +262,7 @@ fn validate_listener(config: &Spis) -> &'static str {
     ) {
         (Some(_), None) | (None, Some(_)) => {}
         _ => {
-            let mut cmd = Spis::command();
+            let mut cmd = SpisArgs::command();
             cmd.error(
             ErrorKind::MissingRequiredArgument,
             "missing either '--server-address <SERVER_ADDRESS>' or '--server-socket <SERVER_SOCKET>'",
@@ -189,6 +290,93 @@ impl TryFrom<&Spis> for PathFinder {
 }
 
 impl Spis {
+    pub fn resolve(args: SpisArgs) -> Result<Self> {
+        let config_file = args.config.clone();
+        let config: SpisConfig = if let Some(path) = config_file {
+            let content = std::fs::read_to_string(&path)
+                .wrap_err_with(|| format!("Failed to read config file: {}", path.display()))?;
+            toml::from_str(&content)
+                .wrap_err_with(|| format!("Failed to parse config file: {}", path.display()))?
+        } else {
+            SpisConfig::default()
+        };
+
+        // Merge logic: Args > Config > Default
+        let dirs = config.dirs.unwrap_or_default();
+        let media_dir = args
+            .media_dir
+            .or(dirs.media)
+            .unwrap_or_else(|| PathBuf::from(""));
+        let data_dir = args
+            .data_dir
+            .or(dirs.data)
+            .unwrap_or_else(|| PathBuf::from(""));
+
+        let processing = config.processing.unwrap_or_default();
+        let processing_schedule = args
+            .processing_schedule
+            .or(processing.schedule)
+            .unwrap_or_else(|| "0 0 2 * * *".to_string());
+        let processing_run_on_start = args
+            .processing_run_on_start
+            .or(processing.run_on_start)
+            .unwrap_or(false);
+
+        let api = config.api.unwrap_or_default();
+        let api_media_path = args
+            .api_media_path
+            .or(api.media_path)
+            .unwrap_or_else(|| "/assets/media".to_string());
+        let api_thumbnail_path = args
+            .api_thumbnail_path
+            .or(api.thumbnail_path)
+            .unwrap_or_else(|| "/assets/thumbnails".to_string());
+
+        // Listener merging
+        let listener_config = config.listener.unwrap_or_default();
+        let listener = ServerListener {
+            server_address: args.listener.server_address.or(listener_config.address),
+            server_socket: args.listener.server_socket.or(listener_config.socket),
+        };
+
+        let features = config.features.unwrap_or_default();
+        let feature_favorite = args.feature_favorite.or(features.favorite).unwrap_or(true);
+        let feature_archive = args.feature_archive.or(features.archive).unwrap_or(true);
+        let feature_follow_symlinks = args
+            .feature_follow_symlinks
+            .or(features.follow_symlinks)
+            .unwrap_or(true);
+        let feature_allow_no_exif = args
+            .feature_allow_no_exif
+            .or(features.allow_no_exif)
+            .unwrap_or(true);
+
+        let slideshow = config.slideshow.unwrap_or_default();
+        let slideshow_duration_seconds = args
+            .slideshow_duration_seconds
+            .or(slideshow.duration_seconds)
+            .unwrap_or(5);
+
+        let custom_commands = config.custom_command.unwrap_or_default();
+
+        Ok(Self {
+            media_dir,
+            data_dir,
+            processing_schedule,
+            processing_run_on_start,
+            api_media_path,
+            api_thumbnail_path,
+            listener,
+            feature_favorite,
+            feature_archive,
+            feature_follow_symlinks,
+            feature_allow_no_exif,
+            slideshow_duration_seconds,
+            custom_commands,
+            command: args.command,
+        })
+    }
+
     #[must_use]
     pub fn thumbnail_dir(&self) -> PathBuf {
         self.data_dir.join("thumbnails")
@@ -212,7 +400,9 @@ async fn main() -> Result<()> {
     color_eyre::install().wrap_err("Failed to install color_eyre")?;
 
     // Load config and run
-    let config = Spis::parse();
+    let args = SpisArgs::parse();
+    let config = Spis::resolve(args)?;
+
     tracing::debug!("Got config: {:?}", config);
     match config.command.clone().unwrap_or_default() {
         SpisCommand::Process { media } => process(config, media).await,
@@ -325,6 +515,7 @@ async fn run(config: Spis) -> Result<()> {
         _ => unreachable!(),
     };
 
+    let pathfinder = (&config).try_into()?;
     let config = Config {
         root_path: config
             .media_dir
@@ -335,8 +526,13 @@ async fn run(config: Spis) -> Result<()> {
             archive_allow: config.feature_archive,
             favorite_allow: config.feature_favorite,
             slideshow_duration: config.slideshow_duration_seconds,
+            custom_commands: config
+                .custom_commands
+                .into_iter()
+                .map(TryInto::try_into)
+                .collect::<Result<Vec<_>, _>>()?,
         },
-        pathfinder: (&config).try_into()?,
+        pathfinder,
     };
     server::run(listener, pool, config).await?;
 

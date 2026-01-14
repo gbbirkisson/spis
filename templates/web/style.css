@@ -7,6 +7,7 @@
   --icon-red: #ff5252;
   --icon-white: #ffffff;
   --icon-blue: #0047ab;
+  --icon-green: #aaff00;
   --border-radius: 4px;
   --transition-speed: 0.3s;
   --bar-height: 60px;
@@ -268,6 +269,7 @@ ul {
 .icon-white { color: var(--icon-white); }
 .icon-red { color: var(--icon-red); }
 .icon-blue { color: var(--icon-blue); }
+.icon-green { color: var(--icon-green); }
 
 /* Search Box in Bar */
 .bar-search-container {
