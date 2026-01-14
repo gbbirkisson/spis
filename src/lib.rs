@@ -4,6 +4,14 @@ pub mod pipeline;
 pub mod prelude;
 pub mod server;
 
+#[derive(Clone)]
+pub struct CustomCommand {
+    pub name: String,
+    pub cmd: Vec<String>,
+    pub fa_icon: String,
+    pub hotkey: Option<char>,
+}
+
 pub struct PathFinder {
     media_dir: String,
     media_path: String,

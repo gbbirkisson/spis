@@ -40,6 +40,11 @@ runs:
         version: 1.0
         packages: gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu
 
+    - name: Install taplo
+      uses: taiki-e/install-action@v2
+      with:
+        tool: taplo
+
     - name: Install sqlx-cli
       uses: taiki-e/cache-cargo-install-action@v3
       with:

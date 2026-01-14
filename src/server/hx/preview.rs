@@ -1,5 +1,6 @@
 use crate::db;
 use crate::server::AppState;
+use crate::server::commands::CustomCommandTrigger;
 
 use super::GalleryState;
 use super::Media;
@@ -19,6 +20,7 @@ struct HxRoot<'a> {
     archive: bool,
     slideshow: bool,
     features: &'a crate::server::Features,
+    active_command: Option<String>,
     prev: Option<Media>,
     media: Option<Media>,
     next: Option<Media>,
@@ -40,12 +42,13 @@ async fn root(
     let config = &app_state.config;
     let res = db::media_get(pool, &state, &state, &uuid)
         .await
-        .map_err(ServerError::DBError)?;
+        .map_err(ServerError::DB)?;
 
     HxRoot {
         archive: preview.archive.unwrap_or_default(),
         slideshow: preview.slideshow.unwrap_or_default(),
         features: &config.features,
+        active_command: None,
         prev: res.0.map(|m| (m, &config.pathfinder).into()),
         media: res.1.map(|m| (m, &config.pathfinder).into()),
         next: res.2.map(|m| (m, &config.pathfinder).into()),
@@ -64,21 +67,61 @@ async fn favorite(
 
     db::media_favorite(pool, &uuid, value)
         .await
-        .map_err(ServerError::DBError)?;
+        .map_err(ServerError::DB)?;
 
     let res = db::media_get(pool, &state, &state, &uuid)
         .await
-        .map_err(ServerError::DBError)?;
+        .map_err(ServerError::DB)?;
 
     HxRoot {
         archive: preview.archive.unwrap_or_default(),
         slideshow: preview.slideshow.unwrap_or_default(),
         features: &config.features,
+        active_command: None,
         prev: res.0.map(|m| (m, &config.pathfinder).into()),
         media: res.1.map(|m| (m, &config.pathfinder).into()),
         next: res.2.map(|m| (m, &config.pathfinder).into()),
     }
     .render_response()
+}
+
+async fn command(
+    State(app_state): State<AppState>,
+    Query(state): Query<GalleryState>,
+    Query(preview): Query<PreviewState>,
+    Path((uuid, cmd)): Path<(Uuid, String)>,
+) -> RenderResult {
+    let pool = &app_state.pool;
+    let config = &app_state.config;
+
+    let res = db::media_get(pool, &state, &state, &uuid)
+        .await
+        .map_err(ServerError::DB)?;
+
+    let res = HxRoot {
+        archive: preview.archive.unwrap_or_default(),
+        slideshow: preview.slideshow.unwrap_or_default(),
+        features: &config.features,
+        active_command: Some(cmd.clone()),
+        prev: res.0.map(|m| (m, &config.pathfinder).into()),
+        media: res.1.map(|m| (m, &config.pathfinder).into()),
+        next: res.2.map(|m| (m, &config.pathfinder).into()),
+    };
+
+    dbg!(&res.active_command, &cmd);
+
+    if let Some(media) = &res.media {
+        app_state
+            .cmd_runner
+            .send(CustomCommandTrigger {
+                cmd,
+                media: media.clone(),
+            })
+            .await
+            .map_err(|e| ServerError::CommandDispatch(e.into()))?;
+    }
+
+    res.render_response()
 }
 
 async fn archive(State(app_state): State<AppState>, Path(uuid): Path<Uuid>) -> RenderResult {
@@ -87,12 +130,13 @@ async fn archive(State(app_state): State<AppState>, Path(uuid): Path<Uuid>) -> R
 
     db::media_archive(pool, &uuid, true)
         .await
-        .map_err(ServerError::DBError)?;
+        .map_err(ServerError::DB)?;
 
     HxRoot {
         archive: false,
         slideshow: false,
         features: &config.features,
+        active_command: None,
         prev: None,
         media: None,
         next: None,
@@ -103,5 +147,6 @@ async fn archive(State(app_state): State<AppState>, Path(uuid): Path<Uuid>) -> R
 pub fn create_router() -> Router<AppState> {
     Router::new()
         .route("/{idx}", get(root).delete(archive))
+        .route("/{idx}/cmd/{value}", put(command))
         .route("/{idx}/favorite/{value}", put(favorite))
 }

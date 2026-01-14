@@ -98,6 +98,32 @@
       <div class="media-action-button"><i class="fa-solid fa-circle-info icon-white"></i></div>
     </div>
 
+    <!-- Slideshow button -->
+    {% if slideshow %}
+    <div class="link" hx-get="/hx/preview/{{ media.uuid }}" hx-trigger="click, keyup[key=='s'] from:body"
+      hx-target="#hx-media-preview" hx-swap="outerHTML" role="button" aria-label="Stop Slideshow">
+      <div class="media-action-button"><i class="fa-solid fa-stop fa-beat-fade icon-blue"></i></div>
+    </div>
+    {% else %}
+    <div class="link" hx-get="/hx/preview/{{ media.uuid }}?slideshow=true" hx-trigger="click, keyup[key=='s'] from:body"
+      hx-target="#hx-media-preview" hx-swap="outerHTML" role="button" aria-label="Start Slideshow">
+      <div class="media-action-button"><i class="fa-solid fa-play"></i></div>
+    </div>
+    {% endif %}
+
+    <!-- Custom Commands -->
+    {% for cmd in features.custom_commands %}
+    <div class="link"
+      hx-put="/hx/preview/{{ media.uuid }}/cmd/{{ cmd.name }}{% if slideshow %}?slideshow=true{% endif %}"
+      hx-trigger="click{% if let Some(key) = cmd.hotkey %}, keyup[key=='{{ key }}'] from:body{% endif %}"
+      hx-target="#hx-media-preview" hx-swap="outerHTML" role="button" aria-label="{{ cmd.name }}">
+      <div class="media-action-button">
+        <i
+          class="{{ cmd.fa_icon }} {% if active_command.as_ref() == Some(cmd.name) %}fa-beat-fade icon-green {% else %}icon-white{% endif %}"></i>
+      </div>
+    </div>
+    {% endfor %}
+
     <!-- Favorite button -->
     {% if features.favorite_allow %}
     <div class="link" _="on htmx:afterRequest toggle between .hidden and .visible on #fav-{{ media.uuid }}"
@@ -109,19 +135,6 @@
       {% else %}
       <div class="media-action-button"><i class="fa-regular fa-heart icon-white"></i></div>
       {% endif %}
-    </div>
-    {% endif %}
-
-    <!-- Slideshow button -->
-    {% if slideshow %}
-    <div class="link" hx-get="/hx/preview/{{ media.uuid }}" hx-trigger="click, keyup[key=='s'] from:body"
-      hx-target="#hx-media-preview" hx-swap="outerHTML" role="button" aria-label="Stop Slideshow">
-      <div class="media-action-button"><i class="fa-solid fa-stop fa-beat-fade icon-blue"></i></div>
-    </div>
-    {% else %}
-    <div class="link" hx-get="/hx/preview/{{ media.uuid }}?slideshow=true" hx-trigger="click, keyup[key=='s'] from:body"
-      hx-target="#hx-media-preview" hx-swap="outerHTML" role="button" aria-label="Start Slideshow">
-      <div class="media-action-button"><i class="fa-solid fa-play"></i></div>
     </div>
     {% endif %}
 
@@ -160,23 +173,23 @@
   <!-- Info Dialog -->
   <div id="info-dialog" class="info-dialog hidden">
     <div class="info-row">
-      <span class="info-label">File</span>
+      <span class="info-label">{path}</span>
       <div class="info-value">{{ media.path }}</div>
     </div>
     <div class="info-row">
-      <span class="info-label">Timestamp</span>
+      <span class="info-label">{taken_at}</span>
       <div class="info-value">{{ media.taken_at }}</div>
     </div>
     <div class="info-row">
-      <span class="info-label">UUID</span>
+      <span class="info-label">{uuid}</span>
       <div class="info-value">{{ media.uuid }}</div>
     </div>
     <div class="info-row">
-      <span class="info-label">Url</span>
+      <span class="info-label">{url}</span>
       <div class="info-value">{{ media.url }}</div>
     </div>
     <div class="info-row">
-      <span class="info-label">Thumbnail</span>
+      <span class="info-label">{thumbnail}</span>
       <div class="info-value">{{ media.thumbnail }}</div>
     </div>
     <div class="info-row" style="display: flex; justify-content: flex-end; margin-top: 10px; margin-bottom: 0;">

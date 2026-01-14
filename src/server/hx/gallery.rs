@@ -134,7 +134,7 @@ pub(super) async fn render(app_state: &AppState, state: GalleryState) -> RenderR
 
     let media = db::media_list(pool, &state, &state, PAGE_SIZE)
         .await
-        .map_err(ServerError::DBError)?
+        .map_err(ServerError::DB)?
         .into_iter()
         .map(|row| (row, &config.pathfinder).into())
         .collect();
@@ -171,7 +171,7 @@ async fn more(
     let config = &app_state.config;
     let media = db::media_list(pool, (&state, &cursor), &state, PAGE_SIZE)
         .await
-        .map_err(ServerError::DBError)?
+        .map_err(ServerError::DB)?
         .into_iter()
         .map(|row| (row, &config.pathfinder).into())
         .collect();

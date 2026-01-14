@@ -34,7 +34,9 @@ The goals for this project are:
 Some features worth mentioning:
 * Endless scrolling 📜
 * Mark favorites ❤️
-* Filter by year, month, favorites 🎚️
+* Play slideshows 📽
+* Filter by year, month, favorites, subdirectories 🎚️
+* Run custom scripts from UI 💻
 * Instantly load new files 📨
 * Is a progressive web app 📲
 
@@ -51,6 +53,8 @@ me a coffee ☕
 
 * [Demo](#demo)
 * [Configuration](#configuration)
+    * [Configuration File](#configuration-file)
+    * [Custom Commands](#custom-commands)
 * [Running](#running)
     * [Docker](#docker)
     * [Binary](#binary)
@@ -75,8 +79,10 @@ mobile.
 
 ## Configuration
 
-Configuration is done either by passing in the appropriate flags or setting environmental
-variables. You can always run `spis help` to see how to configure the server:
+Configuration can be managed through CLI flags, environment variables, or a TOML configuration
+file. The precedence rule is: **CLI Flags/Env Vars > Config File > Defaults**.
+
+You can always run `spis help` to see how to configure the server:
 
 ```console
 $ spis help
@@ -91,6 +97,8 @@ Commands:
   help      Print this message or the help of the given subcommand(s)
 
 Options:
+  -c, --config <CONFIG>
+          Path to configuration file [env: SPIS_CONFIG_FILE=]
       --media-dir <MEDIA_DIR>
           Path to search for media files [env: SPIS_MEDIA_DIR=] [default: ]
       --data-dir <DATA_DIR>
@@ -130,6 +138,30 @@ Options:
 > Both `SPIS_API_MEDIA_PATH` and `SPIS_API_THUMBNAIL_PATH` refer to how the webserver (`nginx`)
 > is configured to serve media. For a details on how this works, look at the
 > [diagram](#diagram).
+
+### Configuration File
+
+See [config.toml](./config.toml) for example. You can also read the
+[config.schema.json](./config.schema.json) file to see the schema.
+
+### Custom Commands
+
+You can define custom commands in the configuration file to execute scripts or system commands
+on the current media file. These commands appear in the UI.
+
+```toml
+## Add custom commands to the UI ##
+[[custom_command]]
+name = "echo"
+cmd = ["echo", "{path}"]
+fa_icon = "fa-solid fa-bullhorn"
+hotkey = "e"
+```
+
+*   `name`: Unique identifier for the command (must be lowercase, no spaces).
+*   `cmd`: The command to execute. The `{path}` placeholder is replaced by the absolute path of the media file.
+*   `fa_icon`: FontAwesome icon class for the button.
+*   `hotkey`: (Optional) Single lowercase character to trigger the command via keyboard.
 
 ## Running
 
