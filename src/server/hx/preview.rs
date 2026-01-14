@@ -122,9 +122,23 @@ async fn command(
     res.render_response()
 }
 
+#[allow(clippy::collapsible_if)]
 async fn archive(State(app_state): State<AppState>, Path(uuid): Path<Uuid>) -> RenderResult {
     let pool = &app_state.pool;
     let config = &app_state.config;
+
+    if config.features.delete_on_archive {
+        if let Some(path) = db::media_get_path(pool, &uuid)
+            .await
+            .map_err(ServerError::DB)?
+        {
+            if let Err(e) = std::fs::remove_file(&path) {
+                tracing::error!("Failed to delete file {}: {}", path, e);
+            } else {
+                tracing::info!("Deleted file: {}", path);
+            }
+        }
+    }
 
     db::media_archive(pool, &uuid, true)
         .await

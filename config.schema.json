@@ -83,6 +83,11 @@
           "description": "Enable archive feature",
           "default": true
         },
+        "delete_on_archive": {
+          "type": "boolean",
+          "description": "Delete file when archived",
+          "default": false
+        },
         "follow_symlinks": {
           "type": "boolean",
           "description": "Follow symbolic links when scanning",

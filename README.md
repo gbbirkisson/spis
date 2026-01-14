@@ -119,6 +119,8 @@ Options:
           Disable feature favorite [env: SPIS_FEATURE_FAVORITE=]
       --feature-archive
           Disable feature archive [env: SPIS_FEATURE_ARCHIVE=]
+      --feature-delete-on-archive
+          Enable delete on archive [env: SPIS_FEATURE_DELETE_ON_ARCHIVE=]
       --feature-follow-symlinks
           Disable feature follow symlinks [env: SPIS_FEATURE_FOLLOW_SYMLINKS=]
       --feature-allow-no-exif
