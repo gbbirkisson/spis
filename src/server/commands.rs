@@ -12,6 +12,8 @@ pub struct CustomCommandTrigger {
 
 pub fn setup_custom_commands(commands: Vec<CustomCommand>) -> Sender<CustomCommandTrigger> {
     let (tx, mut rx) = channel::<CustomCommandTrigger>(100);
+    let spis_path = std::env::current_exe()
+        .map_or_else(|_| "spis".to_string(), |p| p.to_string_lossy().to_string());
 
     tokio::spawn(async move {
         while let Some(trigger) = rx.recv().await {
@@ -25,7 +27,9 @@ pub fn setup_custom_commands(commands: Vec<CustomCommand>) -> Sender<CustomComma
                     .cmd
                     .iter()
                     .map(|arg| {
-                        arg.replace("{path}", &trigger.media.path)
+                        arg.replace("{spis}", &spis_path)
+                            .replace("{name}", &trigger.media.name)
+                            .replace("{path}", &trigger.media.path)
                             .replace("{taken_at}", &trigger.media.taken_at.to_string())
                             .replace("{uuid}", &trigger.media.uuid.to_string())
                             .replace("{url}", &trigger.media.url)
