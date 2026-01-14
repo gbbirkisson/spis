@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/gbbirkisson/spis/compare/v0.11.3...v0.12.0) (2026-01-14)
+
+
+### Features
+
+* add delete_on_archive feature flag ([#556](https://github.com/gbbirkisson/spis/issues/556)) ([c54f83c](https://github.com/gbbirkisson/spis/commit/c54f83c7be6bec7d3a02af9b5999fd182cccb143))
+
 ## [0.11.3](https://github.com/gbbirkisson/spis/compare/v0.11.2...v0.11.3) (2026-01-14)
 
 
