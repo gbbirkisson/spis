@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.1](https://github.com/gbbirkisson/spis/compare/v0.11.0...v0.11.1) (2026-01-14)
+
+
+### Bug Fixes
+
+* downgrade build runners ([#546](https://github.com/gbbirkisson/spis/issues/546)) ([78bb34a](https://github.com/gbbirkisson/spis/commit/78bb34ab018d2a23a36c0f435c789ab5bf182356))
+
 ## [0.11.0](https://github.com/gbbirkisson/spis/compare/v0.10.0...v0.11.0) (2026-01-14)
 
 
