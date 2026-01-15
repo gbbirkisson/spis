@@ -74,8 +74,8 @@
             then remove .noscroll from body
           end">
     {% if media.video %}
-    <video class="img-preview" autoplay controls>
-      <source type="video/mp4" src="{{ media.url }}">
+    <video class="img-preview" autoplay controls playsinline>
+      <source src="{{ media.url }}">
     </video>
     {% else %}
     <img class="img-preview" src="{{ media.url }}">
