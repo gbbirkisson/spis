@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.12.1](https://github.com/gbbirkisson/spis/compare/v0.12.0...v0.12.1) (2026-01-15)
+
+
+### Bug Fixes
+
+* allow scrolling after archiving media ([#562](https://github.com/gbbirkisson/spis/issues/562)) ([17591e1](https://github.com/gbbirkisson/spis/commit/17591e1975f2962d2b78e4659894e54a96e7853f))
+* **deps:** update rust crate chrono to v0.4.43 ([#561](https://github.com/gbbirkisson/spis/issues/561)) ([528f149](https://github.com/gbbirkisson/spis/commit/528f149185b9c44085a477f761233563ecfbfca2))
+* remove hardcoded video type in preview ([#564](https://github.com/gbbirkisson/spis/issues/564)) ([9f5c2ab](https://github.com/gbbirkisson/spis/commit/9f5c2ab7050baa66da93143f1013095553edf9c2))
+
 ## [0.12.0](https://github.com/gbbirkisson/spis/compare/v0.11.3...v0.12.0) (2026-01-14)
 
 
