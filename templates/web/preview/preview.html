@@ -78,11 +78,7 @@
            {% if slideshow %}muted{% endif %}
            _="on click halt the event's bubbling
               on load
-                js(me) var ua = navigator.userAgent;
-                   var isIOS = ua.includes('iPhone') || ua.includes('iPad') || ua.includes('iPod');
-                   var isSafari = ua.includes('Safari') && !ua.includes('Chrome');
-                   if (!isIOS && !isSafari) { me.play().catch(function(){}); }
-                end
+                js(me) me.play().catch(function(){}); end
               end">
       <source src="{{ media.url }}">
     </video>
