@@ -74,7 +74,9 @@
             then remove .noscroll from body
           end">
     {% if media.video %}
-    <video class="img-preview" autoplay controls playsinline>
+    <video class="img-preview" controls playsinline
+           {% if slideshow %}autoplay muted{% endif %}
+           _="on click halt the event's bubbling">
       <source src="{{ media.url }}">
     </video>
     {% else %}
