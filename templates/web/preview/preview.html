@@ -74,7 +74,11 @@
             then remove .noscroll from body
           end">
     {% if media.video %}
-    <video class="img-preview" autoplay controls playsinline>
+    <video class="img-preview" playsinline
+           _="on click halt the event's bubbling then set @controls to 'controls'
+              on load
+                js(me) me.play().catch(function(){}); end
+              end">
       <source src="{{ media.url }}">
     </video>
     {% else %}
