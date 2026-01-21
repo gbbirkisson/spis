@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.12.2](https://github.com/gbbirkisson/spis/compare/v0.12.1...v0.12.2) (2026-01-21)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate thiserror to v2.0.18 ([#565](https://github.com/gbbirkisson/spis/issues/565)) ([89a86d9](https://github.com/gbbirkisson/spis/commit/89a86d9a40770daaffa435e7c5c2593c51fc0fc6))
+* videos do not play on iOS and macOS Safari ([#567](https://github.com/gbbirkisson/spis/issues/567)) ([cf6ebd4](https://github.com/gbbirkisson/spis/commit/cf6ebd402c0843fb1615edb1f96f23479fbc0da4))
+
 ## [0.12.1](https://github.com/gbbirkisson/spis/compare/v0.12.0...v0.12.1) (2026-01-15)
 
 
