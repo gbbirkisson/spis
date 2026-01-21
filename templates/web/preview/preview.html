@@ -74,9 +74,8 @@
             then remove .noscroll from body
           end">
     {% if media.video %}
-    <video class="img-preview" controls playsinline
-           {% if slideshow %}muted{% endif %}
-           _="on click halt the event's bubbling
+    <video class="img-preview" playsinline
+           _="on click halt the event's bubbling then set @controls to 'controls'
               on load
                 js(me) me.play().catch(function(){}); end
               end">
