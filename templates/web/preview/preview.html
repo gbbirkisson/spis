@@ -158,7 +158,11 @@
     {% endif %}
 
     <!-- Info button -->
-    <div class="link" _="on click remove .hidden from #info-dialog" role="button" aria-label="Show info">
+    <div class="link" role="button" aria-label="Show info" _="
+      on click remove .hidden from #info-dialog
+      then remove .hidden from #info-backdrop
+      then halt
+    ">
       <div class="media-action-button"><i class="fa-solid fa-circle-info icon-white"></i></div>
     </div>
 
@@ -209,6 +213,11 @@
     </div>
   </div>
 
+  <div id="info-backdrop" class="info-backdrop hidden" _="
+    on click add .hidden to #info-dialog
+    then add .hidden to me
+  "></div>
+
   <!-- Info Dialog -->
   <div id="info-dialog" class="info-dialog hidden">
     <div class="info-row">
@@ -235,9 +244,10 @@
       <span class="info-label">{thumbnail}</span>
       <div class="info-value">{{ media.thumbnail }}</div>
     </div>
-    <div class="info-row" style="display: flex; justify-content: flex-end; margin-top: 10px; margin-bottom: 0;">
+    <div class="info-row info-footer">
       <div class="link" role="button" aria-label="Close info" _="
         on click add .hidden to #info-dialog
+        then add .hidden to #info-backdrop
       ">
         <div class="media-action-button">
           <i class="fa-solid fa-xmark icon-white"></i>
