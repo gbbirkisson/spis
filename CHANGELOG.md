@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.13.0](https://github.com/gbbirkisson/spis/compare/v0.12.2...v0.13.0) (2026-01-22)
+
+
+### Features
+
+* use sse to update UI ([#570](https://github.com/gbbirkisson/spis/issues/570)) ([4e2a14d](https://github.com/gbbirkisson/spis/commit/4e2a14d079b180bdad548439d921129d95d6e258))
+
+
+### Bug Fixes
+
+* **deps:** update dependency rust to v1.93.0 ([#571](https://github.com/gbbirkisson/spis/issues/571)) ([74773b9](https://github.com/gbbirkisson/spis/commit/74773b91ac5254a01be4a9b59c9d61455cb2b91e))
+
 ## [0.12.2](https://github.com/gbbirkisson/spis/compare/v0.12.1...v0.12.2) (2026-01-21)
 
 
