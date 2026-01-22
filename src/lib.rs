@@ -12,6 +12,13 @@ pub struct CustomCommand {
     pub hotkey: Option<char>,
 }
 
+#[derive(Clone, Debug)]
+pub enum MediaEvent {
+    Added(uuid::Uuid),
+    Changed(uuid::Uuid),
+    Archived(uuid::Uuid),
+}
+
 pub struct PathFinder {
     media_dir: String,
     media_path: String,

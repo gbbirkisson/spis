@@ -1,4 +1,4 @@
-<main id="hx-main" class="main" hx-include="#hx-bar">
+<main id="hx-main" class="main" hx-include="#hx-bar" hx-ext="sse" sse-connect="/hx/sse?{{ state.as_query() }}">
   <div id="hx-media-preview">
   </div>
   <nav id="hx-bar" class="bar" aria-label="Gallery filters">

@@ -1,3 +1,4 @@
+use crate::MediaEvent;
 use crate::db;
 use crate::server::AppState;
 use crate::server::commands::CustomCommandTrigger;
@@ -68,6 +69,8 @@ async fn favorite(
     db::media_favorite(pool, &uuid, value)
         .await
         .map_err(ServerError::DB)?;
+
+    let _ = app_state.media_events.send(MediaEvent::Changed(uuid));
 
     let res = db::media_get(pool, &state, &state, &uuid)
         .await
@@ -143,6 +146,8 @@ async fn archive(State(app_state): State<AppState>, Path(uuid): Path<Uuid>) -> R
     db::media_archive(pool, &uuid, true)
         .await
         .map_err(ServerError::DB)?;
+
+    let _ = app_state.media_events.send(MediaEvent::Archived(uuid));
 
     HxRoot {
         archive: false,

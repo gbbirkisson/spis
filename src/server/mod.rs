@@ -4,9 +4,11 @@ use sqlx::{Pool, Sqlite};
 use std::net::TcpListener;
 use std::sync::Arc;
 use tokio::net::UnixListener;
-use tokio::sync::mpsc::Sender;
+use tokio::sync::broadcast;
+use tokio::sync::mpsc;
 use tower_http::trace::TraceLayer;
 
+use crate::MediaEvent;
 use crate::server::commands::CustomCommandTrigger;
 use crate::{CustomCommand, PathFinder};
 
@@ -39,16 +41,24 @@ pub struct Features {
 pub struct AppState {
     pub pool: Pool<Sqlite>,
     pub config: Arc<Config>,
-    pub cmd_runner: Sender<CustomCommandTrigger>,
+    pub cmd_runner: mpsc::Sender<CustomCommandTrigger>,
+
+    pub media_events: broadcast::Sender<MediaEvent>,
 }
 
-pub async fn run(listener: Listener, pool: Pool<Sqlite>, config: Config) -> Result<()> {
+pub async fn run(
+    listener: Listener,
+    pool: Pool<Sqlite>,
+    media_events: broadcast::Sender<MediaEvent>,
+    config: Config,
+) -> Result<()> {
     let cmd_runner = commands::setup_custom_commands(config.features.custom_commands.clone());
 
     let state = AppState {
         pool,
         config: Arc::new(config),
         cmd_runner,
+        media_events,
     };
 
     let app = Router::new()

@@ -87,10 +87,9 @@
   <div class="media-action">
     <!-- Archive button -->
     {% if features.archive_allow %}
-    <div class="link" id="del-{{ media.uuid }}" {% if archive %} _='on htmx:afterRequest remove #{"{{ media.uuid }}"}'
-      hx-delete="/hx/preview/{{ media.uuid }}" {% else %} hx-get="/hx/preview/{{ media.uuid }}?archive=true" {% endif %}
-      hx-trigger="click, keyup[key=='Delete'] from:body" hx-target="#hx-media-preview" hx-swap="outerHTML" role="button"
-      aria-label="Archive image">
+    <div class="link" id="del-{{ media.uuid }}" {% if archive %} hx-delete="/hx/preview/{{ media.uuid }}" {% else %}
+      hx-get="/hx/preview/{{ media.uuid }}?archive=true" {% endif %} hx-trigger="click, keyup[key=='Delete'] from:body"
+      hx-target="#hx-media-preview" hx-swap="outerHTML" role="button" aria-label="Archive image">
       <div class="media-action-button"><i
           class="fa-solid fa-trash {% if archive %}fa-shake icon-red{% else %}icon-white{% endif %}"></i></div>
     </div>
@@ -130,7 +129,7 @@
 
     <!-- Favorite button -->
     {% if features.favorite_allow %}
-    <div class="link" _="on htmx:afterRequest toggle between .hidden and .visible on #fav-{{ media.uuid }}"
+    <div class="link"
       hx-put="/hx/preview/{{ media.uuid }}/favorite/{{ !media.favorite }}{% if slideshow %}?slideshow=true{% endif %}"
       hx-trigger="click, keyup[key=='Enter'] from:body" hx-target="#hx-media-preview" hx-swap="outerHTML" role="button"
       aria-label="Toggle favorite">

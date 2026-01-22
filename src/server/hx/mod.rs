@@ -14,6 +14,7 @@ mod bar;
 mod gallery;
 mod preview;
 mod render;
+mod sse;
 
 #[derive(Clone)]
 pub struct Media {
@@ -47,13 +48,19 @@ impl From<(MediaRow, &PathFinder)> for Media {
     }
 }
 
-#[derive(Deserialize, Default, Debug, Clone)]
+#[derive(Deserialize, Serialize, Default, Debug, Clone)]
 pub(super) struct GalleryState {
     favorite: Option<bool>,
     collection: Option<String>,
     year: Option<usize>,
     month: Option<u8>,
     new_to_old: Option<bool>,
+}
+
+impl GalleryState {
+    pub fn as_query(&self) -> String {
+        serde_urlencoded::to_string(self).unwrap_or_default()
+    }
 }
 
 fn to_timestamp(s: &str) -> DateTime<Utc> {
@@ -146,7 +153,8 @@ async fn index() -> RenderResult {
 pub fn create_router() -> Router<AppState> {
     Router::new()
         .route("/", get(index))
-        .nest("/gallery", gallery::create_router())
         .nest("/bar", bar::create_router())
+        .nest("/gallery", gallery::create_router())
         .nest("/preview", preview::create_router())
+        .nest("/sse", sse::create_router())
 }
