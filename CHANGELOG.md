@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.14.0](https://github.com/gbbirkisson/spis/compare/v0.13.0...v0.14.0) (2026-01-22)
+
+
+### Features
+
+* add multiselect to gallery ([#574](https://github.com/gbbirkisson/spis/issues/574)) ([8461ac1](https://github.com/gbbirkisson/spis/commit/8461ac17dd593c8c7fce00b38556f116bb4b4ef2))
+
+
+### Bug Fixes
+
+* info dialog exit tweak ([#576](https://github.com/gbbirkisson/spis/issues/576)) ([ba8a92e](https://github.com/gbbirkisson/spis/commit/ba8a92ea00bbf728c88cd01da2dc12f5da972332))
+
 ## [0.13.0](https://github.com/gbbirkisson/spis/compare/v0.12.2...v0.13.0) (2026-01-22)
 
 
