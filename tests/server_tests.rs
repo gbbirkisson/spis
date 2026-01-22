@@ -127,28 +127,19 @@ async fn test_preview_endpoints() {
         .expect("Request failed");
     assert!(response.status().is_success());
 
-    // favorite (put)
+    // favorite (action)
     let response = client
-        .put(format!("{}/hx/preview/{}/favorite/true", addr, uuid))
+        .post(format!("{}/hx/action/favorite", addr))
+        .json(&vec![uuid])
         .send()
         .await
         .expect("Request failed");
     assert!(response.status().is_success());
 
-    // archive (request confirmation)
+    // archive (action)
     let response = client
-        .get(format!("{}/hx/preview/{}?archive=true", addr, uuid))
-        .send()
-        .await
-        .expect("Request failed");
-    assert!(response.status().is_success());
-    // Should show confirmation (red icon)
-    let text = response.text().await.unwrap();
-    assert!(text.contains("icon-red"));
-
-    // confirm archive (delete)
-    let response = client
-        .delete(format!("{}/hx/preview/{}", addr, uuid))
+        .post(format!("{}/hx/action/archive", addr))
+        .json(&vec![uuid])
         .send()
         .await
         .expect("Request failed");

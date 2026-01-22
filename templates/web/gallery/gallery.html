@@ -1,5 +1,103 @@
-<main id="hx-main" class="main" hx-include="#hx-bar" hx-ext="sse" sse-connect="/hx/sse?{{ state.as_query() }}">
+<main id="hx-main" class="main" hx-include="#hx-bar" hx-ext="sse" sse-connect="/hx/sse?{{ state.as_query() }}"
+  _="on enableMultiselect add .multiselect-active to me remove .hidden from #multiselect-overlay end">
   <div id="hx-media-preview">
+  </div>
+  <div id="multiselect-overlay" class="media-preview hidden" style="background: none; pointer-events: none;">
+    <div class="media-action">
+      <!-- Archive button -->
+      {% if features.archive_allow %}
+      <div class="link" role="button" aria-label="Archive selected" _="
+        on click or keyup[key=='Delete'] from body
+          if #multiselect-overlay matches .hidden halt end
+          if my.confirming
+            set ids to []
+            for el in <.media-item.selected/>
+              set tid to el@id
+              if tid append tid.replace('thumb-', '') to ids end
+            end
+            fetch /hx/action/archive {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: ids as JSON
+            }
+            trigger click on #multiselect-exit
+          else
+            set my.confirming to true
+            add .fa-shake .icon-red to <i/> in me
+            remove .icon-white from <i/> in me
+            trigger reset
+          end
+        on reset
+          wait 3s
+          set my.confirming to false
+          remove .fa-shake .icon-red from <i/> in me
+          add .icon-white to <i/> in me
+      ">
+        <div class="media-action-button"><i class="fa-solid fa-trash icon-white"></i></div>
+      </div>
+      {% endif %}
+
+      <!-- Custom Commands -->
+      {% for cmd in features.custom_commands %}
+      <div class="link" role="button" aria-label="{{ cmd.name }}" _="
+        on click
+          toggle .fa-bounce .icon-green .icon-white on <i/> in me
+          wait 500ms
+          set ids to []
+          for el in <.media-item.selected/>
+            set tid to el@id
+            if tid append tid.replace('thumb-', '') to ids end
+          end
+          fetch /hx/action/command/{{ cmd.name }} {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: ids as JSON
+          }
+          toggle .fa-bounce .icon-green .icon-white on <i/> in me
+          trigger click on #multiselect-exit
+        end
+      ">
+        <div class="media-action-button">
+          <i class="{{ cmd.fa_icon }} icon-white"></i>
+        </div>
+      </div>
+      {% endfor %}
+
+      <!-- Favorite button -->
+      {% if features.favorite_allow %}
+      <div class="link" role="button" aria-label="Toggle favorite" _="
+        on click
+          add .fa-bounce to <i/> in me
+          toggle .fa-solid .fa-regular .icon-pink .icon-white on <i/> in me
+          wait 500ms
+          set ids to []
+          for el in <.media-item.selected/>
+            set tid to el@id
+            if tid append tid.replace('thumb-', '') to ids end
+          end
+          fetch /hx/action/favorite {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: ids as JSON
+          }
+          remove .fa-bounce from <i/> in me
+          toggle .fa-solid .fa-regular .icon-pink .icon-white on <i/> in me
+          trigger click on #multiselect-exit
+        end
+      ">
+        <div class="media-action-button"><i class="fa-regular fa-heart icon-white"></i></div>
+      </div>
+      {% endif %}
+
+      <!-- Exit button -->
+      <div id="multiselect-exit" class="link" role="button" aria-label="Close multiselect" _="
+        on click remove .multiselect-active from #hx-main
+        then add .hidden to #multiselect-overlay
+        then remove .selected from .media-item
+      ">
+        <div class="media-action-button"><i class="fa-solid fa-xmark icon-white"></i></div>
+      </div>
+    </div>
   </div>
   <nav id="hx-bar" class="bar" aria-label="Gallery filters">
     {% include "web/bar/bar.html" %}
@@ -9,10 +107,12 @@
       {% include "web/gallery/list.html" %}
     </ul>
   </section>
-  <div class="scroll-to-top" _="on click window.scrollTo({top: 0, behavior: 'smooth'})
-          on scroll from window
-            if window.scrollY > 300 then add .visible else remove .visible end
-          end" aria-label="Scroll to top">
+  <div class="scroll-to-top" aria-label="Scroll to top" _="
+    on click window.scrollTo({top: 0, behavior: 'smooth'})
+    on scroll from window
+      if window.scrollY > 300 then add .visible else remove .visible end
+    end
+  ">
     <i class="fa-solid fa-arrow-up"></i>
   </div>
 </main>

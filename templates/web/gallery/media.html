@@ -1,8 +1,41 @@
 {% if !sse_media_before_skip %}
 <li sse-swap="{{ media.uuid }}-before" hx-swap="outerHTML" class="hidden"></li>
 {% endif %}
-<li id="thumb-{{ media.uuid }}" class="media-item link" hx-get="/hx/preview/{{ media.uuid }}" hx-trigger="click"
-  hx-target="#hx-media-preview" hx-swap="outerHTML">
+<li id="thumb-{{ media.uuid }}" class="media-item link" hx-get="/hx/preview/{{ media.uuid }}" hx-trigger="openpreview"
+  hx-target="#hx-media-preview" hx-swap="outerHTML" oncontextmenu="return false;" _="
+    on pointerdown(button)
+      if button != 0 halt end
+        set my.pressing to true
+        wait 400ms
+        if my.pressing
+          trigger enableMultiselect
+          set my.pressing to false
+          set my.longPressed to true
+        end
+      end
+      on pointerup set my.pressing to false end
+      on pointerleave set my.pressing to false end
+      on pointercancel set my.pressing to false end
+      on enableMultiselect
+      send enableMultiselect to #hx-main
+      add .selected to me
+    end
+
+    on click
+      if my.longPressed
+        set my.longPressed to false
+        halt
+      end
+      if #hx-main matches .multiselect-active
+        toggle .selected on me
+      else
+        trigger openpreview
+      end
+    end
+  ">
+
+  <!-- Selection Indicator -->
+  <div class="selection-indicator"><i class="fa-solid fa-circle-check icon-orange"></i></div>
 
   <!-- For sse updates -->
   <div sse-swap="{{ media.uuid }}" hx-target="#thumb-{{ media.uuid }}" hx-swap="outerHTML"></div>

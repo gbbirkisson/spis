@@ -37,6 +37,7 @@ Some features worth mentioning:
 * Play slideshows 📽
 * Filter by year, month, favorites, subdirectories 🎚️
 * Run custom scripts from UI 💻
+* Multi-select in gallery with long press 👆
 * Instantly load new files 📨
 * Is a progressive web app 📲
 

@@ -6,6 +6,6 @@
 {% endfor %}
 {% if cursor !="" %}
 <li id="hx-media-thumbnail-loader-target" class="media-thumbnail-loader-target" hx-get="/hx/gallery/more?{{ cursor }}"
-  hx-trigger="intersect once rootMargin:0px 0px 2000px 0px" hx-swap="outerHTML" />
+  hx-trigger="intersect once" hx-swap="outerHTML" />
 {% endif %}
 {% endif %}

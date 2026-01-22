@@ -46,7 +46,8 @@ async fn test_delete_on_archive() {
 
     // 4. Archive (this triggers deletion)
     let response = client
-        .delete(format!("{}/hx/preview/{}", addr, uuid))
+        .post(format!("{}/hx/action/archive", addr))
+        .json(&vec![uuid])
         .send()
         .await
         .expect("Request failed");

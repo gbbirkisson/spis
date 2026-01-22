@@ -8,6 +8,8 @@ DATABASE:=$(shell echo ${DATABASE_URL} | awk -F':' '{print $$2}')
 MEDIA_DIR:=data/media
 THUMBNAIL_DIR:=data/thumbnails
 
+DEV_COMPILE_FLAGS:=-F dev
+
 ${DATABASE}:
 	mkdir -p $(shell dirname ${DATABASE})
 	sqlx database create
@@ -45,16 +47,16 @@ toolchain:
 .PHONY: dev-clippy
 dev-clippy: ${DATABASE}
 	watchexec --stop-timeout=0 -r -e rs,toml,html,css -- \
-		cargo clippy -F dev -- --no-deps -D warnings
+		cargo clippy ${DEV_COMPILE_FLAGS} -- --no-deps -D warnings
 
 .PHONY: dev-spis
 dev-spis: ${DATABASE} ${MEDIA_DIR} ${THUMBNAIL_DIR}
 	watchexec --stop-timeout=0 -r -e rs,toml,html,css -- \
-		cargo run --color always -F dev
+		cargo run --color always ${DEV_COMPILE_FLAGS}
 
 .PHONY: dev-nginx
 dev-nginx: ${DATABASE} ${MEDIA_DIR} ${THUMBNAIL_DIR}
-	bash -c 'RUST_LOG=error cargo run -F dev -q -- template nginx --full > /tmp/nginx.conf && nginx -g "daemon off;" -c /tmp/nginx.conf'
+	bash -c 'RUST_LOG=error cargo run ${DEV_COMPILE_FLAGS} -q -- template nginx --full > /tmp/nginx.conf && nginx -g "daemon off;" -c /tmp/nginx.conf'
 
 .PHONY: dev
 dev:
@@ -70,7 +72,7 @@ lint-fmt:
 
 .PHONY: lint-clippy
 lint-clippy: ${DATABASE}
-	cargo clippy -F dev -- --no-deps -D warnings
+	cargo clippy ${DEV_COMPILE_FLAGS} -- --no-deps -D warnings
 
 .PHONY: lint-taplo
 lint-taplo:
