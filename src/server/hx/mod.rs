@@ -10,6 +10,7 @@ use crate::{PathFinder, db::Filter, db::MediaRow, db::Order};
 
 use std::path::Path;
 
+mod actions;
 mod bar;
 mod gallery;
 mod preview;
@@ -153,6 +154,7 @@ async fn index() -> RenderResult {
 pub fn create_router() -> Router<AppState> {
     Router::new()
         .route("/", get(index))
+        .nest("/action", actions::create_router())
         .nest("/bar", bar::create_router())
         .nest("/gallery", gallery::create_router())
         .nest("/preview", preview::create_router())

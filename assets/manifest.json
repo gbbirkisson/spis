@@ -1,42 +1,50 @@
 {
-    "name": "Simple Private Image Server",
-    "short_name": "SPIS",
-    "start_url": "/",
-    "display": "fullscreen",
-    "background_color": "#2b2b2b",
-    "theme_color": "#db9b38",
-    "icons": [
-      {
-        "src": "/assets/favicon.png",
-        "type": "image/png", "sizes": "72x72"
-      },
-      {
-        "src": "/assets/favicon.png",
-        "type": "image/png", "sizes": "96x96"
-      },
-      {
-        "src": "/assets/favicon.png",
-        "type": "image/png","sizes": "128x128"
-      },
-      {
-        "src": "/assets/favicon.png",
-        "type": "image/png", "sizes": "144x144"
-      },
-      {
-        "src": "/assets/favicon.png",
-        "type": "image/png", "sizes": "152x152"
-      },
-      {
-        "src": "/assets/favicon.png",
-        "type": "image/png", "sizes": "192x192"
-      },
-      {
-        "src": "/assets/favicon.png",
-        "type": "image/png", "sizes": "384x384"
-      },
-      {
-        "src": "/assets/favicon.png",
-        "type": "image/png","sizes": "512x512"
-      }
-    ]
-  }
+  "name": "Simple Private Image Server",
+  "short_name": "SPIS",
+  "start_url": "/",
+  "display": "fullscreen",
+  "background_color": "#2b2b2b",
+  "theme_color": "#2b2b2b",
+  "icons": [
+    {
+      "src": "/assets/favicon.png",
+      "type": "image/png",
+      "sizes": "72x72"
+    },
+    {
+      "src": "/assets/favicon.png",
+      "type": "image/png",
+      "sizes": "96x96"
+    },
+    {
+      "src": "/assets/favicon.png",
+      "type": "image/png",
+      "sizes": "128x128"
+    },
+    {
+      "src": "/assets/favicon.png",
+      "type": "image/png",
+      "sizes": "144x144"
+    },
+    {
+      "src": "/assets/favicon.png",
+      "type": "image/png",
+      "sizes": "152x152"
+    },
+    {
+      "src": "/assets/favicon.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/assets/favicon.png",
+      "type": "image/png",
+      "sizes": "384x384"
+    },
+    {
+      "src": "/assets/favicon.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
