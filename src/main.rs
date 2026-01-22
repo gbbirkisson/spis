@@ -12,6 +12,7 @@ use spis::{
     server::{self, Config, Listener},
 };
 use std::{net::TcpListener, path::PathBuf};
+use tokio::sync::broadcast;
 use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 
 fn file_exists(s: &str) -> Result<PathBuf, String> {
@@ -474,6 +475,9 @@ async fn run(config: Spis) -> Result<()> {
     .await
     .wrap_err("Failed to initialize DB")?;
 
+    tracing::info!("Setting up media broadcaster");
+    let (media_events, _) = broadcast::channel(100);
+
     tracing::info!("Setting up media processing");
     let (file_sender, media_receiver) = pipeline::setup_media_processing(
         config.thumbnail_dir(),
@@ -483,8 +487,9 @@ async fn run(config: Spis) -> Result<()> {
     .wrap_err("Failed to setup media processing")?;
 
     tracing::info!("Setting up file watcher");
-    let mut file_watcher = pipeline::setup_filewatcher(file_sender.clone())
-        .wrap_err("Failed to setup file watcher")?;
+    let mut file_watcher =
+        pipeline::setup_filewatcher(pool.clone(), file_sender.clone(), media_events.clone())
+            .wrap_err("Failed to setup file watcher")?;
     file_watcher
         .watch(&config.media_dir, notify::RecursiveMode::Recursive)
         .wrap_err("Failed to start file watcher")?;
@@ -498,7 +503,8 @@ async fn run(config: Spis) -> Result<()> {
     )
     .wrap_err("Failed to setup file walker")?;
 
-    pipeline::setup_db_store(pool.clone(), media_receiver).wrap_err("Failed to setup db store")?;
+    pipeline::setup_db_store(pool.clone(), media_events.clone(), media_receiver)
+        .wrap_err("Failed to setup db store")?;
 
     if config.processing_run_on_start {
         job_sender
@@ -546,7 +552,7 @@ async fn run(config: Spis) -> Result<()> {
         },
         pathfinder,
     };
-    server::run(listener, pool, config).await?;
+    server::run(listener, pool, media_events, config).await?;
 
     Ok(())
 }

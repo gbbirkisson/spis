@@ -1,0 +1,24 @@
+{% if !sse_media_before_skip %}
+<li sse-swap="{{ media.uuid }}-before" hx-swap="outerHTML" class="hidden"></li>
+{% endif %}
+<li id="thumb-{{ media.uuid }}" class="media-item link" hx-get="/hx/preview/{{ media.uuid }}" hx-trigger="click"
+  hx-target="#hx-media-preview" hx-swap="outerHTML">
+
+  <!-- For sse updates -->
+  <div sse-swap="{{ media.uuid }}" hx-target="#thumb-{{ media.uuid }}" hx-swap="outerHTML"></div>
+
+  <img src="{{ media.thumbnail }}" class="media-thumbnail" loading="lazy" aria-label="View media">
+
+  {% if features.favorite_allow %}
+  <div id="fav-{{ media.uuid }}" class="media-thumbnail-fav {% if media.favorite %}visible{% else %}hidden{% endif %}">
+    <i class="fa-solid fa-heart icon-pink"></i>
+  </div>
+  {% endif %}
+
+  {% if media.video %}
+  <div class="media-thumbnail-vid"><i class="fa-solid fa-play icon-white"></i></div>
+  {% endif %}
+</li>
+{% if let Some(sse_media_after) = sse_media_after %}
+<li sse-swap="{{ sse_media_after }}-before" hx-swap="outerHTML" class="hidden"></li>
+{% endif %}

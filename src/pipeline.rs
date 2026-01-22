@@ -1,3 +1,4 @@
+use crate::MediaEvent;
 use crate::db;
 use crate::media::MediaProcessor;
 use crate::media::{self, ProcessedMedia};
@@ -7,15 +8,16 @@ use chrono::Local;
 use chrono::{DateTime, Duration, Utc};
 use color_eyre::Result;
 use color_eyre::eyre::Context;
-use notify::event::ModifyKind;
+use notify::event::RenameMode;
 use notify::{
     Config, Error, Event, RecommendedWatcher, Watcher,
-    event::{AccessKind, CreateKind, EventKind},
+    event::{AccessKind, CreateKind, EventKind, ModifyKind, RemoveKind},
 };
 use rayon::prelude::*;
 use sqlx::{Pool, Sqlite};
 use std::collections::HashMap;
 use std::{collections::HashSet, path::PathBuf};
+use tokio::sync::broadcast;
 use tokio::sync::mpsc::{Receiver, Sender, channel};
 use tokio::time::sleep;
 use uuid::Uuid;
@@ -29,7 +31,12 @@ pub type Nothing = ();
 pub type JobTrigger = ();
 pub type File = (Option<Uuid>, PathBuf);
 
-pub fn setup_filewatcher(file_sender: Sender<File>) -> Result<RecommendedWatcher> {
+#[allow(clippy::too_many_lines)]
+pub fn setup_filewatcher(
+    pool: Pool<Sqlite>,
+    file_sender: Sender<File>,
+    media_events: broadcast::Sender<MediaEvent>,
+) -> Result<RecommendedWatcher> {
     // Setup debouncer channel
     let (debouncer_sender, mut debouncer_receiver): (
         Sender<Option<PathBuf>>,
@@ -81,29 +88,66 @@ pub fn setup_filewatcher(file_sender: Sender<File>) -> Result<RecommendedWatcher
         }
     });
 
+    // Remove logic
+    let (remove_send, mut remove_receiver) = channel(1);
+    tokio::spawn(async move {
+        while let Some(path) = remove_receiver.recv().await {
+            let path_string: String = W(&path).into();
+            match db::media_get_uuid_by_path(&pool, &path_string).await {
+                Ok(Some(uuid)) => {
+                    tracing::info!("Marking removed file as archived: {}", path_string);
+                    if let Err(e) = db::media_archive(&pool, &uuid, true).await {
+                        tracing::error!("Failed to archive removed media: {}", e);
+                    }
+                    if let Err(e) = media_events.send(MediaEvent::Archived(uuid)) {
+                        tracing::error!("Failed to send archived event: {}", e);
+                    }
+                }
+                Ok(None) => {
+                    tracing::warn!("Removed file not found in DB: {}", path_string);
+                }
+                Err(e) => {
+                    tracing::error!("Failed to get UUID for path {}: {}", path_string, e);
+                }
+            }
+        }
+    });
+
     // Setup file watcher
     let file_watcher = RecommendedWatcher::new(
         move |event: Result<Event, Error>| {
             if let Ok(event) = event {
                 tracing::trace!("Got file event: {:?}", event);
-                let trigger_processing = match event.kind {
+                match &event.kind {
                     EventKind::Create(CreateKind::File)
                     | EventKind::Access(AccessKind::Close(_))
-                    | EventKind::Modify(ModifyKind::Name(_)) => true,
-                    // EventKind::Remove(RemoveKind::File) => {
-                    //     // TODO: Handle file deletions?
-                    // }
-                    _ => false,
-                };
-                if trigger_processing {
-                    for path in event.paths {
-                        if let Err(error) = debouncer_sender
-                            .blocking_send(Some(path))
-                            .wrap_err("blocking_send failed")
-                        {
-                            tracing::error!("Failed to send file to debounce channel: {:?}", error);
+                    | EventKind::Modify(ModifyKind::Name(RenameMode::To)) => {
+                        for path in event.paths {
+                            if let Err(error) = debouncer_sender
+                                .blocking_send(Some(path))
+                                .wrap_err("blocking_send failed")
+                            {
+                                tracing::error!(
+                                    "Failed to send file to debounce channel: {:?}",
+                                    error
+                                );
+                            }
                         }
                     }
+                    EventKind::Remove(RemoveKind::File) => {
+                        for path in event.paths {
+                            if let Err(error) = remove_send
+                                .blocking_send(path)
+                                .wrap_err("blocking_send failed")
+                            {
+                                tracing::error!(
+                                    "Failed to send file to debounce channel: {:?}",
+                                    error
+                                );
+                            }
+                        }
+                    }
+                    _ => {}
                 }
             }
         },
@@ -313,7 +357,11 @@ pub fn setup_media_processing(
     Ok((file_sender, media_receiver))
 }
 
-pub fn setup_db_store(pool: Pool<Sqlite>, media_receiver: Receiver<ProcessedMedia>) -> Result<()> {
+pub fn setup_db_store(
+    pool: Pool<Sqlite>,
+    media_events: broadcast::Sender<MediaEvent>,
+    media_receiver: Receiver<ProcessedMedia>,
+) -> Result<()> {
     tracing::debug!("Setup db store");
 
     tokio::spawn(async move {
@@ -321,8 +369,18 @@ pub fn setup_db_store(pool: Pool<Sqlite>, media_receiver: Receiver<ProcessedMedi
 
         let mut media_receiver = media_receiver;
         while let Some(media) = media_receiver.recv().await {
+            let new = media.data.is_some();
+            tracing::debug!(
+                "Update media {} (new: {}): {}",
+                &media.uuid,
+                new,
+                &media.path
+            );
+            let uuid = media.uuid;
             if let Err(error) = db::media_insert(&pool, media).await {
                 tracing::error!("Failed inserting media to db: {:?}", error);
+            } else if new {
+                let _ = media_events.send(MediaEvent::Added(uuid));
             }
         }
         tracing::warn!("media_channel was closed");

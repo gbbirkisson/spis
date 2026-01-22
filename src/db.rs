@@ -335,6 +335,18 @@ pub async fn media_get_path(pool: &SqlitePool, uuid: &uuid::Uuid) -> Result<Opti
     Ok(res)
 }
 
+pub async fn media_get_uuid_by_path(pool: &SqlitePool, path: &str) -> Result<Option<uuid::Uuid>> {
+    let res = sqlx::query_scalar::<_, uuid::Uuid>(
+        r"
+        SELECT id FROM media WHERE path = ?
+        ",
+    )
+    .bind(path)
+    .fetch_optional(pool)
+    .await?;
+    Ok(res)
+}
+
 pub async fn collections_search(
     pool: &SqlitePool,
     media_dir: &str,
