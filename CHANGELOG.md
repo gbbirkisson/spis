@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.14.1](https://github.com/gbbirkisson/spis/compare/v0.14.0...v0.14.1) (2026-01-29)
+
+
+### Bug Fixes
+
+* **deps:** update rust crate askama to v0.15.4 ([#579](https://github.com/gbbirkisson/spis/issues/579)) ([c1b1afc](https://github.com/gbbirkisson/spis/commit/c1b1afc704307b8e7a669750c10457143f566b93))
+* **deps:** update rust crate clap to v4.5.55 ([#580](https://github.com/gbbirkisson/spis/issues/580)) ([e4a739f](https://github.com/gbbirkisson/spis/commit/e4a739f18dd929bc99dd5e7af4adad95412eca3a))
+* **deps:** update rust crate clap to v4.5.56 ([#581](https://github.com/gbbirkisson/spis/issues/581)) ([e564df1](https://github.com/gbbirkisson/spis/commit/e564df1793967c32591fabfdc71d84d09ba346c9))
+* **deps:** update rust crate uuid to v1.20.0 ([#577](https://github.com/gbbirkisson/spis/issues/577)) ([23fe3ec](https://github.com/gbbirkisson/spis/commit/23fe3ec1f0072d899470f6ba1c865d70356bff7b))
+
 ## [0.14.0](https://github.com/gbbirkisson/spis/compare/v0.13.0...v0.14.0) (2026-01-22)
 
 
