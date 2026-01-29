@@ -16,6 +16,8 @@ const PAGE_SIZE: usize = 400;
 const YEARS: usize = 14;
 
 mod filters {
+    #![allow(clippy::inline_always, clippy::unused_self)]
+
     use core::fmt;
 
     use super::super::{Cursor, Media, gallery::PAGE_SIZE};
