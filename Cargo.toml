@@ -68,7 +68,7 @@ md-5 = "0.10"
 
 # Bake GUI into bin
 include_dir = { version = "0.7.3", features = ["glob"] }
-toml = "0.9.11"
+toml = "1.0.0"
 
 [dev-dependencies]
 reqwest = { version = "0.13", features = ["json"] }
