@@ -63,7 +63,7 @@ kamadak-exif = "0.6"
 
 # Video processing
 which = "8.0"
-subprocess = "0.2"
+subprocess = "1.0"
 md-5 = "0.10"
 
 # Bake GUI into bin
