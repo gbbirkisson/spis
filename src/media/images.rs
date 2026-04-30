@@ -6,6 +6,7 @@ use color_eyre::{
 use exif::{Exif, In, Tag, Value};
 use image::DynamicImage;
 use std::{fs, path::Path};
+use subprocess::{Exec, Redirection};
 
 pub struct ImageProcessor {
     exif: Option<Exif>,
@@ -19,7 +20,17 @@ impl ImageProcessor {
         let exif_reader = exif::Reader::new();
 
         let exif = exif_reader.read_from_container(&mut exif_buf_reader).ok();
-        let image = image::open(path).wrap_err("Failed to open image")?;
+
+        let is_heif = path
+            .extension()
+            .and_then(|e| e.to_str())
+            .is_some_and(|ext| matches!(ext, "heic" | "heif"));
+
+        let image = if is_heif {
+            open_heif_image(path).wrap_err("Failed to open HEIF image via heif-convert")?
+        } else {
+            image::open(path).wrap_err("Failed to open image")?
+        };
 
         Ok(Self { exif, image })
     }
@@ -112,4 +123,25 @@ pub fn crop(mut image: DynamicImage) -> DynamicImage {
             image_height,
         )
     }
+}
+
+fn open_heif_image(path: &Path) -> Result<DynamicImage> {
+    let tmp = std::env::temp_dir().join(format!("spis-heif-{}.jpg", std::process::id()));
+
+    let result = Exec::cmd("heif-convert")
+        .arg("--quiet")
+        .arg(path.as_os_str())
+        .arg(&tmp)
+        .stderr(Redirection::Pipe)
+        .capture()
+        .wrap_err("Failed to execute heif-convert")?;
+
+    if !result.success() {
+        let _ = fs::remove_file(&tmp);
+        return Err(eyre!("heif-convert failed: {}", result.stderr_str().trim()));
+    }
+
+    let image = image::open(&tmp).wrap_err("Failed to open converted HEIF image");
+    let _ = fs::remove_file(&tmp);
+    image
 }
