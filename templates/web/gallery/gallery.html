@@ -18,7 +18,7 @@
             fetch /hx/action/archive {
               method: 'POST',
               headers: {'Content-Type': 'application/json'},
-              body: ids as JSON
+              body: ids as JSONString
             }
             trigger click on #multiselect-exit
           else
@@ -51,7 +51,7 @@
           fetch /hx/action/command/{{ cmd.name }} {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: ids as JSON
+            body: ids as JSONString
           }
           toggle .fa-bounce .icon-green .icon-white on <i/> in me
           trigger click on #multiselect-exit
@@ -78,7 +78,7 @@
           fetch /hx/action/favorite {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: ids as JSON
+            body: ids as JSONString
           }
           remove .fa-bounce from <i/> in me
           toggle .fa-solid .fa-regular .icon-pink .icon-white on <i/> in me

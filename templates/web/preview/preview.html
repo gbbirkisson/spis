@@ -96,7 +96,7 @@
           fetch /hx/action/archive {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: ['{{ media.uuid }}'] as JSON
+            body: ['{{ media.uuid }}'] as JSONString
           }
           if #next-btn trigger click on #next-btn
           else trigger click on #exit-btn end
@@ -125,7 +125,7 @@
       fetch /hx/action/command/{{ cmd.name }} {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: ['{{ media.uuid }}'] as JSON
+        body: ['{{ media.uuid }}'] as JSONString
       }
       toggle .fa-bounce .icon-green .icon-white on <i/> in me
     ">
@@ -145,7 +145,7 @@
       fetch /hx/action/favorite {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: ['{{ media.uuid }}'] as JSON
+        body: ['{{ media.uuid }}'] as JSONString
       }
       remove .fa-bounce from <i/> in me
     ">
