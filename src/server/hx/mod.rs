@@ -86,7 +86,7 @@ impl From<&GalleryState> for Filter {
                     if month == 12 {
                         next_year
                     } else {
-                        format!("{}-{:02}-01T00:00:00-00:00", year, month + 1,)
+                        format!("{}-{:02}-01T00:00:00-00:00", year, month + 1)
                     }
                 }
             });
