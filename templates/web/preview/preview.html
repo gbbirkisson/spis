@@ -17,8 +17,9 @@
           set #progress-{{ media.uuid }}.style.width to ((target.currentTime / target.duration) * 100) + '%'
       end
       on ended from .img-preview
-        if my.isConnected trigger
-          click on #next-btn
+        if my.isConnected
+          if #next-btn trigger click on #next-btn
+          else trigger click on #slideshow-btn end
         end
       end
       {% else %}
@@ -26,8 +27,9 @@
         set #progress-{{ media.uuid }}.style.transition to 'width {{ features.slideshow_duration }}s linear'
         then set #progress-{{ media.uuid }}.style.width to '100%'
         wait {{ features.slideshow_duration }}s then
-        if my.isConnected trigger
-          click on #next-btn
+        if my.isConnected
+          if #next-btn trigger click on #next-btn
+          else trigger click on #slideshow-btn end
         end
       end
       {% endif %}
@@ -168,7 +170,7 @@
 
     <!-- Slideshow button -->
     {% if slideshow %}
-    <div class="link" hx-get="/hx/preview/{{ media.uuid }}" hx-trigger="click, keyup[key=='s'] from:body"
+    <div id="slideshow-btn" class="link" hx-get="/hx/preview/{{ media.uuid }}" hx-trigger="click, keyup[key=='s'] from:body"
       hx-target="#hx-media-preview" hx-swap="outerHTML" role="button" aria-label="Stop Slideshow">
       <div class="media-action-button"><i class="fa-solid fa-stop fa-beat-fade icon-blue"></i></div>
     </div>
