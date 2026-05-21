@@ -40,7 +40,7 @@ toolchain:
 	ln -sf AGENTS.md CLAUDE.md
 	ln -sf AGENTS.md GEMINI.md
 	rustup show
-	cargo install sqlx-cli@0.8.6
+	cargo install sqlx-cli@0.9.0
 	cargo install cargo-tarpaulin@0.35.0
 	cargo install --locked watchexec-cli@2.3.2
 
