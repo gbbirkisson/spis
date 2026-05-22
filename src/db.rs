@@ -43,8 +43,10 @@ pub async fn media_insert(pool: &SqlitePool, processed_media: ProcessedMedia) ->
         Some(data) => {
             sqlx::query!(
                 r#"
-                INSERT OR REPLACE INTO media ( id, path, taken_at, type, walked )
-                VALUES ( ?1, ?2, ?3, ?4, 1 )
+                INSERT OR REPLACE INTO
+                  media (id, path, taken_at, type, walked)
+                VALUES
+                  (?1, ?2, ?3, ?4, 1)
                 "#,
                 processed_media.uuid,
                 processed_media.path,
@@ -55,7 +57,12 @@ pub async fn media_insert(pool: &SqlitePool, processed_media: ProcessedMedia) ->
         None => {
             sqlx::query!(
                 r#"
-                UPDATE media SET walked = 1, path = ?2 WHERE ID = ?1
+                UPDATE media
+                SET
+                  walked = 1,
+                  path = ?2
+                WHERE
+                  ID = ?1
                 "#,
                 processed_media.uuid,
                 processed_media.path,
@@ -77,7 +84,11 @@ pub async fn media_hashmap(pool: &SqlitePool) -> Result<HashMap<String, uuid::Uu
     tracing::debug!("Collect all DB entries UUIDs");
     let res = sqlx::query_as::<Sqlite, MediaHashRow>(
         r"
-        SELECT id, path FROM media
+        SELECT
+          id,
+          path
+        FROM
+          media
         ",
     )
     .fetch_all(pool)
@@ -88,7 +99,9 @@ pub async fn media_hashmap(pool: &SqlitePool) -> Result<HashMap<String, uuid::Uu
 pub async fn media_mark_unwalked(pool: &SqlitePool) -> Result<()> {
     sqlx::query!(
         r#"
-        UPDATE media SET walked = 0
+        UPDATE media
+        SET
+          walked = 0
         "#
     )
     .execute(pool)
@@ -99,8 +112,17 @@ pub async fn media_mark_unwalked(pool: &SqlitePool) -> Result<()> {
 pub async fn media_mark_missing(pool: &SqlitePool) -> Result<u64> {
     let res = sqlx::query!(
         r#"
-        UPDATE media SET missing = 1 WHERE walked = 0;
-        UPDATE media SET missing = 0 WHERE walked = 1;
+        UPDATE media
+        SET
+          missing = 1
+        WHERE
+          walked = 0;
+
+        UPDATE media
+        SET
+          missing = 0
+        WHERE
+          walked = 1;
         "#
     )
     .execute(pool)
@@ -121,12 +143,13 @@ pub async fn media_count(pool: &SqlitePool) -> Result<MediaCount> {
     let res = sqlx::query_as::<Sqlite, MediaCount>(
         r"
         SELECT
-        COUNT(*) as count,
-        SUM(walked) as walked,
-        SUM(favorite) as favorite,
-        SUM(archived) as archived,
-        SUM(missing) as missing
-        FROM media
+          COUNT(*) as count,
+          SUM(walked) as walked,
+          SUM(favorite) as favorite,
+          SUM(archived) as archived,
+          SUM(missing) as missing
+        FROM
+          media
         ",
     )
     .fetch_one(pool)
@@ -137,7 +160,11 @@ pub async fn media_count(pool: &SqlitePool) -> Result<MediaCount> {
 pub async fn media_archive(pool: &SqlitePool, uuid: &uuid::Uuid, archive: bool) -> Result<bool> {
     let res = sqlx::query!(
         r#"
-        UPDATE media SET archived = ?2 WHERE id = ?1
+        UPDATE media
+        SET
+          archived = ?2
+        WHERE
+          id = ?1
         "#,
         uuid,
         archive,
@@ -150,7 +177,11 @@ pub async fn media_archive(pool: &SqlitePool, uuid: &uuid::Uuid, archive: bool) 
 pub async fn media_favorite(pool: &SqlitePool, uuid: &uuid::Uuid, archive: bool) -> Result<bool> {
     let res = sqlx::query!(
         r#"
-        UPDATE media SET favorite = ?2 WHERE id = ?1
+        UPDATE media
+        SET
+          favorite = ?2
+        WHERE
+          id = ?1
         "#,
         uuid,
         archive,
@@ -220,8 +251,8 @@ impl Display for Filter {
 impl Filter {
     fn bind<'a>(
         &'a self,
-        query: QueryAs<'a, Sqlite, MediaRow, SqliteArguments<'a>>,
-    ) -> QueryAs<'a, Sqlite, MediaRow, SqliteArguments<'a>> {
+        query: QueryAs<'a, Sqlite, MediaRow, SqliteArguments>,
+    ) -> QueryAs<'a, Sqlite, MediaRow, SqliteArguments> {
         let mut query = query.bind(self.archived);
 
         if let Some(favorite) = self.favorite {
@@ -256,13 +287,14 @@ pub async fn media_list(
 
     let query = format!(
         r"
+-- sql
 SELECT id, path, taken_at, type as media_type, archived, favorite FROM media
 {filter}
 {order}
 LIMIT ?
 "
     );
-    let mut query = sqlx::query_as::<Sqlite, MediaRow>(&query);
+    let mut query = sqlx::query_as::<Sqlite, MediaRow>(sqlx::AssertSqlSafe(query));
     query = filter.bind(query);
     query = query.bind(i32::try_from(limit).expect("Failed to convert limit"));
     query.fetch_all(pool).await.wrap_err("Failed to fetch rows")
@@ -280,6 +312,7 @@ pub async fn media_get(
 
     let query = format!(
         r"
+-- sql
 WITH NR_MED AS (
     SELECT *, ROW_NUMBER() OVER ({order}) AS RN FROM media
     {filter}
@@ -293,7 +326,7 @@ WHERE RN IN (
 )
 "
     );
-    let mut query = sqlx::query_as::<Sqlite, MediaRow>(&query);
+    let mut query = sqlx::query_as::<Sqlite, MediaRow>(sqlx::AssertSqlSafe(query));
     query = filter.bind(query);
     query = query.bind(uuid);
     let res = query
@@ -326,7 +359,12 @@ WHERE RN IN (
 pub async fn media_get_path(pool: &SqlitePool, uuid: &uuid::Uuid) -> Result<Option<String>> {
     let res = sqlx::query_scalar::<_, String>(
         r"
-        SELECT path FROM media WHERE id = ?
+        SELECT
+          path
+        FROM
+          media
+        WHERE
+          id = ?
         ",
     )
     .bind(uuid)
@@ -338,7 +376,12 @@ pub async fn media_get_path(pool: &SqlitePool, uuid: &uuid::Uuid) -> Result<Opti
 pub async fn media_get_uuid_by_path(pool: &SqlitePool, path: &str) -> Result<Option<uuid::Uuid>> {
     let res = sqlx::query_scalar::<_, uuid::Uuid>(
         r"
-        SELECT id FROM media WHERE path = ?
+        SELECT
+          id
+        FROM
+          media
+        WHERE
+          path = ?
         ",
     )
     .bind(path)
@@ -364,20 +407,31 @@ pub async fn collections_search(
     let mut res = sqlx::query_scalar::<_, String>(
         r"
 WITH RECURSIVE
-  folders(folder, rest) AS (
-    SELECT '', SUBSTR(path, ?1)
-    FROM media
+  folders (folder, rest) AS (
+    SELECT
+      '',
+      SUBSTR(path, ?1)
+    FROM
+      media
     UNION ALL
-    SELECT folder || SUBSTR(rest, 1, INSTR(rest, '/')),
-           SUBSTR(rest, INSTR(rest, '/') + 1)
-    FROM folders
-    WHERE INSTR(rest, '/') > 0
+    SELECT
+      folder || SUBSTR(rest, 1, INSTR(rest, '/')),
+      SUBSTR(rest, INSTR(rest, '/') + 1)
+    FROM
+      folders
+    WHERE
+      INSTR(rest, '/') > 0
   )
-SELECT DISTINCT folder
-FROM folders
-WHERE folder != ''
+SELECT DISTINCT
+  folder
+FROM
+  folders
+WHERE
+  folder != ''
   AND LOWER(folder) LIKE LOWER(?2)
-ORDER BY LENGTH(folder), folder COLLATE NOCASE
+ORDER BY
+  LENGTH(folder),
+  folder COLLATE NOCASE
         ",
     )
     .bind(offset)
