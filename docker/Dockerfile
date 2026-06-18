@@ -1,4 +1,4 @@
-FROM nginx:1.31.1 AS builder
+FROM nginx:1.31.2 AS builder
 
 ENV \
     RELEASE_DIR=/tmp/release \
@@ -9,7 +9,7 @@ COPY release ${RELEASE_DIR}
 COPY docker/pick-release.sh /pick-release.sh
 RUN /pick-release.sh
 
-FROM nginx:1.31.1
+FROM nginx:1.31.2
 
 RUN apt-get update && apt-get install -y \
     supervisor \
