@@ -55,4 +55,4 @@ runs:
     - name: Install cargo-tarpaulin
       uses: taiki-e/cache-cargo-install-action@v3
       with:
-        tool: cargo-tarpaulin@0.36.0
+        tool: cargo-tarpaulin@0.37.0
