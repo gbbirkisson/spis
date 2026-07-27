@@ -41,8 +41,7 @@ impl ImageProcessor {
 
         let timestamp = DateTime::parse_from_str(&timestamp_modified, "%Y:%m:%d %H:%M:%S %z")
             .wrap_err(format!(
-                "Failed to parse timestamp:{:?} tz:{:?}",
-                &timestamp, &timestamp_tz
+                "Failed to parse timestamp:{timestamp:?} tz:{timestamp_tz:?}"
             ))?
             .with_timezone(&Utc);
 
