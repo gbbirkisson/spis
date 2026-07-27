@@ -44,7 +44,7 @@ impl VideoProcessor {
 
         let timestamp_modified = timestamp.replace('z', "Z");
         Ok(DateTime::parse_from_rfc3339(&timestamp_modified)
-            .wrap_err(format!("Failed to parse video timestamp:{:?}", &timestamp))?
+            .wrap_err(format!("Failed to parse video timestamp:{timestamp:?}"))?
             .with_timezone(&Utc))
     }
 
