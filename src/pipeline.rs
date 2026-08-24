@@ -185,7 +185,7 @@ pub fn setup_filewalker(
                 Ok(map) => map,
                 Err(error) => {
                     tracing::error!("Failed to get old entries: {:?}", error);
-                    HashMap::with_capacity(0)
+                    HashMap::new()
                 }
             };
 
