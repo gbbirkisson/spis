@@ -78,6 +78,7 @@
       matchStrings: [
         'HTMX_VERSION:=(?<currentValue>\\d+\\.\\d+\\.\\d+)',
         'htmx-(?<currentValue>\\d+\\.\\d+\\.\\d+)',
+        'htmx-sse-(?<currentValue>\\d+\\.\\d+\\.\\d+)',
       ],
       depNameTemplate: 'htmx',
       packageNameTemplate: 'bigskysoftware/htmx',

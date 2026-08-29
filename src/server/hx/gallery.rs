@@ -56,8 +56,7 @@ struct HxGallery<'a> {
     state: &'a GalleryState,
 
     media: &'a Vec<Media>,
-    sse_media_before_skip: bool,
-    sse_media_after: Option<&'a uuid::Uuid>,
+    oob: bool,
 }
 
 pub(super) async fn render(app_state: &AppState, state: GalleryState) -> RenderResult {
@@ -151,8 +150,7 @@ pub(super) async fn render(app_state: &AppState, state: GalleryState) -> RenderR
         features: &config.features,
         state: &state,
         media: &media,
-        sse_media_before_skip: false,
-        sse_media_after: None,
+        oob: false,
     }
     .render_response()
 }
@@ -169,8 +167,7 @@ async fn root(
 struct HxMore<'a> {
     features: &'a crate::server::Features,
     media: &'a Vec<Media>,
-    sse_media_before_skip: bool,
-    sse_media_after: Option<&'a uuid::Uuid>,
+    oob: bool,
 }
 
 async fn more(
@@ -190,8 +187,7 @@ async fn more(
     HxMore {
         features: &config.features,
         media: &media,
-        sse_media_before_skip: false,
-        sse_media_after: None,
+        oob: false,
     }
     .render_response()
 }
