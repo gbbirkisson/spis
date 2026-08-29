@@ -1,4 +1,4 @@
-<main id="hx-main" class="main" hx-include="#hx-bar" hx-ext="sse" sse-connect="/hx/sse?{{ state.as_query() }}"
+<main id="hx-main" class="main" hx-include:inherited="#hx-bar" hx-sse:connect="/hx/sse?{{ state.as_query() }}" hx-config="sse.pauseOnBackground:false"
   _="on enableMultiselect add .multiselect-active to me remove .hidden from #multiselect-overlay end">
   <div id="hx-media-preview">
   </div>

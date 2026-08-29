@@ -19,8 +19,7 @@ use tokio_stream::wrappers::BroadcastStream;
 struct HxMedia<'a> {
     features: &'a crate::server::Features,
     media: &'a Media,
-    sse_media_before_skip: bool,
-    sse_media_after: Option<&'a uuid::Uuid>,
+    oob: bool,
 }
 
 async fn convert_event(
@@ -40,16 +39,14 @@ async fn convert_event(
                 let tmpl = HxMedia {
                     features: &app_state.config.features,
                     media: &media,
-                    sse_media_before_skip: false,
-                    sse_media_after: Some(&after.id),
+                    oob: false,
                 };
 
                 if let Ok(res) = tmpl.render() {
-                    return Some(
-                        Event::default()
-                            .event(format!("{}-before", after.id))
-                            .data(res),
-                    );
+                    return Some(Event::default().data(format!(
+                        r#"<div hx-swap-oob="beforebegin:#thumb-{}">{res}</div>"#,
+                        after.id
+                    )));
                 }
             }
             None
@@ -62,16 +59,17 @@ async fn convert_event(
                 let tmpl = HxMedia {
                     features: &app_state.config.features,
                     media: &media,
-                    sse_media_before_skip: true,
-                    sse_media_after: None,
+                    oob: true,
                 };
                 if let Ok(res) = tmpl.render() {
-                    return Some(Event::default().event(media.uuid.to_string()).data(res));
+                    return Some(Event::default().data(res));
                 }
             }
             None
         }
-        MediaEvent::Archived(uuid) => Some(Event::default().event(uuid.to_string()).data(" ")),
+        MediaEvent::Archived(uuid) => Some(Event::default().data(format!(
+            r#"<li id="thumb-{uuid}" hx-swap-oob="delete"></li>"#
+        ))),
     }
 }
 
