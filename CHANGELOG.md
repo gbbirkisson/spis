@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.15.1](https://github.com/gbbirkisson/spis/compare/v0.15.0...v0.15.1) (2026-09-04)
+
+
+### Bug Fixes
+
+* **deps:** update dependency rust to v1.98.1 ([#713](https://github.com/gbbirkisson/spis/issues/713)) ([75bc296](https://github.com/gbbirkisson/spis/commit/75bc296ea5a6e654bb0242ea0dbdb2bdd59dc628))
+* **deps:** update nginx docker tag to v1.31.5 ([#711](https://github.com/gbbirkisson/spis/issues/711)) ([92973f5](https://github.com/gbbirkisson/spis/commit/92973f512bf563e232473a4eef849b0e339f661b))
+* **deps:** update rust crate toml to v1.1.5 ([#712](https://github.com/gbbirkisson/spis/issues/712)) ([1fd999a](https://github.com/gbbirkisson/spis/commit/1fd999a98ba000295b3e8ea3d1223d6f9a000f3b))
+* **deps:** update rust crate tower-http to v0.7.1 ([#709](https://github.com/gbbirkisson/spis/issues/709)) ([56a3abc](https://github.com/gbbirkisson/spis/commit/56a3abcc14b8b0edad7dfe863384a33dcbc64f20))
+
 ## [0.15.0](https://github.com/gbbirkisson/spis/compare/v0.14.1...v0.15.0) (2026-08-29)
 
 
