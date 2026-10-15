@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.15.2](https://github.com/gbbirkisson/spis/compare/v0.15.1...v0.15.2) (2026-10-15)
+
+
+### Bug Fixes
+
+* **deps:** update nginx docker tag to v1.31.7 ([#730](https://github.com/gbbirkisson/spis/issues/730)) ([0fce702](https://github.com/gbbirkisson/spis/commit/0fce70280b23f3d584def9635fdb7338bdbd3566))
+* **deps:** update rust to v1.99.1 ([#732](https://github.com/gbbirkisson/spis/issues/732)) ([32dc969](https://github.com/gbbirkisson/spis/commit/32dc96941fc4ccc22122d307df6f29c6d748da1d))
+
 ## [0.15.1](https://github.com/gbbirkisson/spis/compare/v0.15.0...v0.15.1) (2026-10-14)
 
 
