@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.15.3](https://github.com/gbbirkisson/spis/compare/v0.15.2...v0.15.3) (2026-10-24)
+
+
+### Bug Fixes
+
+* **deps:** update dependency hyperscript to v0.9.94 ([#738](https://github.com/gbbirkisson/spis/issues/738)) ([efd2252](https://github.com/gbbirkisson/spis/commit/efd225206276651436db8d7e907bb9a2677f4c10))
+* **deps:** update nginx docker tag to v1.31.8 ([#736](https://github.com/gbbirkisson/spis/issues/736)) ([3672eff](https://github.com/gbbirkisson/spis/commit/3672eff5596248d7c9415cb4337451053c0d99d6))
+* **deps:** update rust crate tokio to v1.54.0 ([#733](https://github.com/gbbirkisson/spis/issues/733)) ([42f5c06](https://github.com/gbbirkisson/spis/commit/42f5c067b2a02ab6e3026cfdcbe59c17ec520faa))
+* **deps:** update rust crate tokio to v1.54.1 ([#735](https://github.com/gbbirkisson/spis/issues/735)) ([d68236c](https://github.com/gbbirkisson/spis/commit/d68236c1b655265399b95bac77ba841bed9a4dd0))
+* **deps:** update rust crate uuid to v1.29.0 ([#737](https://github.com/gbbirkisson/spis/issues/737)) ([e86ebeb](https://github.com/gbbirkisson/spis/commit/e86ebeb93de36f45b7d825fada07907d641ed207))
+
 ## [0.15.2](https://github.com/gbbirkisson/spis/compare/v0.15.1...v0.15.2) (2026-10-15)
 
 
