@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.15.3](https://github.com/gbbirkisson/spis/compare/v0.15.2...v0.15.3) (2026-11-07)
+
+
+### Bug Fixes
+
+* **deps:** update dependency htmx to v4.0.1 ([#741](https://github.com/gbbirkisson/spis/issues/741)) ([aec055a](https://github.com/gbbirkisson/spis/commit/aec055a0e23807048eb29f8c542c52e99b25268e))
+* **deps:** update dependency hyperscript to v0.9.94 ([#738](https://github.com/gbbirkisson/spis/issues/738)) ([efd2252](https://github.com/gbbirkisson/spis/commit/efd225206276651436db8d7e907bb9a2677f4c10))
+* **deps:** update nginx docker tag to v1.31.8 ([#736](https://github.com/gbbirkisson/spis/issues/736)) ([3672eff](https://github.com/gbbirkisson/spis/commit/3672eff5596248d7c9415cb4337451053c0d99d6))
+* **deps:** update rust crate kamadak-exif to v0.6.2 ([#745](https://github.com/gbbirkisson/spis/issues/745)) ([0dd7453](https://github.com/gbbirkisson/spis/commit/0dd7453661dd623ab39301cec3dc5433bf5b4a7c))
+* **deps:** update rust crate notify to v8.2.1 ([#739](https://github.com/gbbirkisson/spis/issues/739)) ([ceedbb9](https://github.com/gbbirkisson/spis/commit/ceedbb9ab02931c9b956e7064a6c19bf2962a800))
+* **deps:** update rust crate subprocess to v1.2.2 ([#742](https://github.com/gbbirkisson/spis/issues/742)) ([db65cb1](https://github.com/gbbirkisson/spis/commit/db65cb1a7a86cd9538c541c3449181208c03ae8b))
+* **deps:** update rust crate subprocess to v1.2.3 ([#743](https://github.com/gbbirkisson/spis/issues/743)) ([3104843](https://github.com/gbbirkisson/spis/commit/31048438182ea98138d8f1b678f92aaab926b1c1))
+* **deps:** update rust crate tokio to v1.54.0 ([#733](https://github.com/gbbirkisson/spis/issues/733)) ([42f5c06](https://github.com/gbbirkisson/spis/commit/42f5c067b2a02ab6e3026cfdcbe59c17ec520faa))
+* **deps:** update rust crate tokio to v1.54.1 ([#735](https://github.com/gbbirkisson/spis/issues/735)) ([d68236c](https://github.com/gbbirkisson/spis/commit/d68236c1b655265399b95bac77ba841bed9a4dd0))
+* **deps:** update rust crate toml to v1.2.0 ([#744](https://github.com/gbbirkisson/spis/issues/744)) ([36f5c6c](https://github.com/gbbirkisson/spis/commit/36f5c6cbf3643976b6b14138c63d501f7ef769ea))
+* **deps:** update rust crate toml to v1.2.1 ([#746](https://github.com/gbbirkisson/spis/issues/746)) ([1677ddf](https://github.com/gbbirkisson/spis/commit/1677ddf142214daac2dfdf16ad60c1a940d6e230))
+* **deps:** update rust crate uuid to v1.29.0 ([#737](https://github.com/gbbirkisson/spis/issues/737)) ([e86ebeb](https://github.com/gbbirkisson/spis/commit/e86ebeb93de36f45b7d825fada07907d641ed207))
+* **deps:** update rust crate uuid to v1.29.1 ([#747](https://github.com/gbbirkisson/spis/issues/747)) ([b86497f](https://github.com/gbbirkisson/spis/commit/b86497fea20e812dff527122c17424b38d23c2dc))
+
 ## [0.15.2](https://github.com/gbbirkisson/spis/compare/v0.15.1...v0.15.2) (2026-10-15)
 
 
